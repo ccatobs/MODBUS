@@ -1,0 +1,59 @@
+{
+  "server": {
+    "listenerAddress": "127.0.0.40",
+    "listenerPort": 5020,
+    "tlsParams": {
+      "description": "path to certificate and private key to enable tls",
+      "privateKey": null,
+      "certificate": null
+    },
+    "logging": {
+      "format": "%(asctime)-15s %(threadName)-15s  %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s",
+      "logLevel": "DEBUG"
+    }
+  },
+  "registers": {
+    "description": "initial values for the register types",
+    "zeroMode": false,
+    "initializeUndefinedRegisters": true,
+    "discreteInput": {},
+    "coils": {},
+    "holdingRegister": {},
+    "inputRegister": {
+      "1": "0x0003",
+      "2": "0x0001",
+      "3": "0xc180",
+      "4": "0x0000",
+      "5": "0x0000",
+      "6": "0x0000",
+      "7": "0x4270",
+      "8": "0x0000",
+      "9": "0x42a1",
+      "10": "0x4ccd",
+      "11": "0x42c4",
+      "12": "0x0000",
+      "13": "0x42f8",
+      "14": "0x0000",
+      "15": "0x42f2",
+      "16": "0x0000",
+      "17": "0x42f2",
+      "18": "0x0000",
+      "19": "0x439d",
+      "20": "0x8000",
+      "21": "0x439d",
+      "22": "0x8000",
+      "23": "0x4348",
+      "24": "0x0000",
+      "25": "0x3ff3",
+      "26": "0x3333",
+      "27": "0x4602",
+      "28": "0x3400",
+      "29": "0x0000",
+      "30": "0x0000",
+      "31": "0xABCD",
+      "32": "0x040A",
+      "33": "0x0011",
+      "34": "0xAB04"
+    }
+  }
+}
