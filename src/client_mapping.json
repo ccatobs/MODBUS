@@ -1,6 +1,7 @@
 {
   "10001": {
-    "parameter": "UnitOn"
+    "parameter": "UnitOn",
+    "desc": "Unit On status: TRUE = Unit ON"
   },
   "10002": {
     "parameter": "Unit_Alarm"
@@ -203,6 +204,35 @@
     "parameter": "Software Rev"
   },
   "30034": {
+    "function": "decode_bits",
+    "parameter": "TEST",
+    "map": {
+      "0b00000001": "test0",
+      "0b00000010": "test1",
+      "0b00000100": "test2",
+      "0b00001000": "test3",
+      "0b00010000": "test4",
+      "0b00100000": "test5",
+      "0b01000000": "test6",
+      "0b10000000": "test7"
+    }
+  },
+    "40001": {
+    "function": "decode_16bit_uint",
+    "parameter": "Operating State",
+    "map": {
+      "0": "Idling ‐ ready to start",
+      "2": "Starting",
+      "3": "Running",
+      "5": "Stopping",
+      "6": "Error Lockout",
+      "7": "Error",
+      "8": "Helium Cool Down",
+      "9": "Power related Error",
+      "15": "Recovered from Error"
+    }
+  },
+    "40034": {
     "function": "decode_bits",
     "parameter": "TEST",
     "map": {

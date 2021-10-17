@@ -27,7 +27,10 @@
       "102": "0x1"
     },
     "coils": {},
-    "holdingRegister": {},
+    "holdingRegister": {
+      "1": "0x0003",
+      "34": "0x0000"
+    },
     "inputRegister": {
       "1": "0x0003",
       "2": "0x0001",
