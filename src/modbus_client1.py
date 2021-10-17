@@ -5,10 +5,6 @@ import time
 import json
 import logging
 
-
-HOST = '127.0.0.40'
-PORT = 5020
-
 with open('client_mapping.json') as json_file:
     mapping = json.load(json_file)
 
@@ -113,7 +109,12 @@ def read_compressor_modbus_result(client):
 
 
 def main():
-    client = ModbusClient(HOST, port=PORT)
+
+    with open('client_config.json') as json_file:
+        client_config = json.load(json_file)
+
+    client = ModbusClient(host=client_config["server"]["listenerAddress"],
+                          port=client_config["server"]["listenerPort"])
     client.connect()
 
     while True:
