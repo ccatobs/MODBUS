@@ -21,20 +21,19 @@ class ObjectType(object):
     def __init__(self, client, mapping, entity):
         self.client = client
         self.entity = entity
-        # select mapping per entity
-        self.register_maps = {key: value for key, value in mapping.items() if
-                              key[0] == self.entity}
+        # select mapping for each entity
+        self.register_maps = {key: value for key, value in
+                              sorted(mapping.items()) if key[0] == self.entity}
         els = [i for i in self.register_maps]
         if not els:
             self.boundaries = {}
         else:
             last = els[-1]
             # length of key for e.g. '3xxxx/3xxxx'
+            mini = els[0].split("/")[0]
             if len(last) != 11:
-                mini = els[0].split("/")[0]
                 maxi = last.split("/")[0]
             else:
-                mini = els[0].split("/")[0]
                 maxi = last.split("/")[1]
             self.boundaries = {
                 "min": mini,
@@ -72,21 +71,29 @@ class ObjectType(object):
             logging.error("Error: wrong binary string in mapping")
 
     def formatter(self, decoder, decoded, register):
+        """
+
+        :param decoder:
+        :param decoded:
+        :param register:
+        :return:
+        """
         function = self.register_maps[register]['function']
         parameter = self.register_maps[register]['parameter']
         maps = self.register_maps[register].get('map')
+        desc = self.register_maps[register].get('desc')
         value = getattr(decoder, function)()
         if function == 'decode_bits':
-            for key, desc in self.register_maps[register]['map'].items():
+            for key, name in self.register_maps[register]['map'].items():
                 decoded.append(
                     {
                         "parameter": parameter,
                         "value": value[self.binary_map(binarystring=key)],
-                        "description": desc
+                        "description": name
                     }
                 )
         else:
-            desc = maps.get(str(round(value))) if maps else parameter
+            desc = maps.get(str(round(value))) if maps else desc
             decoded.append(
                 {
                     "parameter": parameter,
@@ -97,37 +104,77 @@ class ObjectType(object):
 
         return decoded
 
+    def formatter_bit(self, decoder, decoded, register):
+        """
+
+        :param decoder:
+        :param decoded:
+        :param register:
+        :return:
+        """
+        parameter = self.register_maps[register]['parameter']
+        desc = self.register_maps[register].get('desc')
+        decoded.append({
+            "parameter": parameter,
+            "value": decoder[int(register[1:]) - 1],
+            "description": desc
+        })
+
+        return decoded
+
     def run(self):
 
-        method = None
-        # result = client.read_xxx_registers(start, width)
-        if self.entity == '3':
+        if not self.boundaries:
+            return []
+
+        if self.entity == '1':
+            # for simplicity we read in the max of 2000 bits
+            method = 'read_discrete_inputs'
+            result = getattr(self.client, method)(0, 2000)
+        elif self.entity == '2':
+            method = 'read-coils'
+            result = getattr(self.client, method)(0, 2000)
+        elif self.entity == '3':
             method = 'read_input_registers'
+            result = getattr(self.client, method)(
+                self.boundaries['start'],
+                self.boundaries['width']
+            )
         elif self.entity == '4':
             method = 'read_holding_registers'
-        result = getattr(self.client, method)(
-            self.boundaries['start'],
-            self.boundaries['width']
-        )
+            result = getattr(self.client, method)(
+                self.boundaries['start'],
+                self.boundaries['width']
+            )
         assert (not result.isError())
-        decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
-                                                     byteorder=Endian.Big)
-        # loop incl. penultimate and find gaps not to be read-out
+
         decoded = list()
-        for index, item in enumerate(list(self.register_maps.keys())[:-1]):
-            decoded = self.formatter(decoder,
-                                     decoded,
-                                     item)
-            # find if there's something to skip
-            skip = self.diff(item,
-                             list(self.register_maps.keys())[index+1]
-                             )
-            decoder.skip_bytes(skip)
-        # last entry in dict
-        decoded = self.formatter(decoder,
-                                 decoded,
-                                 list(self.register_maps.keys())[-1]
-                                 )
+        if self.entity in ['3', '4']:
+            decoder = BinaryPayloadDecoder.fromRegisters(result.registers,
+                                                         byteorder=Endian.Big)
+            # loop incl. penultimate and find gaps not to be read-out
+            for index, item in enumerate(list(self.register_maps.keys())[:-1]):
+                decoded = self.formatter(
+                    decoder,
+                    decoded,
+                    item)
+                # find if there's something to skip
+                skip = self.diff(
+                    item,
+                    list(self.register_maps.keys())[index + 1])
+                decoder.skip_bytes(skip)
+            # last entry in dict
+            decoded = self.formatter(
+                decoder,
+                decoded,
+                list(self.register_maps.keys())[-1])
+        elif self.entity in ['1', '2']:
+            decoder = result.bits
+            for item in self.register_maps.keys():
+                decoded = self.formatter_bit(
+                    decoder,
+                    decoded,
+                    item)
 
         return decoded
 
@@ -144,7 +191,7 @@ def main():
                           port=client_config["server"]["listenerPort"])
     client.connect()
 
-    register_class = ['3', '4']
+    register_class = ['1', '2', '3', '4']
 
     instance_list = list()
     for regs in register_class:
@@ -152,8 +199,8 @@ def main():
                                         mapping=mapping,
                                         entity=regs))
 
-    decoded = list()
     while True:
+        decoded = list()
         for insts in instance_list:
             # append all decoded from all register classes
             decoded = decoded + insts.run()

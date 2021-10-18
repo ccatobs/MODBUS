@@ -156,7 +156,8 @@
   },
   "30031": {
     "function": "decode_16bit_uint",
-    "parameter": "Panel Serial Number"
+    "parameter": "Panel Serial Number",
+    "desc": "This is supposed to be the Panel Serial Number"
   },
   "30032/1": {
     "function": "decode_8bit_uint",
