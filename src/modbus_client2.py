@@ -19,6 +19,15 @@ class BinaryStringError(Exception):
 
 class ObjectType(object):
     def __init__(self, client, mapping, entity):
+        """
+
+        :param client: instance
+        MODBUS client
+        :param mapping: dictionary
+        mapping of all registers as from JSON
+        :param entity: str
+        register prefix
+        """
         self.client = client
         self.entity = entity
         # select mapping for each entity
@@ -29,7 +38,10 @@ class ObjectType(object):
             self.boundaries = {}
         else:
             last = els[-1]
-            # length of key for e.g. '3xxxx/3xxxx'
+            # length of key for e.g.
+            # '3xxxx/3xxxx' or
+            # '3xxxx/2 or just
+            # '3xxxx
             mini = els[0].split("/")[0]
             if len(last) != 11:
                 maxi = last.split("/")[0]
@@ -44,7 +56,14 @@ class ObjectType(object):
 
     @staticmethod
     def diff(i, j):
-        """gap in number of bytes"""
+        """
+        :param i: str
+        low register number
+        :param j: str
+        high register number
+        :return: int
+        gap between high-low in number of bytes
+        """
         high = j.split("/")[0]
         if len(i) == 11:
             low = i.split("/")[1]
@@ -60,6 +79,11 @@ class ObjectType(object):
 
     @staticmethod
     def binary_map(binarystring):
+        """
+        position of True in binary string. Report if malformated in mapping.
+        :param binarystring: str
+        :return: integer
+        """
         try:
             tmp = binarystring.split("0b")[1]
             if tmp.count('1') != 1:
@@ -72,11 +96,13 @@ class ObjectType(object):
 
     def formatter(self, decoder, decoded, register):
         """
-
-        :param decoder:
-        :param decoded:
-        :param register:
-        :return:
+        format the output dictionary and append by scanning through the mapping
+        of the registers. If gaps in the mappings are detected they are skipped
+        by the number of bytes.
+        :param decoder: A deferred response handle from the register readings
+        :param decoded: dictionary
+        :param register: dictionary
+        :return: dict
         """
         function = self.register_maps[register]['function']
         parameter = self.register_maps[register]['parameter']
@@ -106,11 +132,11 @@ class ObjectType(object):
 
     def formatter_bit(self, decoder, decoded, register):
         """
-
-        :param decoder:
-        :param decoded:
-        :param register:
-        :return:
+        indexes the result array of bits by the keys found in the mapping
+        :param decoder: A deferred response handle from the register readings
+        :param decoded: dictionary
+        :param register: dictionary
+        :return: dict
         """
         parameter = self.register_maps[register]['parameter']
         desc = self.register_maps[register].get('desc')
@@ -123,29 +149,29 @@ class ObjectType(object):
         return decoded
 
     def run(self):
-
+        """
+        instantiates the classes for the 4 register object types and invokes
+        the run methods within an interval.
+        :return: dictionary of output
+        """
         if not self.boundaries:
             return []
-
+        result = None
         if self.entity == '1':
             # for simplicity we read in the max of 2000 bits
-            method = 'read_discrete_inputs'
-            result = getattr(self.client, method)(0, 2000)
+            result = self.client.read_discrete_inputs(address=0,
+                                                      count=2000)
         elif self.entity == '2':
-            method = 'read-coils'
-            result = getattr(self.client, method)(0, 2000)
+            result = self.client.read_coils(address=0,
+                                            count=2000)
         elif self.entity == '3':
-            method = 'read_input_registers'
-            result = getattr(self.client, method)(
-                self.boundaries['start'],
-                self.boundaries['width']
-            )
+            result = self.client.read_input_registers(
+                address=self.boundaries['start'],
+                count=self.boundaries['width'])
         elif self.entity == '4':
-            method = 'read_holding_registers'
-            result = getattr(self.client, method)(
-                self.boundaries['start'],
-                self.boundaries['width']
-            )
+            result = self.client.read_holding_registers(
+                address=self.boundaries['start'],
+                count=self.boundaries['width'])
         assert (not result.isError())
 
         decoded = list()
@@ -192,7 +218,6 @@ def main():
     client.connect()
 
     register_class = ['1', '2', '3', '4']
-
     instance_list = list()
     for regs in register_class:
         instance_list.append(ObjectType(client=client,
