@@ -24,7 +24,7 @@ The JSON format is to be defined in the following formate, e.g.:
     "function": "decode_16bit_uint",    # function mandatory for input and holding
     "parameter": "Operating State",
     "map": {
-      "0": "Idling ‐ ready to start",   # if map then desc = element of map
+      "0": "Idling ‐ ready to start",   # if map provided, desc = map element
       "2": "Starting",
       "3": "Running",
       "5": "Stopping",
@@ -112,4 +112,3 @@ https://hub.docker.com/r/oitc/modbus-server)
 * MODBUS [client](https://github.com/ccatp/MODBUS/blob/master/src/modbus_client.py).
 [Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json) 
 comrprise MODBUS server details, etc.
-

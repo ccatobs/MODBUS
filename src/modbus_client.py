@@ -26,13 +26,9 @@ class DuplicateParameterError(Exception):
 class ObjectType(object):
     def __init__(self, client, mapping, entity):
         """
-
-        :param client: instance
-        MODBUS client
-        :param mapping: dictionary
-        mapping of all registers as from JSON
-        :param entity: str
-        register prefix
+        :param client: instance- MODBUS client
+        :param mapping: dictionary - mapping of all registers as from JSON
+        :param entity: str - register prefix
         """
         self.client = client
         self.entity = entity
@@ -66,12 +62,9 @@ class ObjectType(object):
     @staticmethod
     def gap(low, high):
         """
-        :param low: str
-        low register number
-        :param high: str
-        high register number
-        :return: int
-        gap between high and low registers in number of bytes
+        :param low: str - low register number
+        :param high: str - high register number
+        :return: int - gap between high and low registers in number of bytes
         """
         byt = 0
         hb = high.split("/")
@@ -115,7 +108,7 @@ class ObjectType(object):
         by the number of bytes.
         :param decoder: A deferred response handle from the register readings
         :param register: dictionary
-        :return: dict
+        :return: dictionary
         """
         function = self.register_maps[register]['function']
         parameter = self.register_maps[register]['parameter']
@@ -149,7 +142,7 @@ class ObjectType(object):
         indexes the result array of bits by the keys found in the mapping
         :param decoder: A deferred response handle from the register readings
         :param register: dictionary
-        :return: dict
+        :return: dictionary
         """
         parameter = self.register_maps[register]['parameter']
         desc = self.register_maps[register].get('desc')
