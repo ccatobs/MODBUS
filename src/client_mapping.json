@@ -1,44 +1,44 @@
 {
-  "10001": {
+  "10000": {
     "parameter": "UnitOn",
     "desc": "Unit On status: TRUE = Unit ON"
   },
-  "10002": {
+  "10001": {
     "parameter": "Unit_Alarm"
   },
-  "10003": {
+  "10002": {
     "parameter": "Door_Open",
     "desc": "Door Open"
   },
-  "10004": {
+  "10003": {
     "parameter": "WaterLevel_High",
     "desc": "Water Level High"
   },
-  "10005": {
+  "10004": {
     "parameter": "DO_Alarm3.Val",
     "desc": "Alarm Output - .Value"
   },
-  "10006": {
+  "10005": {
     "parameter": "DO_Alarm4.Val",
     "desc": "Alarm Output - .Value"
   },
-  "10007": {
+  "10006": {
     "parameter": "DO_Alarm5.Val",
     "desc": "Alarm Output - .Value"
   },
-  "10008": {
+  "10007": {
     "parameter": "EN_Option_Air_Sensor",
     "desc": "Enable option additional air sensors"
   },
-  "10009": {
+  "10008": {
     "parameter": "EN_Option_Water",
     "desc": "Enable option water loop"
   },
-  "10010": {
+  "10009": {
     "parameter": "EN_Option_Air",
     "desc": "Enable option air controll"
   },
-  "10011": {
+  "10010": {
     "parameter": "EN_Option_CondPumpe",
     "desc": "Enable option condensation pump"
   },
@@ -46,13 +46,13 @@
     "parameter": "EN_Option_DoorSwitch",
     "desc": "Enable option door switch"
   },
-  "10101": {
+  "10100": {
     "parameter": "ALARM_ARR[0]"
   },
-  "10102": {
+  "10101": {
     "parameter": "ALARM_ARR[1]"
   },
-  "10103": {
+  "10102": {
     "parameter": "ALARM_ARR[3]"
   },
   "30001": {
@@ -130,7 +130,8 @@
   },
   "30007/30008": {
     "function": "decode_32bit_float",
-    "parameter": "Coolant In Temp"
+    "parameter": "Coolant In Temp",
+    "desc": "additional info on the coolant"
   },
   "30009/30010": {
     "function": "decode_32bit_float",
@@ -204,7 +205,7 @@
     "function": "decode_16bit_uint",
     "parameter": "Software Rev"
   },
-  "30034": {
+  "30034/2": {
     "function": "decode_bits",
     "parameter": "TEST",
     "map": {
@@ -218,24 +219,9 @@
       "0b10000000": "test7"
     }
   },
-    "40001": {
-    "function": "decode_16bit_uint",
-    "parameter": "Operating State",
-    "map": {
-      "0": "Idling ‐ ready to start",
-      "2": "Starting",
-      "3": "Running",
-      "5": "Stopping",
-      "6": "Error Lockout",
-      "7": "Error",
-      "8": "Helium Cool Down",
-      "9": "Power related Error",
-      "15": "Recovered from Error"
-    }
-  },
-    "40034": {
+    "40034/1": {
     "function": "decode_bits",
-    "parameter": "TEST",
+    "parameter": "TEST1",
     "map": {
       "0b00000001": "test0",
       "0b00000010": "test1",
@@ -247,4 +233,5 @@
       "0b10000000": "test7"
     }
   }
+
 }

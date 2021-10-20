@@ -4,6 +4,7 @@
     "listenerPort": 5020
   },
   "hk": {
-    "interval": 30
-  }
+    "interval": 60
+  },
+  "debug": false
 }

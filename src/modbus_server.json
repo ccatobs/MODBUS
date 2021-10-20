@@ -14,22 +14,23 @@
   },
   "registers": {
     "description": "initial values for the register types",
-    "zeroMode": false,
+    "zeroMode": true,
     "initializeUndefinedRegisters": true,
     "discreteInput": {
+      "0": "0x1",
       "1": "0x1",
-      "2": "0x0",
-      "7": "0x1",
+      "6": "0x1",
+      "8": "0x1",
       "9": "0x1",
-      "10": "0x1",
-      "101": "0x1",
+      "100": "0x1",
       "101": "0x1",
       "102": "0x1"
     },
     "coils": {},
     "holdingRegister": {
-      "1": "0x0003",
-      "34": "0x0000"
+      "0": "0x0003",
+      "33": "0xF0E0",
+      "34": "0x00FF"
     },
     "inputRegister": {
       "1": "0x0003",
