@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+
+"""
+mqtt2ttn_v3 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, AIfA,
+University Bonn.
+
+A simple universal MODBUS interface.
+"""
+
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
@@ -6,6 +15,24 @@ import json
 import re
 import sys
 import logging
+
+"""
+change history
+2012/10/20 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- First version 0.1
+"""
+
+__author__ = "Dr. Ralf Antonius Timmermann"
+__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
+                "University Bonn"
+__credits__ = ""
+__license__ = "GPLv3"
+__version__ = "0.1.0"
+__maintainer__ = "Dr. Ralf Antonius Timmermann"
+__email__ = "rtimmermann@astro.uni-bonn.de"
+__status__ = "Dev"
+
+print(__doc__)
 
 
 class BinaryStringError(Exception):
@@ -169,14 +196,16 @@ class ObjectType(object):
         result = None
         if self.entity == '0':
             # ToDo: for simplicity we read first 2000 bits
-            result = self.client.read_coils(address=0,
-                                            count=2000
-                                            )
+            result = self.client.read_coils(
+                address=0,
+                count=2000
+            )
         elif self.entity == '1':
             # ToDo: for simplicity we read first 2000 bits
-            result = self.client.read_discrete_inputs(address=0,
-                                                      count=2000
-                                                      )
+            result = self.client.read_discrete_inputs(
+                address=0,
+                count=2000
+            )
         elif self.entity == '3':
             result = self.client.read_input_registers(
                 address=self.boundaries['start'],
@@ -241,6 +270,7 @@ def main():
     # checks on the client mapping
     # test on keys in mapping
     # keys are of following formate: '3xxxx/3xxxx', '3xxxx/2 or '3xxxx'
+    # test on duplicate parameter
     rev_dict = dict()
     try:
         for key, value in mapping.items():
@@ -255,10 +285,10 @@ def main():
                 raise DuplicateParameterError
     except MappingKeyError:
         logging.error("Error: wrong key in mapping: {0}".format(key))
-        return 1
+        sys.exit(1)
     except DuplicateParameterError:
         logging.error("Error: duplicate parameters: {0}".format(parameter))
-        return 1
+        sys.exit(1)
 
     client = ModbusClient(host=client_config["server"]["listenerAddress"],
                           port=client_config["server"]["listenerPort"])
