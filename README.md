@@ -116,47 +116,67 @@ file.
 comrprise MODBUS server details, etc.
 
 For the time being the output looks something like this (your input needed):
-
-[{'parameter': 'UnitOn', 'value': True, 'description': 'Unit On status: TRUE =
-Unit ON'}, {'parameter': 'Unit_Alarm', 'value': True, 'description': None},
-{'parameter': 'Door_Open', 'value': False, 'description': 'Door Open'},
-{'parameter': 'WaterLevel_High', 'value': False, 'description': 'Water Level
-High'}, {'parameter': 'DO_Alarm3.Val', 'value': False, 'description': 'Alarm
-Output - .Value'}, {'parameter': 'DO_Alarm4.Val', 'value': False, '
-description': 'Alarm Output - .Value'}, {'parameter': 'DO_Alarm5.Val', 'value':
-True, 'description': 'Alarm Output - .Value'}, {'parameter': '
-EN_Option_Air_Sensor', 'value': False, 'description': 'Enable option additional
-air sensors'}, {'parameter': 'EN_Option_Water', 'value': True, 'description': '
-Enable option water loop'}, {'parameter': 'EN_Option_Air', 'value': True, '
-description': 'Enable option air controll'}, {'parameter': '
-EN_Option_CondPumpe', 'value': False, 'description': 'Enable option condensation
-pump'}, {'parameter': 'EN_Option_DoorSwitch', 'value': False, 'description': '
-Enable option door switch'}, {'parameter': 'ALARM_ARR[0]', 'value': True, '
-description': None}, {'parameter': 'ALARM_ARR[1]', 'value': True, 'description':
-None}, {'parameter': 'ALARM_ARR[3]', 'value': True, 'description': None},
-{'parameter': 'Operating State', 'value': 3, 'description': 'Running'},
-{'parameter': 'Compressor Running', 'value': 1, 'description': 'On'},
-{'parameter': 'Warning State', 'value': -16.0, 'description': 'Oil running
-High'}, {'parameter': 'Alarm State', 'value': 0.0, 'description': 'No Errors'},
-{'parameter': 'Coolant In Temp', 'value': 60.0, 'description': 'additional info
-on the coolant'}, {'parameter': 'Coolant Out Temp', 'value': 80.6500015258789, '
-description': None}, {'parameter': 'Pressure', 'value': 0, 'description': '
-PSI'}, {'parameter': 'Temperature', 'value': 0, 'description': 'Fahrenheit'},
-{'parameter': 'Panel Serial Number', 'value': 43981, 'description': 'This is
-supposed to be the Panel Serial Number'}, {'parameter': 'Model Major Number', '
-value': 4, 'description': '1100 Series'}, {'parameter': 'Model Minor Number', '
-value': 10, 'description': 'H5'}, {'parameter': 'Software Rev', 'value': 17, '
-description': None}, {'parameter': 'TEST', 'value': False, 'description': '
-test0'}, {'parameter': 'TEST', 'value': False, 'description': 'test1'},
-{'parameter': 'TEST', 'value': True, 'description': 'test2'}, {'parameter': '
-TEST', 'value': False, 'description': 'test3'}, {'parameter': 'TEST', 'value':
-False, 'description': 'test4'}, {'parameter': 'TEST', 'value': False, '
-description': 'test5'}, {'parameter': 'TEST', 'value': False, 'description': '
-test6'}, {'parameter': 'TEST', 'value': False, 'description': 'test7'},
-{'parameter': 'TEST1', 'value': False, 'description': 'test0'}, {'parameter': '
-TEST1', 'value': False, 'description': 'test1'}, {'parameter': 'TEST1', 'value':
-False, 'description': 'test2'}, {'parameter': 'TEST1', 'value': False, '
-description': 'test3'}, {'parameter': 'TEST1', 'value': False, 'description': '
-test4'}, {'parameter': 'TEST1', 'value': False, 'description': 'test5'},
-{'parameter': 'TEST1', 'value': False, 'description': 'test6'}, {'parameter': '
-TEST1', 'value': False, 'description': 'test7'}]
+```
+[
+    {
+        "parameter": "Operating State",
+        "value": 3,
+        "description": "Running"
+    },
+    {
+        "parameter": "Compressor Running",
+        "value": 1,
+        "description": "On"
+    },
+    {
+        "parameter": "Warning State",
+        "value": -16.0,
+        "description": "Oil running High"
+    },
+    {
+        "parameter": "Alarm State",
+        "value": 0.0,
+        "description": "No Errors"
+    },
+    {
+        "parameter": "Coolant In Temp",
+        "value": 60.0,
+        "description": "additional info on the coolant"
+    },
+    {
+        "parameter": "Coolant Out Temp",
+        "value": 80.6500015258789,
+        "description": null
+    },
+    {
+        "parameter": "Pressure",
+        "value": 0,
+        "description": "PSI"
+    },
+    {
+        "parameter": "Temperature",
+        "value": 0,
+        "description": "Fahrenheit"
+    },
+    {
+        "parameter": "Panel Serial Number",
+        "value": 4711,
+        "description": "This is supposed to be the Panel Serial Number"
+    },
+    {
+        "parameter": "Model Major Number",
+        "value": 4,
+        "description": "1100 Series"
+    },
+    {
+        "parameter": "Model Minor Number",
+        "value": 10,
+        "description": "H5"
+    },
+    {
+        "parameter": "Software Rev",
+        "value": 17,
+        "description": "upgrade frequently!"
+    }
+]
+```
