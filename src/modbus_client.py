@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 """
-modbus_client.py Copyright (C) 2021 Dr. Ralf Antonius Timmermann, AIfA,
-University Bonn.
-
 For a detailed description, see https://github.com/ccatp/MODBUS
+
+Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
+Astronomy (AIfA), University Bonn.
 """
 
 from pymodbus.constants import Endian
@@ -33,6 +33,8 @@ __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
 
 print(__doc__)
+
+UNIT = 0x1
 
 
 class BinaryStringError(Exception):
@@ -139,7 +141,7 @@ class ObjectType(object):
         """
         function = self.register_maps[register]['function']
         parameter = self.register_maps[register]['parameter']
-        map = self.register_maps[register].get('map')
+        maps = self.register_maps[register].get('map')
         unit = self.register_maps[register].get('unit')
         desc = self.register_maps[register].get('desc')
         value = getattr(decoder, function)()
@@ -155,7 +157,7 @@ class ObjectType(object):
                     }
                 )
         else:
-            desc = map.get(str(round(value))) if map else desc
+            desc = maps.get(str(round(value))) if maps else desc
             di = {
                 "parameter": parameter,
                 "value": value
@@ -198,7 +200,6 @@ class ObjectType(object):
         """
         if not self.boundaries:
             return []
-        UNIT = 0x1
         result = None
         if self.entity == '0':
             # ToDo: for simplicity we read first 2000 bits
