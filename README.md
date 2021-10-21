@@ -1,16 +1,19 @@
 # MODBUS
-A simple universal MODBUS interface, where the 
-mapping of the registers to the coil, discrete
-input, input registers, and holding registers is entirely defined though a
-[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json) 
-file, no modification to the python coding is required. This JSON file
-comprises a key describing the register, a parameter (mandatory and unique over
-all four register classes), a unit and description (optional) per value.
-The key is in the formate: e.g. 30011, 30011/1 or 30011/2 for the leading and
-trailing byte, or 30011/30012 for 32 or 64 bit register addresses. For input
-and holding registers a function needs to be defined that translated the
-8, 16, 32, or 64 bits into appropriate values, such as
-```
+
+A simple universal MODBUS interface, where the mapping of the registers to coil,
+discrete input, input registers, and holding registers is entirely defined
+though a
+[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json)
+file, with no modification to the python code required. This JSON file comprises
+a key describing the register, a corresponding parameter (mandatory and unique
+over all register classes), a unit and a description (optional). The key is in
+the formate: e.g. 30011, 30011/1 or 30011/2 for the leading and trailing byte,
+30011/30012 or 30011/30014 for 32 or 64 bit register addresses. For input and
+holding registers a function needs to be defined that translated the 8, 16, 32,
+or 64 bits into appropriate values, such as
+
+```python
+{
 ('bits', decoder.decode_bits()),
 ('8int', decoder.decode_8bit_int()),
 ('8uint', decoder.decode_8bit_uint()),
@@ -22,12 +25,16 @@ and holding registers a function needs to be defined that translated the
 ('32float', decoder.decode_32bit_float()),
 ('64int', decoder.decode_64bit_int()),
 ('64uint', decoder.decode_64bit_uint()),
-('64float', decoder.decode_64bit_float()),
+('64float', decoder.decode_64bit_float())
+}
 ```
-and so on. If a map is defined, then description is chosen according to the
-round(value). In case of a gap between keys byte skipping is calculated
-automatically. The JSON format is to be defined in the following formate, e.g.:
-```
+
+Function is in the form, e.g. "decode_32bit_uint". If a map is defined, then 
+the description is chosen according to the round(value). In case of a gap 
+between keys byte skipping is calculated automatically. The JSON format is to 
+be defined in the following formate, e.g.:
+
+```JSON
 {
   "10000": {
     "parameter": "UnitOn",                      # parameter mandatory
@@ -123,27 +130,28 @@ automatically. The JSON format is to be defined in the following formate, e.g.:
   }
 }
 ```
-A check on the uniqueness of "parameter" is performed. Keys are to be in the 
-format: 3xxxx, 3xxxx/1 or 3xxxx/2 for the leading/trailing byte or 3xxxx/3xxxx 
-for 32/64 bit spanning registers. So far the JSON output is display on stdout.
 
-Caveat:
+A check on the uniqueness of "parameter" is performed. So far the JSON output 
+is display on stdout.
+
+####Caveat: 
+
+not implemented yet
 * decoder.decode_string(size=1) - Decodes a string from the buffer
 * decoder.bit_chunks() - classmethod
-
-not implemented yet.
 
 This repository comprises a 
 * MODBUS server simulator (the python code is extracted from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
 [config](https://github.com/ccatp/MODBUS/blob/master/src/modbus_server.json) 
 file.
-* MODBUS [client](https://github.com/ccatp/MODBUS/blob/master/src/modbus_client.py).
-[Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json) 
-comprise MODBUS server connection details, etc.
+* MODBUS [client](https://github.com/ccatp/MODBUS/blob/master/src/modbus_client.py), 
+where the MODBUS server connection details, etc are defined in
+[Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
 
-For the time being the output looks something like this (your input needed):
-```
+For the time being the output looks something like this (your input needed): 
+
+```JSON
 [
     {
         "parameter": "Operating State",
