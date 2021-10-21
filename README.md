@@ -1,13 +1,36 @@
 # MODBUS
-Development of a general MODBUS interface, where the mappings of
-coil, discrete input, input register, and holding register are entirely
-defined in 
-[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json). 
-In case of gaps (for input and holding registers) 
-between the defined registers, the appropriate number of bytes is calculated 
-and skipped accordingly.
-
-The JSON format is to be defined in the following formate, e.g.:
+A simple universal MODBUS interface, where the 
+mapping of the registers to the coil, discrete
+input, input registers, and holding registers is entirely defined though a
+[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json) 
+file, no modification to the python coding is required. This JSON file
+comprises a key describing the register, a parameter (mandatory and unique over
+all four register classes), a unit and description (optional) per value.
+The key is in the formate: e.g. 30011, 30011/1 or 30011/2 for the leading and
+trailing byte, or 30011/30012 for 32 or 64 bit register addresses. For input
+and holding registers a function needs to be defined that translated the
+8, 16, 32, or 64 bits into appropriate values, such as
+```
+            ('bits', decoder.decode_bits()),
+            ('8int', decoder.decode_8bit_int()),
+            ('8uint', decoder.decode_8bit_uint()),
+            ('16int', decoder.decode_16bit_int()),
+            ('16uint', decoder.decode_16bit_uint()),
+            ('32int', decoder.decode_32bit_int()),
+            ('32uint', decoder.decode_32bit_uint()),
+            ('16float', decoder.decode_16bit_float()),
+            ('16float2', decoder.decode_16bit_float()),
+            ('32float', decoder.decode_32bit_float()),
+            ('32float2', decoder.decode_32bit_float()),
+            ('64int', decoder.decode_64bit_int()),
+            ('64uint', decoder.decode_64bit_uint()),
+            ('ignore', decoder.skip_bytes(8)),
+            ('64float', decoder.decode_64bit_float()),
+            ('64float2', decoder.decode_64bit_float())
+```
+and so on. If a map is defined, then description is chosen according to the
+round(value). In case of a gap between keys byte skipping is calculated
+automatically. The JSON format is to be defined in the following formate, e.g.:
 ```
 {
   "10000": {
@@ -113,7 +136,7 @@ https://hub.docker.com/r/oitc/modbus-server) with its
 file.
 * MODBUS [client](https://github.com/ccatp/MODBUS/blob/master/src/modbus_client.py).
 [Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json) 
-comrprise MODBUS server details, etc.
+comprise MODBUS server connection details, etc.
 
 For the time being the output looks something like this (your input needed):
 ```

@@ -4,6 +4,8 @@
 modbus_client.py Copyright (C) 2021 Dr. Ralf Antonius Timmermann, AIfA,
 University Bonn.
 
+For a detailed description see https://github.com/ccatp/MODBUS
+
 A simple universal MODBUS interface, where the mapping to the coil, discrete
 input, input registers, and holding registers is entirely defined though a
 JSON file, no modification to this python coding is required. This JSON file
@@ -166,9 +168,11 @@ class ObjectType(object):
         """
         function = self.register_maps[register]['function']
         parameter = self.register_maps[register]['parameter']
-        maps = self.register_maps[register].get('map')
+        map = self.register_maps[register].get('map')
+        unit = self.register_maps[register].get('unit')
         desc = self.register_maps[register].get('desc')
         value = getattr(decoder, function)()
+
         decoded = list()
         if function == 'decode_bits':
             for key, name in self.register_maps[register]['map'].items():
@@ -180,14 +184,16 @@ class ObjectType(object):
                     }
                 )
         else:
-            desc = maps.get(str(round(value))) if maps else desc
-            decoded.append(
-                {
-                    "parameter": parameter,
-                    "value": value,
-                    "description": desc
-                }
-            )
+            desc = map.get(str(round(value))) if map else desc
+            di = {
+                "parameter": parameter,
+                "value": value
+            }
+            if unit:
+                di["unit"] = unit
+            if desc:
+                di["description"] = desc
+            decoded.append(di)
 
         return decoded
 
@@ -201,13 +207,14 @@ class ObjectType(object):
         parameter = self.register_maps[register]['parameter']
         desc = self.register_maps[register].get('desc')
 
-        return [
-            {
-                "parameter": parameter,
-                "value": decoder[int(register[1:])],
-                "description": desc
-            }
-        ]
+        di = {
+            "parameter": parameter,
+            "value": decoder[int(register[1:])],
+        }
+        if desc:
+            di["description"] = desc
+
+        return [di]
 
     def run(self):
         """
@@ -220,28 +227,33 @@ class ObjectType(object):
         """
         if not self.boundaries:
             return []
+        UNIT = 0x1
         result = None
         if self.entity == '0':
             # ToDo: for simplicity we read first 2000 bits
             result = self.client.read_coils(
                 address=0,
-                count=2000
+                count=2000,
+                unit=UNIT
             )
         elif self.entity == '1':
             # ToDo: for simplicity we read first 2000 bits
             result = self.client.read_discrete_inputs(
                 address=0,
-                count=2000
+                count=2000,
+                unit=UNIT
             )
         elif self.entity == '3':
             result = self.client.read_input_registers(
                 address=self.boundaries['start'],
-                count=self.boundaries['width']
+                count=self.boundaries['width'],
+                unit=UNIT
             )
         elif self.entity == '4':
             result = self.client.read_holding_registers(
                 address=self.boundaries['start'],
-                count=self.boundaries['width']
+                count=self.boundaries['width'],
+                unit=UNIT
             )
         assert (not result.isError())
 
@@ -294,10 +306,9 @@ def main():
     with open('client_mapping.json') as json_file:
         mapping = json.load(json_file)
 
-    # checks on the client mapping
-    # test on keys in mapping
-    # keys are of following formate: '3xxxx/3xxxx', '3xxxx/2 or '3xxxx'
-    # test on duplicate parameter
+    # perform checks on the client mapping
+    # 1) keys are of following formate: '3xxxx/3xxxx', '3xxxx/2 or '3xxxx'
+    # 2) test on duplicate parameter
     rev_dict = dict()
     try:
         for key, value in mapping.items():
@@ -328,10 +339,11 @@ def main():
                                         mapping=mapping,
                                         entity=regs))
 
+    # ToDo: catch exceptions and restart if MODBUS connection error
     while True:
         decoded = list()
         for insts in instance_list:
-            # append all decoded from all register classes
+            # append result from all register classes
             decoded = decoded + insts.run()
         print(json.dumps(decoded, indent=4))
 

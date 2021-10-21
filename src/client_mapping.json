@@ -81,9 +81,46 @@
     "function": "decode_32bit_float",
     "parameter": "Coolant Out Temp"
   },
+  "30011/30012": {
+    "function": "decode_32bit_float",
+    "parameter": "Oil Temp",
+    "unit": "Fahrenheit"
+  },
+  "30013/30014": {
+    "function": "decode_32bit_float",
+    "parameter": "Helium Temp"
+  },
+  "30015/30016": {
+    "function": "decode_32bit_float",
+    "parameter": "Low Pressure"
+  },
+  "30017/30018": {
+    "function": "decode_32bit_float",
+    "parameter": "Low Pressure Average"
+  },
+  "30019/30020": {
+    "function": "decode_32bit_float",
+    "parameter": "High Pressure"
+  },
+  "30021/30022": {
+    "function": "decode_32bit_float",
+    "parameter": "High Pressure Average"
+  },
+  "30023/30024": {
+    "function": "decode_32bit_float",
+    "parameter": "Delta Pressure Average"
+  },
+  "30025/30026": {
+    "function": "decode_32bit_float",
+    "parameter": "Motor Current"
+  },
+  "30027/30028": {
+    "function": "decode_32bit_float",
+    "parameter": "Hours Of Operation"
+  },
   "30029": {
     "function": "decode_16bit_uint",
-    "parameter": "Pressure",
+    "parameter": "Pressure Scale",
     "map": {
       "0": "PSI",
       "1": "Bar",
@@ -92,7 +129,7 @@
   },
   "30030": {
     "function": "decode_16bit_uint",
-    "parameter": "Temperature",
+    "parameter": "Temperature Scale",
     "map": {
       "0": "Fahrenheit",
       "1": "Celcius",
@@ -101,8 +138,7 @@
   },
   "30031": {
     "function": "decode_16bit_uint",
-    "parameter": "Panel Serial Number",
-    "desc": "This is supposed to be the Panel Serial Number"
+    "parameter": "Panel Serial Number"
   },
   "30032/1": {
     "function": "decode_8bit_uint",
