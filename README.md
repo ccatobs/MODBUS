@@ -134,12 +134,6 @@ be defined in the following formate, e.g.:
 A check on the uniqueness of "parameter" is performed. So far the JSON output 
 is display on stdout.
 
-#### Caveat: 
-
-not implemented yet
-* decoder.decode_string(size=1) - Decodes a string from the buffer
-* decoder.bit_chunks() - classmethod
-
 This repository comprises a 
 * MODBUS server simulator (the python code is extracted from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
@@ -248,3 +242,9 @@ For the time being the output looks something like this (your input needed):
     }
 ]
 ```
+
+#### Caveat:
+not implemented yet
+* decoder.decode_string(size=1) - Decodes a string from the buffer
+* decoder.bit_chunks() - classmethod
+
