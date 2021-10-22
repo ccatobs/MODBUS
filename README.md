@@ -134,7 +134,7 @@ be defined in the following formate, e.g.:
 A check on the uniqueness of "parameter" is performed. So far the JSON output 
 is display on stdout.
 
-####Caveat: 
+#### Caveat: 
 
 not implemented yet
 * decoder.decode_string(size=1) - Decodes a string from the buffer
@@ -180,33 +180,66 @@ For the time being the output looks something like this (your input needed):
     },
     {
         "parameter": "Coolant Out Temp",
-        "value": 80.6500015258789,
-        "description": null
+        "value": 80.6500015258789
     },
     {
-        "parameter": "Pressure",
+        "parameter": "Oil Temp",
+        "value": 98.0,
+        "unit": "Fahrenheit"
+    },
+    {
+        "parameter": "Helium Temp",
+        "value": 124.0
+    },
+    {
+        "parameter": "Low Pressure",
+        "value": 121.0
+    },
+    {
+        "parameter": "Low Pressure Average",
+        "value": 121.0
+    },
+    {
+        "parameter": "High Pressure",
+        "value": 315.0
+    },
+    {
+        "parameter": "High Pressure Average",
+        "value": 315.0
+    },
+    {
+        "parameter": "Delta Pressure Average",
+        "value": 200.0
+    },
+    {
+        "parameter": "Motor Current",
+        "value": 1.899999976158142
+    },
+    {
+        "parameter": "Hours Of Operation",
+        "value": 8333.0
+    },
+    {
+        "parameter": "Pressure Scale",
         "value": 0,
         "description": "PSI"
     },
     {
-        "parameter": "Temperature",
+        "parameter": "Temperature Scale",
         "value": 0,
         "description": "Fahrenheit"
     },
     {
         "parameter": "Panel Serial Number",
-        "value": 4711,
-        "description": "This is supposed to be the Panel Serial Number"
+        "value": 4711
     },
     {
         "parameter": "Model Major Number",
-        "value": 4,
-        "description": "1100 Series"
+        "value": 40
     },
     {
         "parameter": "Model Minor Number",
-        "value": 10,
-        "description": "H5"
+        "value": 156
     },
     {
         "parameter": "Software Rev",
