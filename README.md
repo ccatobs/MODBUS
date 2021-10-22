@@ -8,9 +8,9 @@ file, with no modification to the python code required. This JSON file comprises
 a key describing the register, a corresponding parameter (mandatory and unique
 over all register classes), a unit and a description (optional). The key is in
 the formate: e.g. 30011, 30011/1 or 30011/2 for the leading and trailing byte,
-30011/30012 or 30011/30014 for 32 or 64 bit register addresses. For input and
-holding registers a function needs to be defined that translated the 8, 16, 32,
-or 64 bits into appropriate values, such as
+30011/30012 or 30011/30014 for 32 or 64 bit register addresses, respectively. 
+For input and holding registers a function needs to be defined that translate 
+the 8, 16, 32, or 64 bits into appropriate values, such as
 
 ```python
 {
@@ -37,20 +37,17 @@ be defined in the following formate, e.g.:
 ```JSON
 {
   "10000": {
-    "parameter": "UnitOn",                      # parameter mandatory
-    "desc": "Unit On status: TRUE = Unit ON"    # desc optional
+    "parameter": "UnitOn",                            // parameter mandatory
+    "description": "Unit On status: TRUE = Unit ON"   // description optional
   },
   "10001": {
     "parameter": "Unit_Alarm"
-  },
-  
-  ...
-
+  }, 
   "30001": {
-    "function": "decode_16bit_uint",    # function mandatory for input and holding
+    "function": "decode_16bit_uint", // function mandatory for input and holding register
     "parameter": "Operating State",
     "map": {
-      "0": "Idling ‐ ready to start",   # if map provided, desc = map element
+      "0": "Idling ‐ ready to start", // if map provided, desc = map element
       "2": "Starting",
       "3": "Running",
       "5": "Stopping",
@@ -92,24 +89,18 @@ be defined in the following formate, e.g.:
       "-262144": "Static Pressure running Low",
       "-524288": "Cold head motor Stall"
     }
-  },
-  
-  ...
-  
+  },                     // possible gaps between keys are automatically skipped
   "30011/30012": {
     "function": "decode_32bit_float",
     "parameter": "Oil Temp",
-    "desc": "unit is provided here..."
+    "description": "unit is provided here...",
     "unit": "e.g. Fahrenheit"
-  
-  ...                    # possible gaps between keys are automatically skipped
-
+  },
   "30031": {
     "function": "decode_16bit_uint",
     "parameter": "Panel Serial Number",
-    "desc": "This is supposed to be the Panel Serial Number"
+    "description": "This is supposed to be the Panel Serial Number"
   },
-  ...
   "30033": {
     "function": "decode_16bit_uint",
     "parameter": "Software Rev"
@@ -118,7 +109,7 @@ be defined in the following formate, e.g.:
     "function": "decode_bits",
     "parameter": "TEST",
     "map": {
-      "0b00000001": "test0",    # for decode bits mapping binary string format 
+      "0b00000001": "test0",    // for decode_bits mapping binary string format 
       "0b00000010": "test1",
       "0b00000100": "test2",
       "0b00001000": "test3",
@@ -247,4 +238,4 @@ For the time being the output looks something like this (your input needed):
 not implemented yet
 * decoder.decode_string(size=1) - Decodes a string from the buffer
 * decoder.bit_chunks() - classmethod
-
+* for coil and discrete input we read in (hardcoded) only the first 2000 bits.

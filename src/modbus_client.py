@@ -143,7 +143,7 @@ class ObjectType(object):
         parameter = self.register_maps[register]['parameter']
         maps = self.register_maps[register].get('map')
         unit = self.register_maps[register].get('unit')
-        desc = self.register_maps[register].get('desc')
+        desc = self.register_maps[register].get('description')
         value = getattr(decoder, function)()
 
         decoded = list()
@@ -178,7 +178,7 @@ class ObjectType(object):
         :return: dictionary
         """
         parameter = self.register_maps[register]['parameter']
-        desc = self.register_maps[register].get('desc')
+        desc = self.register_maps[register].get('description')
 
         di = {
             "parameter": parameter,
