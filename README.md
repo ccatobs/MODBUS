@@ -94,7 +94,7 @@ be defined in the following formate, e.g.:
     "function": "decode_32bit_float",
     "parameter": "Oil Temp",
     "description": "unit is provided here...",
-    "unit": "e.g. Fahrenheit"
+    "unit": "e.g. Fahrenheit"   // unit optional
   },
   "30031": {
     "function": "decode_16bit_uint",
@@ -131,7 +131,7 @@ https://hub.docker.com/r/oitc/modbus-server) with its
 [config](https://github.com/ccatp/MODBUS/blob/master/src/modbus_server.json) 
 file.
 * MODBUS [client](https://github.com/ccatp/MODBUS/blob/master/src/modbus_client.py), 
-where the MODBUS server connection details, etc are defined in
+where the MODBUS server connection details, etc. are defined in
 [Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
 
 For the time being the output looks something like this (your input needed): 
@@ -239,3 +239,7 @@ not implemented yet
 * decoder.decode_string(size=1) - Decodes a string from the buffer
 * decoder.bit_chunks() - classmethod
 * for coil and discrete input we read in (hardcoded) only the first 2000 bits.
+
+
+Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
+rtimmermann@astro.uni-bonn.de

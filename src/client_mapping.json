@@ -75,7 +75,7 @@
   "30007/30008": {
     "function": "decode_32bit_float",
     "parameter": "Coolant In Temp",
-    "desc": "additional info on the coolant"
+    "description": "additional info on the coolant"
   },
   "30009/30010": {
     "function": "decode_32bit_float",
@@ -184,6 +184,6 @@
   "30033": {
     "function": "decode_16bit_uint",
     "parameter": "Software Rev",
-    "desc": "upgrade frequently!"
+    "description": "upgrade frequently!"
   }
 }

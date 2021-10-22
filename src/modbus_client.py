@@ -6,7 +6,7 @@ For a detailed description, see https://github.com/ccatp/MODBUS
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
-
+import pymodbus.exceptions
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
@@ -282,6 +282,8 @@ def main():
     # 1) keys are of following formate: '3xxxx/3xxxx', '3xxxx/2 or '3xxxx'
     # 2) test on duplicate parameter
     rev_dict = dict()
+    key = None
+    parameter = None
     try:
         for key, value in mapping.items():
             if not re.match(
@@ -289,10 +291,10 @@ def main():
                     key):
                 raise MappingKeyError
             rev_dict.setdefault(value["parameter"], set()).add(key)
-            parameter = [key for key, values in rev_dict.items()
-                         if len(values) > 1]
-            if parameter:
-                raise DuplicateParameterError
+        parameter = [key for key, values in rev_dict.items()
+                     if len(values) > 1]
+        if parameter:
+            raise DuplicateParameterError
     except MappingKeyError:
         logging.error("Error: wrong key in mapping: {0}".format(key))
         sys.exit(1)
@@ -300,9 +302,13 @@ def main():
         logging.error("Error: duplicate parameters: {0}".format(parameter))
         sys.exit(1)
 
-    client = ModbusClient(host=client_config["server"]["listenerAddress"],
-                          port=client_config["server"]["listenerPort"])
-    client.connect()
+    try:
+        client = ModbusClient(host=client_config["server"]["listenerAddress"],
+                              port=client_config["server"]["listenerPort"])
+        client.connect()
+    except pymodbus.exceptions.ConnectionException:
+        logging.error("Error: no such coneection parameters")
+        sys.exit(1)
 
     register_class = ['0', '1', '3', '4']
     instance_list = list()
