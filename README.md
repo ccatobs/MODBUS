@@ -40,8 +40,8 @@ is in the form, e.g. "decode_32bit_uint" (see below for a selection):
 
 If a map is defined, the description is chosen according to round(value). In
 case of a gap between keys, byte skipping is calculated and performed
-automatically. The JSON format for the mapping is to be defined in the following
-formate, e.g.:
+automatically. A check on the uniqueness of "parameter" is performed. The JSON
+format for the mapping is to be defined in the following formate, e.g.:
 
 ```JSON
 {
@@ -131,9 +131,6 @@ formate, e.g.:
 }
 ```
 
-A check on the uniqueness of "parameter" is performed. So far the JSON output 
-is display on stdout.
-
 This repository comprises a 
 * MODBUS server simulator (the python code is extracted from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
@@ -143,7 +140,8 @@ file.
 where the MODBUS server connection details, etc. are defined in
 [Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
 
-For the time being the output looks something like this (your input needed): 
+So far the JSON output is display on stdout. For the time being the output looks
+something like this (your input needed):
 
 ```JSON
 [
