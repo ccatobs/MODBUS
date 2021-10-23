@@ -49,6 +49,7 @@
   "30005/30006": {
     "function": "decode_32bit_float",
     "parameter": "Alarm State",
+    "description": "This description should not be parsed",
     "map": {
       "0": "No Errors",
       "-1": "Coolant IN High",

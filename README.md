@@ -4,13 +4,22 @@ A simple universal MODBUS interface, where the mapping of the registers to coil,
 discrete input, input registers, and holding registers is entirely defined
 though a
 [JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json)
-file, with no modification to the python code required. This JSON file comprises
-a key describing the register, a corresponding parameter (mandatory and unique
-over all register classes), a unit and a description (optional). The key is in
-the formate: e.g. 30011, 30011/1 or 30011/2 for the leading and trailing byte,
-30011/30012 or 30011/30014 for 32 or 64 bit register addresses, respectively. 
-For input and holding registers a function needs to be defined that translate 
-the 8, 16, 32, or 64 bits into appropriate values, such as
+file, with no modification to the coding required whatsoever. This JSON file
+comprises a key pointing to the register(s) and several nested keys, such as
+
+1) "parameter" (mandatory and unique over all register classes), 
+2) "description" (optional) or
+3) "map" (optional), in the case a value needs to match an entry from a list 
+   provided. This fields value is then parsed through as description.
+
+Additional dictionary key/value pairs may be provided in 
+client_mapping, which are just parsed. The register key has to be in
+the formate: e.g. "30011", "30011/1" or "30011/2" for the leading and trailing 
+byte of the (16 bit) register, respectively, and furthermore,
+"30011/30012" or "30011/30014" for 32 or 64 bit register addresses. In such case
+a function needs to be defined for input and holding registers that 
+translates the 8, 16, 32, or 64 bits into appropriate values. This function 
+is in the form, e.g. "decode_32bit_uint" (see below for a selection): 
 
 ```python
 {
@@ -29,10 +38,10 @@ the 8, 16, 32, or 64 bits into appropriate values, such as
 }
 ```
 
-Function is in the form, e.g. "decode_32bit_uint". If a map is defined, then 
-the description is chosen according to the round(value). In case of a gap 
-between keys byte skipping is calculated automatically. The JSON format is to 
-be defined in the following formate, e.g.:
+If a map is defined, the description is chosen according to round(value). In
+case of a gap between keys, byte skipping is calculated and performed
+automatically. The JSON format for the mapping is to be defined in the following
+formate, e.g.:
 
 ```JSON
 {
@@ -235,11 +244,10 @@ For the time being the output looks something like this (your input needed):
 ```
 
 #### Caveat:
-not implemented yet
+not implemented yet:
 * decoder.decode_string(size=1) - Decodes a string from the buffer
 * decoder.bit_chunks() - classmethod
-* for coil and discrete input we read in (hardcoded) only the first 2000 bits.
-
+* for coil and discrete input only the first 2000 bits are read in (hardcoded).
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de

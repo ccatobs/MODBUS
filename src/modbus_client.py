@@ -1,15 +1,17 @@
 #!/usr/bin/env python
-
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
+
+version 0.2 - 2021/10/22
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
-import pymodbus.exceptions
+
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+import pymodbus.exceptions
 import time
 import json
 import re
@@ -18,8 +20,11 @@ import logging
 
 """
 change history
-2012/10/20 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
-- First version 0.1
+2021/10/20 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 0.1
+2021/10/22 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 0.2
+    * for additional key/value pairs in client mapping parse'em through.
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -27,7 +32,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "GPLv3"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -137,36 +142,40 @@ class ObjectType(object):
         by the number of bytes.
         :param decoder: A deferred response handle from the register readings
         :param register: dictionary
-        :return: dictionary
+        :return: list with dictionary
         """
+        decoded = list()
+
         function = self.register_maps[register]['function']
-        parameter = self.register_maps[register]['parameter']
         maps = self.register_maps[register].get('map')
-        unit = self.register_maps[register].get('unit')
         desc = self.register_maps[register].get('description')
         value = getattr(decoder, function)()
-
-        decoded = list()
+        optional = {
+            key: self.register_maps[register][key]
+            for key in self.register_maps[register]
+            if key not in {'function', 'parameter', 'map', 'description'}
+        }
         if function == 'decode_bits':
             for key, name in self.register_maps[register]['map'].items():
                 decoded.append(
                     {
-                        "parameter": parameter,
+                        "parameter": self.register_maps[register]['parameter'],
                         "value": value[self.binary_map(binarystring=key)],
                         "description": name
                     }
                 )
         else:
-            desc = maps.get(str(round(value))) if maps else desc
+            if maps:
+                desc = maps.get(str(round(value)))
             di = {
-                "parameter": parameter,
+                "parameter": self.register_maps[register]['parameter'],
                 "value": value
             }
-            if unit:
-                di["unit"] = unit
             if desc:
                 di["description"] = desc
-            decoded.append(di)
+            decoded.append(
+                dict(**di, **optional)
+            )
 
         return decoded
 
@@ -175,19 +184,21 @@ class ObjectType(object):
         indexes the result array of bits by the keys found in the mapping
         :param decoder: A deferred response handle from the register readings
         :param register: dictionary
-        :return: dictionary
+        :return: list with dictionary
         """
-        parameter = self.register_maps[register]['parameter']
-        desc = self.register_maps[register].get('description')
-
+        optional = {
+            key: self.register_maps[register][key]
+            for key in self.register_maps[register]
+            if key != 'parameter'
+        }
         di = {
-            "parameter": parameter,
+            "parameter": self.register_maps[register]['parameter'],
             "value": decoder[int(register[1:])],
         }
-        if desc:
-            di["description"] = desc
 
-        return [di]
+        return [
+            dict(**di, **optional)
+        ]
 
     def run(self):
         """
@@ -201,6 +212,8 @@ class ObjectType(object):
         if not self.boundaries:
             return []
         result = None
+        decoded = list()
+
         if self.entity == '0':
             # ToDo: for simplicity we read first 2000 bits
             result = self.client.read_coils(
@@ -229,7 +242,6 @@ class ObjectType(object):
             )
         assert (not result.isError())
 
-        decoded = list()
         if self.entity in ['3', '4']:
             decoder = BinaryPayloadDecoder.fromRegisters(
                 registers=result.registers,
@@ -265,6 +277,10 @@ class ObjectType(object):
 
 def main():
 
+    rev_dict = dict()
+    key = None
+    parameter = None
+
     with open('client_config.json') as config_file:
         client_config = json.load(config_file)
 
@@ -277,13 +293,9 @@ def main():
 
     with open('client_mapping.json') as json_file:
         mapping = json.load(json_file)
-
     # perform checks on the client mapping
     # 1) keys are of following formate: '3xxxx/3xxxx', '3xxxx/2 or '3xxxx'
     # 2) test on duplicate parameter
-    rev_dict = dict()
-    key = None
-    parameter = None
     try:
         for key, value in mapping.items():
             if not re.match(
@@ -317,7 +329,6 @@ def main():
                                         mapping=mapping,
                                         entity=regs))
 
-    # ToDo: catch exceptions and restart if MODBUS connection error
     while True:
         decoded = list()
         for insts in instance_list:
