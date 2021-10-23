@@ -6,5 +6,5 @@
   "hk": {
     "interval": 60
   },
-  "debug": false
+  "debug": true
 }

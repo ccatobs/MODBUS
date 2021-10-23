@@ -317,7 +317,9 @@ def main():
     try:
         client = ModbusClient(host=client_config["server"]["listenerAddress"],
                               port=client_config["server"]["listenerPort"])
+        client.debug_enabled()
         client.connect()
+
     except pymodbus.exceptions.ConnectionException:
         logging.error("Error: no such coneection parameters")
         sys.exit(1)
