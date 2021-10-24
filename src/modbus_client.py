@@ -2,7 +2,7 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.2 - 2021/10/22
+version 0.2 - 2021/10/24
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -22,7 +22,7 @@ import logging
 change history
 2021/10/20 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.1
-2021/10/22 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+2021/10/24 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.2
     * for additional key/value pairs in client mapping parse'em through.
 """
@@ -144,18 +144,10 @@ class ObjectType(object):
         :param register: dictionary
         :return: list with dictionary
         """
-        decoded = list()
-
         function = self.register_maps[register]['function']
-        maps = self.register_maps[register].get('map')
-        desc = self.register_maps[register].get('description')
         value = getattr(decoder, function)()
-        optional = {
-            key: self.register_maps[register][key]
-            for key in self.register_maps[register]
-            if key not in {'function', 'parameter', 'map', 'description'}
-        }
         if function == 'decode_bits':
+            decoded = list()
             for key, name in self.register_maps[register]['map'].items():
                 decoded.append(
                     {
@@ -165,17 +157,22 @@ class ObjectType(object):
                     }
                 )
         else:
+            maps = self.register_maps[register].get('map')
+            desc = self.register_maps[register].get('description')
+            optional = {
+                key: self.register_maps[register][key]
+                for key in self.register_maps[register]
+                if key not in {'function', 'map', 'description'}
+            }
+            di = {"value": value}
             if maps:
                 desc = maps.get(str(round(value)))
-            di = {
-                "parameter": self.register_maps[register]['parameter'],
-                "value": value
-            }
             if desc:
                 di["description"] = desc
-            decoded.append(
-                dict(**di, **optional)
-            )
+            decoded = [
+                dict(**optional,
+                     **di)
+            ]
 
         return decoded
 
@@ -186,18 +183,11 @@ class ObjectType(object):
         :param register: dictionary
         :return: list with dictionary
         """
-        optional = {
-            key: self.register_maps[register][key]
-            for key in self.register_maps[register]
-            if key != 'parameter'
-        }
-        di = {
-            "parameter": self.register_maps[register]['parameter'],
-            "value": decoder[int(register[1:])],
-        }
-
         return [
-            dict(**di, **optional)
+            dict(
+                **self.register_maps[register],
+                **{"value": decoder[int(register[1:])]}
+            )
         ]
 
     def run(self):
@@ -321,7 +311,7 @@ def main():
         client.connect()
 
     except pymodbus.exceptions.ConnectionException:
-        logging.error("Error: no such coneection parameters")
+        logging.error("Error: no such connection parameters")
         sys.exit(1)
 
     register_class = ['0', '1', '3', '4']

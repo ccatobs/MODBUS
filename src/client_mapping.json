@@ -1,4 +1,61 @@
 {
+  "10000": {
+    "parameter": "UnitOn",
+    "description": "Unit On status: TRUE = Unit ON",
+    "unit": "let's see, what happenz"
+  },
+  "10001": {
+    "parameter": "Unit_Alarm"
+  },
+  "10002": {
+    "parameter": "Door_Open",
+    "description": "Door Open"
+  },
+  "10003": {
+    "parameter": "WaterLevel_High",
+    "description": "Water Level High"
+  },
+  "10004": {
+    "parameter": "DO_Alarm3.Val",
+    "description": "Alarm Output - .Value"
+  },
+  "10005": {
+    "parameter": "DO_Alarm4.Val",
+    "description": "Alarm Output - .Value"
+  },
+  "10006": {
+    "parameter": "DO_Alarm5.Val",
+    "description": "Alarm Output - .Value"
+  },
+  "10007": {
+    "parameter": "EN_Option_Air_Sensor",
+    "description": "Enable option additional air sensors"
+  },
+  "10008": {
+    "parameter": "EN_Option_Water",
+    "description": "Enable option water loop"
+  },
+  "10009": {
+    "parameter": "EN_Option_Air",
+    "description": "Enable option air controll"
+  },
+  "10010": {
+    "parameter": "EN_Option_CondPumpe",
+    "description": "Enable option condensation pump"
+  },
+  "10012": {
+    "parameter": "EN_Option_DoorSwitch",
+    "description": "Enable option door switch"
+  },
+  "10100": {
+    "parameter": "ALARM_ARR[0]"
+  },
+  "10101": {
+    "parameter": "ALARM_ARR[1]"
+  },
+  "10102": {
+    "parameter": "ALARM_ARR[2]"
+  },
   "30001": {
     "function": "decode_16bit_uint",
     "parameter": "Operating State",
