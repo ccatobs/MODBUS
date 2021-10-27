@@ -3,8 +3,5 @@
     "listenerAddress": "127.0.0.40",
     "listenerPort": 5020
   },
-  "hk": {
-    "interval": 60
-  },
   "debug": false
 }

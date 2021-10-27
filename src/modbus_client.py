@@ -12,7 +12,6 @@ from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 import pymodbus.exceptions
-import time
 import json
 import re
 import sys
@@ -25,6 +24,9 @@ change history
 2021/10/24 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.2
     * for additional key/value pairs in client mapping parse'em through.
+- version 0.3
+    * adapted for hk
+    * also function parsed through as indicator for data type     
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -32,7 +34,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "GPLv3"
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -77,6 +79,12 @@ class ObjectType(object):
             self.boundaries = {}
         else:
             mini = els[0].split("/")[0]
+            if len(els[0].split("/")) == 2:
+                if els[0].split("/")[1] == '2':
+                    logging.error("Error: starting the first register with a "
+                                  "trailing byte is a lausy idea. Consider a "
+                                  "redesign either way!")
+                    sys.exit(1)
             maxi = els[-1].split("/")[0]
             if len(els[-1].split("/")) == 2:
                 if els[-1].split("/")[1] not in ['1', '2']:
@@ -101,6 +109,7 @@ class ObjectType(object):
         :return: int - gap between high and low registers in number of bytes
         """
         byt = 0
+
         hb = high.split("/")
         if len(hb) == 2:
             if hb[1] == "2":
@@ -147,14 +156,26 @@ class ObjectType(object):
         function = self.register_maps[register]['function']
         value = getattr(decoder, function)()
         if function == 'decode_bits':
+            # if only one entry in map found, add optional parameters
+            if len(self.register_maps[register]['map']) == 1:
+                optional = {
+                    key: self.register_maps[register][key]
+                    for key in self.register_maps[register]
+                    if key not in {'map', 'description', 'value', 'function',
+                                   'parameter'}
+                }
+            else:
+                optional = dict()
             decoded = list()
             for key, name in self.register_maps[register]['map'].items():
-                decoded.append(
+                decoded.append(dict(
                     {
                         "parameter": self.register_maps[register]['parameter'],
                         "value": value[self.binary_map(binarystring=key)],
-                        "description": name
-                    }
+                        "description": name,
+                        "function": function
+                    },
+                    **optional)
                 )
         else:
             maps = self.register_maps[register].get('map')
@@ -162,7 +183,7 @@ class ObjectType(object):
             optional = {
                 key: self.register_maps[register][key]
                 for key in self.register_maps[register]
-                if key not in {'function', 'map', 'description'}
+                if key not in {'map', 'description'}
             }
             di = {"value": value}
             if maps:
@@ -186,7 +207,8 @@ class ObjectType(object):
         return [
             dict(
                 **self.register_maps[register],
-                **{"value": decoder[int(register[1:])]}
+                **{"value": decoder[int(register[1:])],
+                   "function": "decode_bits"}
             )
         ]
 
@@ -265,8 +287,16 @@ class ObjectType(object):
         return decoded
 
 
-def main():
-
+def initialize():
+    """
+    initializing the modbus client and perform checks on client_mapping.json:
+    1) format of register key
+    2) existance and uniqueness of "parameter"
+    3) connection to modbus server via synchronous TCP
+    :return:
+    object - modbus client
+    dictionary - mapping
+    """
     rev_dict = dict()
     key = None
     parameter = None
@@ -311,25 +341,54 @@ def main():
         client.connect()
 
     except pymodbus.exceptions.ConnectionException:
-        logging.error("Error: no such connection parameters")
+        logging.error("Error: could not connect to server.")
         sys.exit(1)
 
+    return client, mapping
+
+
+def retrieve(client, mapping):
+    """
+    invoke for monitoring
+    :param client: object
+    :param mapping: dictionary
+    :return:
+    """
     register_class = ['0', '1', '3', '4']
     instance_list = list()
+
     for regs in register_class:
-        instance_list.append(ObjectType(client=client,
-                                        mapping=mapping,
-                                        entity=regs))
+        instance_list.append(
+            ObjectType(client=client,
+                       mapping=mapping,
+                       entity=regs
+                       )
+        )
 
-    while True:
-        decoded = list()
-        for insts in instance_list:
-            # append result from all register classes
-            decoded = decoded + insts.run()
-        print(json.dumps(decoded, indent=4))
+    decoded = list()
+    for insts in instance_list:
+        # append result from all register classes
+        decoded = decoded + insts.run()
 
-        time.sleep(client_config["hk"]["interval"])
+    # ToDo: modify accordingly
+    # if JSON needs to be sorted by keys
+    print(json.dumps([dict(sorted(i.items())) for i in decoded], indent=4))
+    # otherwise, this will suffice
+    # print(json.dumps(decoded, indent=4))
+
+
+def close(client):
+    """
+    close the client
+    :param client: object
+    :return:
+    """
+    client.close()
 
 
 if __name__ == '__main__':
-    main()
+
+    client, mapping = initialize()
+    retrieve(client=client,
+             mapping=mapping)
+    close(client=client)

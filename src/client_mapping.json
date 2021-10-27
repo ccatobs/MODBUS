@@ -243,5 +243,20 @@
     "function": "decode_16bit_uint",
     "parameter": "Software Rev",
     "description": "upgrade frequently!"
+  },
+  "30034/2": {
+    "function": "decode_bits",
+    "parameter": "TEST",
+    "default value": "ZERO",
+    "map": {
+      "0b00000001": "test0",
+      "0b00000010": "test1",
+      "0b00000100": "test2",
+      "0b00001000": "test3",
+      "0b00010000": "test4",
+      "0b00100000": "test5",
+      "0b01000000": "test6",
+      "0b10000000": "test7"
+    }
   }
 }

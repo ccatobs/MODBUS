@@ -10,10 +10,14 @@ comprises a key pointing to the register(s) and several nested keys, such as
 1) "parameter" (mandatory and unique over all register classes), 
 2) "description" (optional) or
 3) "map" (optional), in the case a value needs to match an entry from a list 
-   provided. This fields value is then parsed through as description.
+   provided. This field value is then parsed through as description. A map 
+   might contain only one entry that matches one bit out of the leading or 
+   trailing byte.
 
-Additional dictionary key/value pairs may be provided in 
-client_mapping, which are just parsed. The register key has to be in
+Additional dictionary key/value pairs may be provided in the
+client registry mapping, which are just parsed. 
+
+The register key has to be in
 the formate: e.g. "30011", "30011/1" or "30011/2" for the leading and trailing 
 byte of the (16 bit) register, respectively, and furthermore,
 "30011/30012" or "30011/30014" for 32 or 64 bit register addresses. In such case
@@ -21,22 +25,21 @@ a function needs to be defined for input and holding registers that
 translates the 8, 16, 32, or 64 bits into appropriate values. This function 
 is in the form, e.g. "decode_32bit_uint" (see below for a selection): 
 
-```python
-{
-('bits', decoder.decode_bits()),
-('8int', decoder.decode_8bit_int()),
-('8uint', decoder.decode_8bit_uint()),
-('16int', decoder.decode_16bit_int()),
-('16uint', decoder.decode_16bit_uint()),
-('32int', decoder.decode_32bit_int()),
-('32uint', decoder.decode_32bit_uint()),
-('16float', decoder.decode_16bit_float()),
-('32float', decoder.decode_32bit_float()),
-('64int', decoder.decode_64bit_int()),
-('64uint', decoder.decode_64bit_uint()),
-('64float', decoder.decode_64bit_float())
-}
-```
+
+| Function | Value |
+|----------|-------|
+| 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_bits |
+| 8 int | decode_8bit_int |
+| 8 uint | decode_8bit_uint |
+| 16 int|  decode_16bit_int| 
+| 16 uint|  decode_16bit_uint| 
+| 32 int|   decode_32bit_int| 
+| 32 uint|   decode_32bit_uint| 
+| 16 float|   decode_16bit_float| 
+| 32 float|   decode_32bit_float| 
+| 64 int|   decode_64bit_int| 
+| 64 uint|   decode_64bit_uint| 
+| 64 float|   decode_64bit_float |
 
 If a map is defined, the description is chosen according to round(value). In
 case of a gap between keys, byte skipping is calculated and performed
@@ -114,9 +117,16 @@ format for the mapping is to be defined in the following formate, e.g.:
     "function": "decode_16bit_uint",
     "parameter": "Software Rev"
   },
+  "30034/1": {
+    "function": "decode_bits",
+    "parameter": "TEST1", 
+    "default": "ZERO",
+    "map": {
+      "0b10000000": "test7"   // becomes description
+    },
   "30034/2": {
     "function": "decode_bits",
-    "parameter": "TEST",
+    "parameter": "TEST2",
     "map": {
       "0b00000001": "test0",    // for decode_bits mapping binary string format 
       "0b00000010": "test1",
