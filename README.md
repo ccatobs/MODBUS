@@ -15,7 +15,10 @@ comprises a key pointing to the register(s) and several nested keys, such as
    trailing byte.
 
 Additional dictionary key/value pairs may be provided in the
-client registry mapping, which are just parsed. 
+client registry mapping, which are just parsed. In order to maintain 
+consistancy amongst the various modbus clients, we suggest to select 
+same denominators for further keys, such as "default value", "unit", "min", 
+and "max".
 
 The register key has to be in
 the formate: e.g. "30011", "30011/1" or "30011/2" for the leading and trailing 
