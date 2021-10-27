@@ -2,7 +2,7 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.2 - 2021/10/24
+version 0.3 - 2021/10/27
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -24,6 +24,7 @@ change history
 2021/10/24 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.2
     * for additional key/value pairs in client mapping parse'em through.
+2021/10/27 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.3
     * adapted for hk
     * also function parsed through as indicator for data type     
