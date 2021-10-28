@@ -74,8 +74,8 @@ class ObjectType(object):
             key: value for key, value in
             sorted(mapping.items()) if key[0] == self.entity
         }
-
         els = [i for i in self.register_maps]
+
         if not els:
             self.boundaries = {}
         else:
@@ -371,11 +371,7 @@ def retrieve(client, mapping):
         # append result from all register classes
         decoded = decoded + insts.run()
 
-    # ToDo: modify accordingly
-    # if JSON needs to be sorted by keys
-    print(json.dumps([dict(sorted(i.items())) for i in decoded], indent=4))
-    # otherwise, this will suffice
-    # print(json.dumps(decoded, indent=4))
+    return decoded
 
 
 def close(client):
@@ -390,6 +386,13 @@ def close(client):
 if __name__ == '__main__':
 
     client, mapping = initialize()
-    retrieve(client=client,
-             mapping=mapping)
+    to_hk = retrieve(client=client,
+                     mapping=mapping)
     close(client=client)
+
+    # if JSON needs to be sorted by keys
+    print(json.dumps([dict(sorted(i.items())) for i in to_hk], indent=4))
+    # otherwise, this will suffice
+    # print(json.dumps(to_hk, indent=4))
+
+    exit(0)
