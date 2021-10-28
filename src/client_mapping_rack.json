@@ -1,0 +1,665 @@
+{
+  "10000": {
+    "parameter": "UnitOn",
+    "description": "Unit On status: TRUE = Unit ON"
+  },
+  "10001": {
+    "parameter": "Unit_Alarm"
+  },
+  "10002": {
+    "parameter": "Door_Open",
+    "description": "Door Open"
+  },
+  "10003": {
+    "parameter": "WaterLevel_High",
+    "description": "Water Level High"
+  },
+  "10004": {
+    "parameter": "DO_Alarm3.Val",
+    "description": "Alarm Output - .Value"
+  },
+  "10005": {
+    "parameter": "DO_Alarm4.Val",
+    "description": "Alarm Output - .Value"
+  },
+  "10006": {
+    "parameter": "DO_Alarm5.Val",
+    "description": "Alarm Output - .Value"
+  },
+  "10007": {
+    "parameter": "EN_Option_Air_Sensor",
+    "description": "Enable option additional air sensors"
+  },
+  "10008": {
+    "parameter": "EN_Option_Water",
+    "description": "Enable option water loop"
+  },
+  "10009": {
+    "parameter": "EN_Option_Air",
+    "description": "Enable option air controll"
+  },
+  "10010": {
+    "parameter": "EN_Option_CondPumpe",
+    "description": "Enable option condensation pump"
+  },
+  "10011": {
+    "parameter": "EN_Option_DoorSwitch",
+    "description": "Enable option door switch"
+  },
+  "10100": {
+    "parameter": "ALARM_ARR[0]"
+  },
+  "10101": {
+    "parameter": "ALARM_ARR[1]"
+  },
+  "10102": {
+    "parameter": "ALARM_ARR[2]"
+  },
+  "10103": {
+    "parameter": "ALARM_ARR[3]"
+  },
+  "10104": {
+    "parameter": "ALARM_ARR[4]"
+  },
+  "10105": {
+    "parameter": "ALARM_ARR[5]"
+  },
+  "10106": {
+    "parameter": "ALARM_ARR[6]"
+  },
+  "10107": {
+    "parameter": "ALARM_ARR[7]"
+  },
+  "10108": {
+    "parameter": "ALARM_ARR[8]"
+  },
+  "10109": {
+    "parameter": "ALARM_ARR[9]"
+  },
+  "10110": {
+    "parameter": "ALARM_ARR[10]"
+  },
+  "10111": {
+    "parameter": "ALARM_ARR[11]"
+  },
+  "10112": {
+    "parameter": "ALARM_ARR[12]"
+  },
+  "10113": {
+    "parameter": "ALARM_ARR[13]"
+  },
+  "10114": {
+    "parameter": "ALARM_ARR[14]"
+  },
+  "10115": {
+    "parameter": "ALARM_ARR[15]"
+  },
+  "10116": {
+    "parameter": "ALARM_ARR[16]"
+  },
+  "10117": {
+    "parameter": "ALARM_ARR[17]"
+  },
+  "10118": {
+    "parameter": "ALARM_ARR[18]"
+  },
+  "10119": {
+    "parameter": "ALARM_ARR[19]"
+  },
+  "10120": {
+    "parameter": "ALARM_ARR[20]"
+  },
+  "10121": {
+    "parameter": "ALARM_ARR[21]"
+  },
+  "10122": {
+    "parameter": "ALARM_ARR[22]"
+  },
+  "10123": {
+    "parameter": "ALARM_ARR[23]"
+  },
+  "10124": {
+    "parameter": "ALARM_ARR[24]"
+  },
+  "10125": {
+    "parameter": "ALARM_ARR[25]"
+  },
+  "10126": {
+    "parameter": "ALARM_ARR[26]"
+  },
+  "10127": {
+    "parameter": "ALARM_ARR[27]"
+  },
+  "10128": {
+    "parameter": "ALARM_ARR[28]"
+  },
+  "10129": {
+    "parameter": "ALARM_ARR[29]"
+  },
+  "10130": {
+    "parameter": "ALARM_ARR[30]"
+  },
+  "10131": {
+    "parameter": "ALARM_ARR[31]"
+  },
+  "10132": {
+    "parameter": "ALARM_ARR[32]"
+  },
+  "10133": {
+    "parameter": "ALARM_ARR[33]"
+  },
+  "10134": {
+    "parameter": "ALARM_ARR[34]"
+  },
+  "10135": {
+    "parameter": "ALARM_ARR[35]"
+  },
+  "10136": {
+    "parameter": "ALARM_ARR[36]"
+  },
+  "10137": {
+    "parameter": "ALARM_ARR[37]"
+  },
+  "10138": {
+    "parameter": "ALARM_ARR[38]"
+  },
+  "10139": {
+    "parameter": "ALARM_ARR[39]"
+  },
+  "10140": {
+    "parameter": "ALARM_ARR[40]"
+  },
+  "10141": {
+    "parameter": "ALARM_ARR[41]"
+  },
+  "10142": {
+    "parameter": "ALARM_ARR[42]"
+  },
+  "10143": {
+    "parameter": "ALARM_ARR[43]"
+  },
+  "10144": {
+    "parameter": "ALARM_ARR[44]"
+  },
+  "10145": {
+    "parameter": "ALARM_ARR[45]"
+  },
+  "10146": {
+    "parameter": "ALARM_ARR[46]"
+  },
+  "10147": {
+    "parameter": "ALARM_ARR[47]"
+  },
+  "10148": {
+    "parameter": "ALARM_ARR[48]"
+  },
+  "10149": {
+    "parameter": "ALARM_ARR[49]"
+  },
+  "10150": {
+    "parameter": "ALARM_ARR[50]"
+  },
+  "10151": {
+    "parameter": "ALARM_ARR[51]"
+  },
+  "10152": {
+    "parameter": "ALARM_ARR[52]"
+  },
+  "10153": {
+    "parameter": "ALARM_ARR[53]"
+  },
+  "10154": {
+    "parameter": "ALARM_ARR[54]"
+  },
+  "10155": {
+    "parameter": "ALARM_ARR[55]"
+  },
+  "10156": {
+    "parameter": "ALARM_ARR[56]"
+  },
+  "10157": {
+    "parameter": "ALARM_ARR[57]"
+  },
+  "10158": {
+    "parameter": "ALARM_ARR[58]"
+  },
+  "10159": {
+    "parameter": "ALARM_ARR[59]"
+  },
+  "10160": {
+    "parameter": "ALARM_ARR[60]"
+  },
+  "10161": {
+    "parameter": "ALARM_ARR[61]"
+  },
+  "10162": {
+    "parameter": "ALARM_ARR[62]"
+  },
+  "10163": {
+    "parameter": "ALARM_ARR[63]"
+  },
+  "10164": {
+    "parameter": "ALARM_ARR[64]"
+  },
+  "10165": {
+    "parameter": "ALARM_ARR[65]"
+  },
+  "10166": {
+    "parameter": "ALARM_ARR[66]"
+  },
+  "10167": {
+    "parameter": "ALARM_ARR[67]"
+  },
+  "10168": {
+    "parameter": "ALARM_ARR[68]"
+  },
+  "10169": {
+    "parameter": "ALARM_ARR[69]"
+  },
+  "10170": {
+    "parameter": "ALARM_ARR[70]"
+  },
+  "10171": {
+    "parameter": "ALARM_ARR[71]"
+  },
+  "10172": {
+    "parameter": "ALARM_ARR[72]"
+  },
+  "10173": {
+    "parameter": "ALARM_ARR[73]"
+  },
+  "10174": {
+    "parameter": "ALARM_ARR[74]"
+  },
+  "10175": {
+    "parameter": "ALARM_ARR[75]"
+  },
+  "10176": {
+    "parameter": "ALARM_ARR[76]"
+  },
+  "10177": {
+    "parameter": "ALARM_ARR[77]"
+  },
+  "10178": {
+    "parameter": "ALARM_ARR[78]"
+  },
+  "10179": {
+    "parameter": "ALARM_ARR[79]"
+  },
+  "10180": {
+    "parameter": "ALARM_ARR[80]"
+  },
+  "10181": {
+    "parameter": "ALARM_ARR[81]"
+  },
+  "10182": {
+    "parameter": "ALARM_ARR[82]"
+  },
+  "10183": {
+    "parameter": "ALARM_ARR[83]"
+  },
+  "10184": {
+    "parameter": "ALARM_ARR[84]"
+  },
+  "10185": {
+    "parameter": "ALARM_ARR[85]"
+  },
+  "10186": {
+    "parameter": "ALARM_ARR[86]"
+  },
+  "10187": {
+    "parameter": "ALARM_ARR[87]"
+  },
+  "10188": {
+    "parameter": "ALARM_ARR[88]"
+  },
+  "10189": {
+    "parameter": "ALARM_ARR[89]"
+  },
+  "10190": {
+    "parameter": "ALARM_ARR[90]"
+  },
+  "10191": {
+    "parameter": "ALARM_ARR[91]"
+  },
+  "10192": {
+    "parameter": "ALARM_ARR[92]"
+  },
+  "10193": {
+    "parameter": "ALARM_ARR[93]"
+  },
+  "10194": {
+    "parameter": "ALARM_ARR[94]"
+  },
+  "10195": {
+    "parameter": "ALARM_ARR[95]"
+  },
+  "10196": {
+    "parameter": "ALARM_ARR[96]"
+  },
+  "10197": {
+    "parameter": "ALARM_ARR[97]"
+  },
+  "10198": {
+    "parameter": "ALARM_ARR[98]"
+  },
+  "10199": {
+    "parameter": "ALARM_ARR[99]"
+  },
+  "30000": {
+    "function": "decode_16bit_float",
+    "parameter": "T_Air_OUT_Top_r",
+    "description": "Temperature cold air top",
+    "unit": "DegreesCelsius"
+  },
+  "30001": {
+    "function": "decode_16bit_float",
+    "parameter": "T_Air_OUT_Bottom_r",
+    "description": "Temperature cold air below",
+    "unit": "DegreesCelsius"
+  },
+  "30002": {
+    "function": "decode_16bit_float",
+    "parameter": "T_Air_IN_Top_r",
+    "description": "Temperature warm air  top",
+    "unit": "DegreesCelsius"
+  },
+  "30003": {
+    "function": "decode_16bit_float",
+    "parameter": "T_Air_IN_Bottom_r",
+    "description": "Temperature warm air bottom",
+    "unit": "DegreesCelsius"
+  },
+  "30004": {
+    "function": "decode_16bit_float",
+    "parameter": "Air_Diff_Pressure_r",
+    "description": "Air Differential Pressure",
+    "unit": "Pascals"
+  },
+  "30005": {
+    "function": "decode_16bit_float",
+    "parameter": "FAN_TACHO_r",
+    "description": "Fan speed feedback",
+    "Min": "0.0",
+    "Max": "9999.9"
+  },
+  "30006": {
+    "function": "decode_16bit_float",
+    "parameter": "T_Water_IN_r",
+    "description": "Temperature water inlet",
+    "unit": "DegreesCelsius"
+  },
+  "30007": {
+    "function": "decode_16bit_float",
+    "parameter": "T_Water_OUT_r",
+    "description": "Temperature water outlet",
+    "unit": "DegreesCelsius"
+  },
+  "30008": {
+    "function": "decode_16bit_float",
+    "parameter": "Water_Flow_r",
+    "description": "Water volume per second",
+    "unit": "LitersPerMinute"
+  },
+  "30009": {
+    "function": "decode_16bit_float",
+    "parameter": "Water_Pressure_r",
+    "description": "Water pressure",
+    "unit": "Bars"
+  },
+  "30010": {
+    "function": "decode_16bit_float",
+    "parameter": "VALVE_ACT_REQ_r",
+    "description": "Valve Control Signal 0-100%",
+    "unit": "Percent"
+  },
+  "30011": {
+    "function": "decode_16bit_float",
+    "parameter": "FAN_ACT_REQ_r",
+    "description": "Fan Control Signal 0-100%",
+    "unit": "Percent"
+  },
+  "30012": {
+    "function": "decode_16bit_uint",
+    "parameter": "FAN_ACT_RPM_ui[1]",
+    "description": "Fan Actual Speed"
+  },
+  "30013": {
+    "function": "decode_16bit_uint",
+    "parameter": "FAN_ACT_RPM_ui[2]",
+    "description": "Fan Actual Speed"
+  },
+  "30014": {
+    "function": "decode_16bit_uint",
+    "parameter": "FAN_ACT_RPM_ui[3]",
+    "description": "Fan Actual Speed"
+  },
+  "30015": {
+    "function": "decode_16bit_uint",
+    "parameter": "FAN_ACT_RPM_ui[4]",
+    "description": "Fan Actual Speed"
+  },
+  "30016/30017": {
+    "function": "decode_32bit_float",
+    "parameter": "Q_ACTUAL_r"
+  },
+  "30018/30019": {
+    "function": "decode_32bit_float",
+    "parameter": "Q_TOTAL_r",
+    "description": "Q Total"
+  },
+  "30020": {
+    "function": "decode_16bit_uint",
+    "parameter": "FAN_ACT_PWR_ui",
+    "description": "Sum of actual Fan Power Consumption"
+  },
+  "30022/30023": {
+    "function": "decode_32bit_uint",
+    "parameter": "HourCount_System_udi",
+    "description": "Operating hour counter  (x 1000)",
+    "Default Value": "0",
+    "Min": "0",
+    "Max": "999999",
+    "unit": "Hours"
+  },
+  "30024/30025": {
+    "function": "decode_32bit_int",
+    "parameter": "FAN_HOURS_CNT_di[1]"
+  },
+  "30026/30027": {
+    "function": "decode_32bit_int",
+    "parameter": "FAN_HOURS_CNT_di[2]"
+  },
+  "30028/30029": {
+    "function": "decode_32bit_int",
+    "parameter": "FAN_HOURS_CNT_di[3]"
+  },
+  "30030/30031": {
+    "function": "decode_32bit_int",
+    "parameter": "FAN_HOURS_CNT_di[4]"
+  },
+  "30032/30033": {
+    "function": "decode_32bit_float",
+    "parameter": "POU_Water_Control.oPOSITION_r"
+  },
+  "30034/30035": {
+    "function": "decode_32bit_uint",
+    "parameter": "OEM_Version.Main_udi"
+  },
+  "30036/30037": {
+    "function": "decode_16bit_uint",
+    "parameter": "OEM_Version.Sub_ui"
+  },
+  "40000/1": {
+    "function": "decode_bits",
+    "parameter": "POU_Unit_Mng.BmsOn(1)",
+    "Default Value": "TRUE",
+    "map": {}
+  },
+  "40000/2": {
+    "function": "decode_bits",
+    "parameter": "POU_Unit_Mng.BmsOn(2)",
+    "Default Value": "TRUE",
+    "map": {
+      "0b00000001": "Unit On/Off by BMS"
+    }
+  },
+  "40001/1": {
+    "function": "decode_bits",
+    "parameter": "MAX_COOLING(1)",
+    "Default Value": "FALSE",
+    "map": {}
+  },
+  "40001/2": {
+    "function": "decode_bits",
+    "parameter": "MAX_COOLING(2)",
+    "Default Value": "FALSE",
+    "map": {
+      "0b00000001": "max cooling"
+   }
+  },
+  "40007": {
+    "parameter": "WATER_REG_MODE_ui",
+    "function": "decode_16bit_uint",
+    "description": "Water Regulation Mode",
+    "max": 5,
+    "min": 0,
+    "default value": 3.0
+  },
+  "40008": {
+    "parameter": "Water_ManValvePosition_ui",
+    "function": "decode_16bit_uint",
+    "description": "Manual valve position",
+    "unit": "Percent",
+    "max": "water_PID_max_ui",
+    "min": "water_PID_min_ui",
+    "default value": 50.0
+  },
+  "40009": {
+    "parameter": "Water_Setpoint.SP_r",
+    "function": "decode_16bit_float",
+    "description": "Setpoint Water",
+    "unit": "DegreesCelsius",
+    "max": "Water_Setpoint.max_r",
+    "min": "Water_Setpoint.min_r",
+    "default value": 24.0
+  },
+  "40012": {
+    "parameter": "ALARM_LIMIT_CNTRL_MARGIN_r",
+    "function": "decode_16bit_float",
+    "default value": 4.0
+  },
+  "40013": {
+    "parameter": "Water_PID.Kp",
+    "function": "decode_16bit_float",
+    "description": "PID Water - .Kp",
+    "max": 100.0,
+    "min": 0.0,
+    "default value": 8.0
+  },
+  "40014": {
+    "parameter": "Water_PID.Ti",
+    "function": "decode_16bit_uint",
+    "description": "PID Water - .Ti",
+    "max": 100.0,
+    "min": 0.0
+  },
+  "40015": {
+    "parameter": "Water_PID.Td",
+    "function": "decode_16bit_uint",
+    "description": "PID Water - .Td",
+    "max": 100.0,
+    "min": 0.0
+  },
+  "40016": {
+    "parameter": "Water_PID.DeadBand",
+    "function": "decode_16bit_float",
+    "description": "PID Water - .Deadband",
+    "max": 5.0,
+    "min": 0.0,
+    "default value": 0.2
+  },
+  "40017": {
+    "parameter": "AIR_REG_MODE_ui",
+    "function": "decode_16bit_uint",
+    "description": "Air Regulation Mode",
+    "max": 1,
+    "min": 0,
+    "default value": 0.0
+  },
+  "40018": {
+    "parameter": "Air_ManFanLevel_ui",
+    "function": "decode_16bit_uint",
+    "description": "Manual Fan Level",
+    "unit": "Percent",
+    "max": "air_PID_max_ui",
+    "min": "air_PID_min_ui",
+    "default value": 50.0
+  },
+  "40019": {
+    "parameter": "Air_Setpoint.SP_r",
+    "function": "decode_16bit_float",
+    "description": "Setpoint Differential Air Pressure",
+    "max": "Air_Setpoint.max_r",
+    "min": "Air_Setpoint.min_r",
+    "default value": 15.0
+  },
+  "40022": {
+    "parameter": "Air_PID.Kp",
+    "function": "decode_16bit_float",
+    "description": "Air PID - .Kp",
+    "max": 100.0,
+    "min": 0.0,
+    "default value": 1.5
+  },
+  "40023": {
+    "parameter": "Air_PID.Ti",
+    "function": "decode_16bit_uint",
+    "description": "Air PID - .Ti",
+    "max": 100.0,
+    "min": 0.0
+  },
+  "40024": {
+    "parameter": "Air_PID.Td",
+    "function": "decode_16bit_uint",
+    "description": "Air PID - .Td",
+    "max": 999.0,
+    "min": 0.0
+  },
+  "40025": {
+    "parameter": "Air_PID.DeadBand",
+    "function": "decode_16bit_float",
+    "description": "Air PID - .Deadband",
+    "default value": 0.0
+  },
+  "40026": {
+    "parameter": "ALARM_LIMIT_WARM_AIR_r",
+    "function": "decode_16bit_float",
+    "default value": 55.0
+  },
+  "40027": {
+    "parameter": "ALARM_LIMIT_COLD_AIR_r",
+    "function": "decode_16bit_float",
+    "default value": 35.0
+  },
+  "40028": {
+    "parameter": "ALARM_LIMIT_WATER_IN_r",
+    "function": "decode_16bit_float",
+    "default value": 18.0
+  },
+  "40029": {
+    "parameter": "ALARM_LIMIT_WATER_OUT_r",
+    "function": "decode_16bit_float",
+    "default value": 30.0
+  },
+  "40030": {
+    "parameter": "ALARM_LIMIT_WATER_PRES_r",
+    "function": "decode_16bit_float",
+    "default value": 6.0
+  },
+  "40031": {
+    "parameter": "ALARM_LIMIT_WATER_FLOW_r",
+    "function": "decode_16bit_float",
+    "default value": 100.0
+  }
+}
