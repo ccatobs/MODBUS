@@ -262,7 +262,6 @@ to be read out, we suggest following workaround:
   "30000/1": {
     "function": "decode_bits",
     "parameter": "must not be named 'TEST'",
-    "default value": "ZERO",
     "map": {}
   },
   "30000/2": {
