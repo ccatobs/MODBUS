@@ -153,8 +153,7 @@ file.
 where the MODBUS server connection details, etc. are defined in
 [Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
 
-So far the JSON output is display on stdout. For the time being the output looks
-something like this (your input needed):
+For the time being the output is a list of dictionaries:
 
 ```JSON
 [
@@ -255,6 +254,27 @@ something like this (your input needed):
 ```
 
 #### Caveat:
+In case the trailing byte of the very first register (only in this case) is 
+to be read out, we suggest following workaround:
+
+```JSON
+{
+  "30000/1": {
+    "function": "decode_bits",
+    "parameter": "must not be named 'TEST'",
+    "default value": "ZERO",
+    "map": {},
+  },
+  "30000/2": {
+    "function": "decode_bits",
+    "parameter": "TEST",
+    "default value": "FALSE",
+    "map": {
+      "0b00000001": "last significat bit of register"
+    }
+  }
+}
+
 not implemented yet:
 * decoder.decode_string(size=1) - Decodes a string from the buffer
 * decoder.bit_chunks() - classmethod

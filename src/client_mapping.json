@@ -244,6 +244,13 @@
     "parameter": "Software Rev",
     "description": "upgrade frequently!"
   },
+  "30034/1": {
+    "function": "decode_bits",
+    "parameter": "Dummy",
+    "default value": "ZERO",
+    "map": {
+      "0b00000001": "special test"}
+  },
   "30034/2": {
     "function": "decode_bits",
     "parameter": "TEST",

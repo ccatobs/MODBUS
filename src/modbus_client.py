@@ -255,7 +255,14 @@ class ObjectType(object):
             )
         assert (not result.isError())
 
-        if self.entity in ['3', '4']:
+        if self.entity in ['0', '1']:
+            decoder = result.bits
+            for register in self.register_maps.keys():
+                decoded = decoded + self.formatter_bit(
+                    decoder=decoder,
+                    register=register
+                )
+        elif self.entity in ['3', '4']:
             decoder = BinaryPayloadDecoder.fromRegisters(
                 registers=result.registers,
                 byteorder=Endian.Big
@@ -277,13 +284,6 @@ class ObjectType(object):
             decoded = decoded + self.formatter(
                 decoder=decoder,
                 register=list(self.register_maps.keys())[-1])
-        elif self.entity in ['0', '1']:
-            decoder = result.bits
-            for register in self.register_maps.keys():
-                decoded = decoded + self.formatter_bit(
-                    decoder=decoder,
-                    register=register
-                )
 
         return decoded
 
@@ -340,7 +340,6 @@ def initialize():
                               port=client_config["server"]["listenerPort"])
         client.debug_enabled()
         client.connect()
-
     except pymodbus.exceptions.ConnectionException:
         logging.error("Error: could not connect to server.")
         sys.exit(1)
