@@ -269,7 +269,7 @@ to be read out, we suggest following workaround:
     "parameter": "TEST",
     "default value": "FALSE",
     "map": {
-      "0b00000001": "last significat bit of register"
+      "0b00000001": "least significant bit of register"
     }
   }
 }
