@@ -274,6 +274,7 @@ to be read out, we suggest following workaround:
     }
   }
 }
+```
 
 not implemented yet:
 * decoder.decode_string(size=1) - Decodes a string from the buffer
