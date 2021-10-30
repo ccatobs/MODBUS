@@ -190,7 +190,7 @@
     "parameter": "Temperature Scale",
     "map": {
       "0": "Fahrenheit",
-      "1": "Celcius",
+      "1": "Celsius",
       "2": "Kelvin"
     }
   },
