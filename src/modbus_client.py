@@ -2,7 +2,7 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.3 - 2021/10/27
+version 0.4 - 2021/11/01
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -28,6 +28,9 @@ change history
 - version 0.3
     * adapted for hk
     * also function parsed through as indicator for data type     
+2021/11/01 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 0.4
+    * skip first byte of register if starts with 'xxxxx/2'
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -35,7 +38,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "GPLv3"
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -80,12 +83,6 @@ class ObjectType(object):
             self.boundaries = {}
         else:
             mini = els[0].split("/")[0]
-            if len(els[0].split("/")) == 2:
-                if els[0].split("/")[1] == '2':
-                    logging.error("Error: starting the first register with a "
-                                  "trailing byte is a lausy idea. Consider a "
-                                  "redesign either way!")
-                    sys.exit(1)
             maxi = els[-1].split("/")[0]
             if len(els[-1].split("/")) == 2:
                 if els[-1].split("/")[1] not in ['1', '2']:
@@ -110,12 +107,11 @@ class ObjectType(object):
         :return: int - gap between high and low registers in number of bytes
         """
         byt = 0
-
+        lb = low.split("/")
         hb = high.split("/")
         if len(hb) == 2:
             if hb[1] == "2":
                 byt += 1
-        lb = low.split("/")
         if len(lb) == 2:
             if lb[1] == "1":
                 return (int(hb[0]) - int(lb[0]) - 1) * 2 + 1 + byt
@@ -208,8 +204,8 @@ class ObjectType(object):
         return [
             dict(
                 **self.register_maps[register],
-                **{"value": decoder[int(register[1:])],
-                   "function": "decode_bits"}
+                **{"function": "decode_bits",
+                   "value": decoder[int(register[1:])]}
             )
         ]
 
@@ -267,17 +263,22 @@ class ObjectType(object):
                 registers=result.registers,
                 byteorder=Endian.Big
             )
-            # loop incl. penultimate and find gaps not to be read-out
+            # skip leading byte for very first register to start with
+            # trailing byte if key='xxxxx/2'
+            first_key = list(self.register_maps.keys())[0].split("/")
+            if len(first_key) == 2:
+                if first_key[1] == '2':
+                    decoder.skip_bytes(nbytes=1)
+            # loop incl. penultimate and find gaps to be skipped
             for index, register in enumerate(
                     list(self.register_maps.keys())[:-1]):
                 decoded = decoded + self.formatter(
                     decoder=decoder,
                     register=register
                 )
-                # if there are bytes to skip
                 skip = self.gap(
                     low=register,
-                    high=list(self.register_maps.keys())[index + 1]
+                    high=list(self.register_maps.keys())[index+1]
                 )
                 decoder.skip_bytes(nbytes=skip)
             # last entry in dictionary

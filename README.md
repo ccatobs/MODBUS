@@ -254,27 +254,6 @@ For the time being the output is a list of dictionaries:
 ```
 
 #### Caveat:
-In case the trailing byte of the very first register (only in this case) is 
-to be read out, we suggest following workaround:
-
-```JSON
-{
-  "30000/1": {
-    "function": "decode_bits",
-    "parameter": "must not be named 'TEST'",
-    "map": {}
-  },
-  "30000/2": {
-    "function": "decode_bits",
-    "parameter": "TEST",
-    "default value": "FALSE",
-    "map": {
-      "0b00000001": "least significant bit of register"
-    }
-  }
-}
-```
-
 not implemented yet:
 * decoder.decode_string(size=1) - Decodes a string from the buffer
 * decoder.bit_chunks() - classmethod
