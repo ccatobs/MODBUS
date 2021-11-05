@@ -158,8 +158,12 @@ class ObjectType(object):
                 optional = {
                     key: self.register_maps[register][key]
                     for key in self.register_maps[register]
-                    if key not in {'map', 'description', 'value', 'function',
-                                   'parameter'}
+                    if key not in {'map',
+                                   'description',
+                                   'value',
+                                   'function',
+                                   'parameter',
+                                   'multiplier'}
                 }
             else:
                 optional = dict()
@@ -180,7 +184,8 @@ class ObjectType(object):
             optional = {
                 key: self.register_maps[register][key]
                 for key in self.register_maps[register]
-                if key not in {'map', 'description'}
+                if key not in {'map',
+                               'description'}
             }
             di = {"value": value}
             if maps:
