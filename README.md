@@ -1,48 +1,50 @@
 # MODBUS
 
-A simple universal MODBUS interface, where the mapping of the registers to coil,
+A simple universal MODBUS interface, where the mapping to coil,
 discrete input, input registers, and holding registers is entirely defined
 though a
 [JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json)
 file, with no modification to the coding required whatsoever. This JSON file
 comprises a key pointing to the register(s) and several nested keys, such as
 
-1) "parameter" (mandatory and unique over all register classes), 
-2) "description" (optional) or
-3) "map" (optional), in the case a value needs to match an entry from a list 
+1) "function" (mandatory only for input and holding registers).
+2) "parameter" (mandatory and unique over all register classes). 
+3) "description" (optional).
+4) "map" (optional), in the case a value needs to match an entry from a list 
    provided. This field value is then parsed through as description. A map 
    might contain only one entry that matches one bit out of the leading or 
    trailing byte.
+5) "muliplier" (optional only for input and holding registers).
 
-Additional dictionary key/value pairs may be provided in the
-client registry mapping, which are just parsed. In order to maintain 
-consistancy amongst the various modbus clients, we suggest to select 
-same denominators for further keys, such as "default value", "unit", "min", 
-and "max".
+Furthermore, "value" and "datatype" are also reserved keys, since they
+will be generated in the output dictionary. Additional dictionary key/value
+pairs may be provided in the client registry mapping, which are just parsed. 
+To maintain consistancy amongst the various modbus clients, we urge
+selecting same denominators for further keys, such as "defaultvalue", "unit", 
+"min", or "max".
 
-The register key has to be in
-the formate: e.g. "30011", "30011/1" or "30011/2" for the leading and trailing 
-byte of the (16 bit) register, respectively, and furthermore,
-"30011/30012" or "30011/30014" for 32 or 64 bit register addresses. In such case
-a function needs to be defined for input and holding registers that 
-translates the 8, 16, 32, or 64 bits into appropriate values. This function 
-is in the form, e.g. "decode_32bit_uint" (see below for a selection): 
+The register key are in the formate: e.g. "30011", "30011/1" or "30011/2" for
+the leading and trailing byte of the (16 bit) register, respectively, and
+furthermore, "30011/30012" or "30011/30014" for 32 or 64 bit register addresses.
+A function needs to be defined for input and holding registers that translates
+the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
+e.g. "decode_32bit_uint" (see below for a selection):
 
-
-| Function | Value |
-|----------|-------|
-| 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_bits |
-| 8 int | decode_8bit_int |
-| 8 uint | decode_8bit_uint |
-| 16 int|  decode_16bit_int| 
-| 16 uint|  decode_16bit_uint| 
-| 32 int|   decode_32bit_int| 
-| 32 uint|   decode_32bit_uint| 
-| 16 float|   decode_16bit_float| 
-| 32 float|   decode_32bit_float| 
-| 64 int|   decode_64bit_int| 
-| 64 uint|   decode_64bit_uint| 
-| 64 float|   decode_64bit_float |
+| Function | Value | Avro |
+|----------|-------|------|
+| 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_bits | boolean |
+| 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte = 1 character | decode_string | string| 
+| 8 int of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_8bit_int | int |
+| 8 uint of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_8bit_uint | int |
+| 16 int|  decode_16bit_int|  int |
+| 16 uint|  decode_16bit_uint|  int |
+| 32 int|   decode_32bit_int|  int |
+| 32 uint|   decode_32bit_uint|  int |
+| 16 float|   decode_16bit_float| float |
+| 32 float|   decode_32bit_float| float |
+| 64 int|   decode_64bit_int| long |
+| 64 uint|   decode_64bit_uint| long | 
+| 64 float|   decode_64bit_float | double |
 
 If a map is defined, the description is chosen according to round(value). In
 case of a gap between keys, byte skipping is calculated and performed
@@ -153,110 +155,10 @@ file.
 where the MODBUS server connection details, etc. are defined in
 [Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
 
-For the time being the output is a list of dictionaries:
-
-```JSON
-[
-    {
-        "parameter": "Operating State",
-        "value": 3,
-        "description": "Running"
-    },
-    {
-        "parameter": "Compressor Running",
-        "value": 1,
-        "description": "On"
-    },
-    {
-        "parameter": "Warning State",
-        "value": -16.0,
-        "description": "Oil running High"
-    },
-    {
-        "parameter": "Alarm State",
-        "value": 0.0,
-        "description": "No Errors"
-    },
-    {
-        "parameter": "Coolant In Temp",
-        "value": 60.0,
-        "description": "additional info on the coolant"
-    },
-    {
-        "parameter": "Coolant Out Temp",
-        "value": 80.6500015258789
-    },
-    {
-        "parameter": "Oil Temp",
-        "value": 98.0,
-        "unit": "Fahrenheit"
-    },
-    {
-        "parameter": "Helium Temp",
-        "value": 124.0
-    },
-    {
-        "parameter": "Low Pressure",
-        "value": 121.0
-    },
-    {
-        "parameter": "Low Pressure Average",
-        "value": 121.0
-    },
-    {
-        "parameter": "High Pressure",
-        "value": 315.0
-    },
-    {
-        "parameter": "High Pressure Average",
-        "value": 315.0
-    },
-    {
-        "parameter": "Delta Pressure Average",
-        "value": 200.0
-    },
-    {
-        "parameter": "Motor Current",
-        "value": 1.899999976158142
-    },
-    {
-        "parameter": "Hours Of Operation",
-        "value": 8333.0
-    },
-    {
-        "parameter": "Pressure Scale",
-        "value": 0,
-        "description": "PSI"
-    },
-    {
-        "parameter": "Temperature Scale",
-        "value": 0,
-        "description": "Fahrenheit"
-    },
-    {
-        "parameter": "Panel Serial Number",
-        "value": 4711
-    },
-    {
-        "parameter": "Model Major Number",
-        "value": 40
-    },
-    {
-        "parameter": "Model Minor Number",
-        "value": 156
-    },
-    {
-        "parameter": "Software Rev",
-        "value": 17,
-        "description": "upgrade frequently!"
-    }
-]
-```
-
 #### Caveat:
 not implemented yet:
-* decoder.decode_string(size=1) - Decodes a string from the buffer
 * decoder.bit_chunks() - classmethod
+* strings of length>1
 * for coil and discrete input only the first 2000 bits are read in (hardcoded).
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 

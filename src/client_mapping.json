@@ -1,4 +1,24 @@
 {
+  "10000": {
+    "parameter": "UnitOn",
+    "description": "Unit On status: TRUE = Unit ON"
+  },
+  "10001": {
+    "parameter": "Unit_Alarm"
+  },
+  "30000": {
+    "function": "decode_16bit_int",
+    "multiplier": 0.1,
+    "parameter": "T_Air_OUT_Top_r",
+    "description": "Temperature cold air top",
+    "unit": "DegreesCelsius"
+  },
+  "30001": {
+    "function": "decode_16bit_int",
+    "parameter": "T_Air_OUT_Bottom_r",
+    "description": "Temperature cold air below",
+    "unit": "DegreesCelsius"
+  },
   "30032/2": {
     "function": "decode_8bit_uint",
     "parameter": "Model Minor Number",
@@ -39,7 +59,8 @@
     "parameter": "Dummy",
     "default value": "ZERO",
     "map": {
-      "0b00000001": "special test"}
+      "0b00000001": "special test"
+    }
   },
   "30034/2": {
     "function": "decode_bits",
@@ -55,5 +76,17 @@
       "0b01000000": "test6",
       "0b10000000": "test7"
     }
+  },
+  "40000/1": {
+    "function": "decode_string",
+    "parameter": "test first register/1"
+  },
+  "40000/2": {
+    "function": "decode_string",
+    "parameter": "test first register/2"
+  },
+  "40001": {
+    "function": "decode_16bit_float",
+    "parameter": "test first register"
   }
 }
