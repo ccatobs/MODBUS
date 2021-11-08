@@ -381,8 +381,9 @@ def initialize():
     try:
         client = ModbusClient(host=client_config["server"]["listenerAddress"],
                               port=client_config["server"]["listenerPort"])
+        if not client.connect():
+            raise pymodbus.exceptions.ConnectionException
         client.debug_enabled()
-        client.connect()
     except pymodbus.exceptions.ConnectionException:
         logging.error("Could not connect to server.")
         sys.exit(1)
