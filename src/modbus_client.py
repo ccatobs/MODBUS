@@ -346,7 +346,6 @@ def initialize():
 
     with open('client_config.json') as config_file:
         client_config = json.load(config_file)
-
     myformat = "%(asctime)s.%(msecs)03d :: %(levelname)s: " \
                "%(filename)s - %(lineno)s - %(funcName)s()\t%(message)s"
     logging.basicConfig(format=myformat,
@@ -354,7 +353,6 @@ def initialize():
                         datefmt="%Y-%m-%d %H:%M:%S")
     if client_config['debug']:
         logging.getLogger().setLevel(logging.DEBUG)
-
     with open('client_mapping.json') as json_file:
         mapping = json.load(json_file)
     # perform checks on the client mapping

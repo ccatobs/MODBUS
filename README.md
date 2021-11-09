@@ -18,8 +18,9 @@ comprises a key pointing to the register(s) and several nested keys, such as
 
 Furthermore, "value" and "datatype" are also reserved keys, since they
 will be generated in the output dictionary. Additional dictionary key/value
-pairs may be provided in the client registry mapping, which are just parsed. 
-To maintain consistancy amongst the various modbus clients, we urge
+pairs may be provided in the client registry mapping, which are just parsed 
+to the output. 
+To maintain consistancy over the various modbus clients, we urge
 selecting same denominators for further keys, such as "defaultvalue", "unit", 
 "min", or "max".
 
@@ -125,7 +126,7 @@ format for the mapping is to be defined in the following formate, e.g.:
   "30034/1": {
     "function": "decode_bits",
     "parameter": "TEST1", 
-    "default": "ZERO",
+    "default": "test7",
     "map": {
       "0b10000000": "test7"   // becomes description
     },
@@ -145,6 +146,8 @@ format for the mapping is to be defined in the following formate, e.g.:
   }
 }
 ```
+The result for the housekeeping (Kafka consumer) is a list of dictionaries, 
+where most of its content is parsed through from the register mapping.
 
 This repository comprises a 
 * MODBUS server simulator (the python code is extracted from 
