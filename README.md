@@ -15,6 +15,7 @@ comprises a key pointing to the register(s) and several nested keys, such as
    might contain only one entry that matches one bit out of the leading or 
    trailing byte.
 5) "muliplier" (optional only for input and holding registers).
+6) "offset" (optional only for input and holding registers).
 
 Furthermore, "value" and "datatype" are also reserved keys, since they
 will be generated in the output dictionary. Additional dictionary key/value
