@@ -16,6 +16,7 @@ import json
 import re
 import sys
 import logging
+from timeit import default_timer as timer
 
 """
 change history
@@ -279,12 +280,14 @@ class ObjectType(object):
                 unit=UNIT
             )
         elif self.__entity == '3':
+            # ToDo: only a maximum of 125 continguous registers can be read out
             result = self.__client.read_input_registers(
                 address=self.__boundary['start'],
                 count=self.__boundary['width'],
                 unit=UNIT
             )
         elif self.__entity == '4':
+            # ToDo: only a maximum of 125 continguous registers can be read out
             result = self.__client.read_holding_registers(
                 address=self.__boundary['start'],
                 count=self.__boundary['width'],
@@ -424,13 +427,20 @@ def close(client):
 
 if __name__ == '__main__':
 
+    _start_time = timer()
+
     modbus_client, registry_mapping = initialize()
     to_hk = retrieve(client=modbus_client,
-                     mapping=registry_mapping)
+                     mapping=registry_mapping
+                     )
     close(client=modbus_client)
 
     print(json.dumps(to_hk,
                      indent=4)
           )
+
+    print("Time consumed to process modbus interface: {0:.1f} ms".format(
+        (timer() - _start_time) * 1000)
+    )
 
     exit(0)
