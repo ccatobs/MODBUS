@@ -2,7 +2,7 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.5 - 2021/11/08
+version 0.6 - 2021/11/11
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -35,14 +35,17 @@ change history
 2021/11/08 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.5
     * introduce datatype for avro, disregard function for output dictionary
+21021/11/11
+- version 0.6
+    * complete redesign: registers are read consecutively, one-by-one.
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
 __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
-__license__ = "GPLv3"
-__version__ = "0.5.0"
+__license__ = "BSD"
+__version__ = "0.6.0"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -96,55 +99,35 @@ class ObjectType(object):
         """
         self.__client = client
         self.__entity = entity
-        # select mapping for each entity and sort by key if applicable
+        # select mapping for each entity and sort by key
         self.__register_maps = {
             key: value for key, value in
             sorted(mapping.items()) if key[0] == self.__entity
         }
-        els = [i for i in self.__register_maps]
-
-        if not els:
-            self.__boundary = {}
-        else:
-            mini = els[0].split("/")[0]
-            maxi = els[-1].split("/")[0]
-            if len(els[-1].split("/")) == 2:
-                if els[-1].split("/")[1] not in ['1', '2']:
-                    maxi = els[-1].split("/")[1]
-            self.__boundary = {
-                "min": mini,
-                "max": maxi,
-                "start": int(mini[1:]),
-                "width": int(maxi[1:]) - int(mini[1:]) + 1
-            }
-            if self.__entity in ['0', '1']:
-                if self.__boundary['start'] + self.__boundary['width'] >= 2000:
-                    logging.error("Number of registers superseed "
-                                  "limit of 2000. Consider a redesign!")
-                    sys.exit(1)
 
     @staticmethod
-    def gap(low, high):
+    def register_width(register):
         """
-        :param low: str - low register number
-        :param high: str - high register number
-        :return: int - gap between high and low registers in number of bytes
+        determine the number of registers to read for a given key
+        :param register: string
+        :return: (int, int) - address to start from and its width
         """
-        byt = 0
-        lb = low.split("/")
-        hb = high.split("/")
-        if len(hb) == 2:
-            if hb[1] == "2":
-                byt += 1
-        if len(lb) == 2:
-            if lb[1] == "1":
-                return (int(hb[0]) - int(lb[0]) - 1) * 2 + 1 + byt
-            elif lb[1] == "2":
-                return (int(hb[0]) - int(lb[0]) - 1) * 2 + byt
+        width = 0
+        comp = register.split("/")
+        start = int(comp[0][1:])
+        if len(comp) == 1:
+            width = 1
+        elif len(comp) == 2:
+            if comp[1] in ["1", "2"]:
+                width = 1
             else:
-                return (int(hb[0]) - int(lb[1]) - 1) * 2 + byt
-        else:
-            return (int(hb[0]) - int(lb[0]) - 1) * 2 + byt
+                width = int(comp[1]) - int(comp[0]) + 1
+        if width not in [1, 2, 4]:
+            logging.error("Error in number of registers to read for "
+                          "address: {0}".format(comp[0]))
+            sys.exit(1)
+
+        return start, width
 
     @staticmethod
     def binary_map(binarystring):
@@ -195,6 +178,7 @@ class ObjectType(object):
                                    'function',
                                    'parameter',
                                    'multiplier',
+                                   'offset',
                                    'datatype'}
                 }
             else:
@@ -247,88 +231,69 @@ class ObjectType(object):
             dict(
                 **self.__register_maps[register],
                 **{"datatype": function2avro["decode_bits"],
-                   "value": decoder[int(register[1:])]}
+                   "value": decoder[0]}
             )
         ]
 
     def run(self):
         """
-        instantiates the classes for the 4 register object types and invokes
-        the run methods within an interval.
-        These two methods are not yet implemented !!!
-            decoder.decode_string(size=1) - Decodes a string from the buffer
-            decoder.bit_chunks() - classmethod
-        :return: dictionary
+        reads the coil discrete input, input, or holding registers according
+        to their length defined in key and decodes them accordingly. The
+        list of dictionary/ies is appended to the result list
+        :return: list - result
         """
-        if not self.__boundary:
-            return []
         result = None
         decoded = list()
 
-        if self.__entity == '0':
-            # ToDo: for simplicity we read first 2000 bits
-            result = self.__client.read_coils(
-                address=0,
-                count=2000,
-                unit=UNIT
-            )
-        elif self.__entity == '1':
-            # ToDo: for simplicity we read first 2000 bits
-            result = self.__client.read_discrete_inputs(
-                address=0,
-                count=2000,
-                unit=UNIT
-            )
-        elif self.__entity == '3':
-            # ToDo: only a maximum of 125 continguous registers can be read out
-            result = self.__client.read_input_registers(
-                address=self.__boundary['start'],
-                count=self.__boundary['width'],
-                unit=UNIT
-            )
-        elif self.__entity == '4':
-            # ToDo: only a maximum of 125 continguous registers can be read out
-            result = self.__client.read_holding_registers(
-                address=self.__boundary['start'],
-                count=self.__boundary['width'],
-                unit=UNIT
-            )
-        assert (not result.isError())
-
-        if self.__entity in ['0', '1']:
-            decoder = result.bits
-            for register in self.__register_maps.keys():
+        for key in self.__register_maps.keys():
+            start, width = self.register_width(key)
+            # read appropriate register(s)
+            if self.__entity == '0':
+                result = self.__client.read_coils(
+                    address=start,
+                    count=1,
+                    unit=UNIT
+                )
+            elif self.__entity == '1':
+                result = self.__client.read_discrete_inputs(
+                    address=start,
+                    count=1,
+                    unit=UNIT
+                )
+            elif self.__entity == '3':
+                result = self.__client.read_input_registers(
+                    address=start,
+                    count=width,
+                    unit=UNIT
+                )
+            elif self.__entity == '4':
+                result = self.__client.read_holding_registers(
+                    address=start,
+                    count=width,
+                    unit=UNIT
+                )
+            assert(not result.isError())
+            # decode and append to list
+            if self.__entity in ['0', '1']:
+                decoder = result.bits
                 decoded = decoded + self.formatter_bit(
                     decoder=decoder,
-                    register=register
+                    register=key
                 )
-        elif self.__entity in ['3', '4']:
-            decoder = BinaryPayloadDecoder.fromRegisters(
-                registers=result.registers,
-                byteorder=Endian.Big
-            )
-            # skip leading byte for very first register to start with
-            # trailing byte if key='xxxxx/2'
-            first_key = list(self.__register_maps.keys())[0].split("/")
-            if len(first_key) == 2:
-                if first_key[1] == '2':
-                    decoder.skip_bytes(nbytes=1)
-            # loop incl. penultimate and find gaps to be skipped
-            for index, register in enumerate(
-                    list(self.__register_maps.keys())[:-1]):
+            elif self.__entity in ['3', '4']:
+                decoder = BinaryPayloadDecoder.fromRegisters(
+                    registers=result.registers,
+                    byteorder=Endian.Big
+                )
+                # skip leading byte, if key = "xxxxx/2"
+                first_key = key.split("/")
+                if len(first_key) == 2:
+                    if first_key[1] == '2':
+                        decoder.skip_bytes(nbytes=1)
                 decoded = decoded + self.formatter(
                     decoder=decoder,
-                    register=register
+                    register=key
                 )
-                skip = self.gap(
-                    low=register,
-                    high=list(self.__register_maps.keys())[index+1]
-                )
-                decoder.skip_bytes(nbytes=skip)
-            # last entry in dictionary
-            decoded = decoded + self.formatter(
-                decoder=decoder,
-                register=list(self.__register_maps.keys())[-1])
 
         return decoded
 
@@ -428,17 +393,13 @@ def close(client):
 if __name__ == '__main__':
 
     _start_time = timer()
-
     modbus_client, registry_mapping = initialize()
     to_hk = retrieve(client=modbus_client,
                      mapping=registry_mapping
                      )
     close(client=modbus_client)
-
     print(json.dumps(to_hk,
-                     indent=4)
-          )
-
+                     indent=4))
     print("Time consumed to process modbus interface: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )
