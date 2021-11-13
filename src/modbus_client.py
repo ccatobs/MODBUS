@@ -45,7 +45,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -85,11 +85,6 @@ class DuplicateParameterError(Exception):
     pass
 
 
-class FunctionNotDefined(Exception):
-    """Base class for other exceptions"""
-    pass
-
-
 class ObjectType(object):
     def __init__(self, client, mapping, entity):
         """
@@ -106,7 +101,7 @@ class ObjectType(object):
         }
 
     @staticmethod
-    def register_width(register):
+    def __register_width(register):
         """
         determine the number of registers to read for a given key
         :param register: string
@@ -130,7 +125,7 @@ class ObjectType(object):
         return start, width
 
     @staticmethod
-    def binary_map(binarystring):
+    def __binary_map(binarystring):
         """
         position of True in binary string. Report if malformated in mapping.
         :param binarystring: str
@@ -148,7 +143,78 @@ class ObjectType(object):
             logging.error("Wrong binary string in mapping.")
             sys.exit(1)
 
-    def formatter(self, decoder, register):
+    def __decode_byte(self, register, value, function):
+        """
+        decode payload messages from a modbus reponse message and enrich with
+        add. parameters from input mapping
+        :param register: string - key in dictionary mapping
+        :param value: ? - result from payload decoder method
+        :param function: string - decoder method
+        :return: list with dictionary
+        """
+        if len(self.__register_maps[register]['map']) == 1:
+            # if only one entry in map, add optional parameters, otherwise no
+            optional = {
+                key: self.__register_maps[register][key]
+                for key in self.__register_maps[register]
+                if key not in {'map',
+                               'description',
+                               'value',
+                               'function',
+                               'parameter',
+                               'multiplier',
+                               'offset',
+                               'datatype'}
+            }
+        else:
+            optional = dict()
+        decoded = list()
+        for key, name in self.__register_maps[register]['map'].items():
+            decoded.append(dict(
+                {
+                    "parameter":
+                        self.__register_maps[register]['parameter'],
+                    "value": value[self.__binary_map(binarystring=key)],
+                    "description": name,
+                    "datatype": function2avro[function]
+                },
+                **optional)
+            )
+
+        return decoded
+
+    def __decode_prop(self, register, value, function):
+        """
+        decode payload messages from a modbus reponse message and enrich with
+        add. parameters from input mapping
+        :param register: string - key in dictionary mapping
+        :param value: ? - result from payload decoder method
+        :param function: string - decoder method
+        :return: list with dictionary
+        """
+        maps = self.__register_maps[register].get('map')
+        desc = self.__register_maps[register].get('description')
+        multiplier = self.__register_maps[register].get('multiplier', 1)
+        optional = {
+            key: self.__register_maps[register][key]
+            for key in self.__register_maps[register]
+            if key not in {'map',
+                           'description',
+                           'function',
+                           'datatype'}
+        }
+        di = {"value": value,
+              "datatype": function2avro[function]
+              if multiplier == 1 else "float"}
+        if maps:
+            desc = maps.get(str(round(value)))
+        if desc:
+            di["description"] = desc
+
+        return [dict(**di,
+                     **optional)]
+
+    def __formatter(self, decoder, register):
         """
         format the output dictionary and append by scanning through the mapping
         of the registers. If gaps in the mappings are detected they are skipped
@@ -158,69 +224,22 @@ class ObjectType(object):
         :return: list with dictionary
         """
         function = self.__register_maps[register]['function']
-        try:
-            datatype = function2avro[function]
-            value = getattr(decoder, function)()
-        except FunctionNotDefined:
+        if function not in function2avro:
             logging.error("Decoding function not defined.")
             sys.exit(1)
-        if function == "decode_string":
-            value = value.decode()
+        value = getattr(decoder, function)()
         if function == 'decode_bits':
-            # if only one entry in map found, add optional parameters
-            if len(self.__register_maps[register]['map']) == 1:
-                optional = {
-                    key: self.__register_maps[register][key]
-                    for key in self.__register_maps[register]
-                    if key not in {'map',
-                                   'description',
-                                   'value',
-                                   'function',
-                                   'parameter',
-                                   'multiplier',
-                                   'offset',
-                                   'datatype'}
-                }
-            else:
-                optional = dict()
-            decoded = list()
-            for key, name in self.__register_maps[register]['map'].items():
-                decoded.append(dict(
-                    {
-                        "parameter":
-                            self.__register_maps[register]['parameter'],
-                        "value": value[self.binary_map(binarystring=key)],
-                        "description": name,
-                        "datatype": datatype
-                    },
-                    **optional)
-                )
+            return self.__decode_byte(register=register,
+                                      value=value,
+                                      function=function)
         else:
-            maps = self.__register_maps[register].get('map')
-            desc = self.__register_maps[register].get('description')
-            multiplier = self.__register_maps[register].get('multiplier', 1)
-            optional = {
-                key: self.__register_maps[register][key]
-                for key in self.__register_maps[register]
-                if key not in {'map',
-                               'description',
-                               'function',
-                               'datatype'}
-            }
-            di = {"value": value,
-                  "datatype": datatype if multiplier == 1 else "float"}
-            if maps:
-                desc = maps.get(str(round(value)))
-            if desc:
-                di["description"] = desc
-            decoded = [
-                dict(**di,
-                     **optional)
-            ]
+            if function == "decode_string":
+                value = value.decode()
+            return self.__decode_prop(register=register,
+                                      value=value,
+                                      function=function)
 
-        return decoded
-
-    def formatter_bit(self, decoder, register):
+    def __formatter_bit(self, decoder, register):
         """
         indexes the result array of bits by the keys found in the mapping
         :param decoder: A deferred response handle from the register readings
@@ -246,7 +265,7 @@ class ObjectType(object):
         decoded = list()
 
         for key in self.__register_maps.keys():
-            start, width = self.register_width(key)
+            start, width = self.__register_width(key)
             # read appropriate register(s)
             if self.__entity == '0':
                 result = self.__client.read_coils(
@@ -272,11 +291,11 @@ class ObjectType(object):
                     count=width,
                     unit=UNIT
                 )
-            assert(not result.isError())
+            assert (not result.isError())
             # decode and append to list
             if self.__entity in ['0', '1']:
                 decoder = result.bits
-                decoded = decoded + self.formatter_bit(
+                decoded = decoded + self.__formatter_bit(
                     decoder=decoder,
                     register=key
                 )
@@ -290,7 +309,7 @@ class ObjectType(object):
                 if len(first_key) == 2:
                     if first_key[1] == '2':
                         decoder.skip_bytes(nbytes=1)
-                decoded = decoded + self.formatter(
+                decoded = decoded + self.__formatter(
                     decoder=decoder,
                     register=key
                 )
