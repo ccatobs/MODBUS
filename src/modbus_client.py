@@ -360,7 +360,7 @@ def initialize():
         logging.error("Wrong key in mapping: {0}.".format(key))
         sys.exit(1)
     except DuplicateParameterError:
-        logging.error("Duplicate parameters: {0}.".format(parameter))
+        logging.error("Duplicate parameter: {0}.".format(parameter))
         sys.exit(1)
 
     try:
