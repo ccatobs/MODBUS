@@ -6,6 +6,12 @@
   "10001": {
     "parameter": "Unit_Alarm"
   },
+  "12400": {
+    "parameter": "lontano"
+  },
+  "12401": {
+    "parameter": "molto lontano"
+  },
   "30000": {
     "function": "decode_16bit_int",
     "multiplier": 0.1,
@@ -59,7 +65,7 @@
     "parameter": "Dummy",
     "default value": "ZERO",
     "map": {
-      "0b00000001": "special test"
+      "0b00000100": "special test"
     }
   },
   "30034/2": {
@@ -79,14 +85,23 @@
   },
   "40000/1": {
     "function": "decode_string",
-    "parameter": "test first register/1"
+    "parameter": "string of register/1"
   },
   "40000/2": {
     "function": "decode_string",
-    "parameter": "test first register/2"
+    "parameter": "string of register/2"
   },
   "40001": {
     "function": "decode_16bit_float",
     "parameter": "test first register"
+  },
+  "41000/41001": {
+    "function": "decode_32bit_int",
+    "parameter": "test 32 bit int",
+    "multiplier": 0.001
+  },
+  "41301/41304": {
+    "function": "decode_64bit_float",
+    "parameter": "test 64 bit float"
   }
 }
