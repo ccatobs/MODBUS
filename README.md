@@ -147,16 +147,16 @@ the following formate, e.g.:
       }
    },
    "40009": {
-    "parameter": "Water_Setpoint.SP_r",
-    "function": "decode_16bit_int",
-    "multiplier": 0.1,
-    "offset": -273,  
-    "description": "Setpoint Water",
-    "unit": "DegreesCelsius",
-    "max": "Water_Setpoint.max_r",
-    "min": "Water_Setpoint.min_r",
-    "defaultvalue": 24.0
-  }
+      "parameter": "Water_Setpoint.SP_r",
+      "function": "decode_16bit_int",
+      "multiplier": 0.1,
+      "offset": -273,
+      "description": "Setpoint Water",
+      "unit": "DegreesCelsius",
+      "max": "Water_Setpoint.max_r",
+      "min": "Water_Setpoint.min_r",
+      "defaultvalue": 24.0
+   }
 }
 ```
 The result for the housekeeping (Kafka consumer) is a list of dictionaries, 
