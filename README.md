@@ -7,22 +7,22 @@ though a
 file, with no modification to the coding required whatsoever. This JSON file
 comprises a key pointing to the register(s) and several nested keys, such as
 
-1) "function" (mandatory only for input and holding registers).
+1) "function" (mandatory for input and holding registers).
 2) "parameter" (mandatory and unique over all register classes). 
 3) "description" (optional).
 4) "map" (optional), in the case a value needs to match an entry from a list 
    provided. This field value is then parsed through as description. A map 
    might contain one entry that matches one bit out of the leading or 
    trailing byte.
-5) "muliplier" (optional only for input and holding registers).
-6) "offset" (optional only for input and holding registers).
+5) "muliplier" (optional for input and holding registers of datatype integer).
+6) "offset" (optional for input and holding registers of datatype integer).
 
-Furthermore, "value" and "datatype" are also reserved keys, since they
-will be generated in the output dictionary. Additional dictionary key/value
-pairs may be provided in the client registry mapping, which are just parsed 
-to the output. 
-To maintain consistancy over the various modbus clients, we urge
-selecting same denominators for further keys, such as "defaultvalue", "unit", 
+The latter two will be processed when provided. Furthermore, "value" and
+"datatype" are also reserved keys, since they will be generated in the output
+dictionary. Additional dictionary key/value pairs may be provided in the client
+registry mapping, which are just parsed to the output. To maintain consistancy
+over the various modbus clients, we urge selecting same denominators for further
+keys, such as "defaultvalue", "unit",
 "min", or "max".
 
 The register key are in the formate: e.g. "30011", "30011/1" or "30011/2" for

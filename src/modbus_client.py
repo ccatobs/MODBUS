@@ -2,7 +2,7 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.6 - 2021/11/11
+version 0.6.2 - 2021/11/15
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -38,6 +38,7 @@ change history
 21021/11/11
 - version 0.6
     * complete redesign: registers are read consecutively, one-by-one.
+    * multiplier & offset are processed for output to hk
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -45,7 +46,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -152,6 +153,8 @@ class ObjectType(object):
         :param function: string - decoder method
         :return: list with dictionary
         """
+        decoded = list()
+
         if len(self.__register_maps[register]['map']) == 1:
             # if only one entry in map, add optional parameters, otherwise no
             optional = {
@@ -168,7 +171,6 @@ class ObjectType(object):
             }
         else:
             optional = dict()
-        decoded = list()
         for key, name in self.__register_maps[register]['map'].items():
             decoded.append(dict(
                 {
@@ -194,18 +196,27 @@ class ObjectType(object):
         """
         maps = self.__register_maps[register].get('map')
         desc = self.__register_maps[register].get('description')
-        multiplier = self.__register_maps[register].get('multiplier', 1)
+        datatype = function2avro[function]
         optional = {
             key: self.__register_maps[register][key]
             for key in self.__register_maps[register]
             if key not in {'map',
                            'description',
                            'function',
-                           'datatype'}
+                           'datatype',
+                           'multiplier',
+                           'offset'}
         }
+        if datatype in ['int', 'long'] and not maps:
+            # multiplier and/or offset make sense for int datatypes and when
+            # no map is defined
+            multiplier = self.__register_maps[register].get('multiplier', 1)
+            offset = self.__register_maps[register].get('offset', 0)
+            value = value * multiplier + offset
+            if isinstance(value, float):
+                datatype = "float"
         di = {"value": value,
-              "datatype": function2avro[function]
-              if multiplier == 1 else "float"}
+              "datatype": datatype}
         if maps:
             desc = maps.get(str(round(value)))
         if desc:
