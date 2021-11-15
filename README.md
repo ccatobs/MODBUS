@@ -17,16 +17,16 @@ comprises keys pointing to the register(s) and nested keys, such as
 5) "muliplier" (optional for input and holding registers of datatype integer).
 6) "offset" (optional for input and holding registers of datatype integer).
 
-The latter two will be parsed to recompute "value", when provided, hence, not
+The latter two, when provided, will be parsed to recompute "value", hence, not
 passed on to the output. Furthermore, "value" and "datatype" are also reserved
-key words, since they will be generated in the output dictionary. Additional
+keywords, since they will be generated in the output dictionary. Additional
 dictionary key/value pairs may be provided in the client registry mapping, which
 are just passed on to the output. To maintain consistancy over the various
-modbus clients, we urge selecting same denominators for further keys, such as "
-defaultvalue", "unit", "min", or "max".
+modbus clients, we urge selecting same denominators for further keys, such as 
+"defaultvalue", "unit", "min", or "max".
 
-The register key are in the formate: e.g. "30011", "30011/1" or "30011/2" for
-the leading and trailing byte of the (16 bit) register, respectively, and
+The register keys are in the formate: e.g. "30011", "30011/1" or "30011/2" for
+the leading and trailing byte of the (16 bit) register, respectively,
 furthermore, "30011/30012" or "30011/30014" for 32 or 64 bit register addresses.
 A function needs to be defined for input and holding registers that translates
 the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
