@@ -2,27 +2,27 @@
 
 A simple universal MODBUS interface, where the mapping to coil,
 discrete input, input registers, and holding registers is entirely defined
-though a
+by a
 [JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json)
 file, with no modification to the coding required whatsoever. This JSON file
-comprises a key pointing to the register(s) and several nested keys, such as
+comprises keys pointing to the register(s) and nested keys, such as
 
-1) "function" (mandatory for input and holding registers).
-2) "parameter" (mandatory and unique over all register classes). 
+1) "parameter" (mandatory and unique over all register classes). 
+2) "function" (mandatory for input and holding registers).
 3) "description" (optional).
-4) "map" (optional), in the case a value needs to match an entry from a list 
-   provided. This field value is then parsed through as description. A map 
+4) "map" (optional), in case a value needs to match an entry from a list 
+   provided. This field value is then passed-through as description. A map 
    might contain one entry that matches one bit out of the leading or 
    trailing byte.
 5) "muliplier" (optional for input and holding registers of datatype integer).
 6) "offset" (optional for input and holding registers of datatype integer).
 
-The latter two will be processed when provided. Furthermore, "value" and
-"datatype" are also reserved keys, since they will be generated in the output
-dictionary. Additional dictionary key/value pairs may be provided in the client
-registry mapping, which are just parsed to the output. To maintain consistancy
-over the various modbus clients, we urge selecting same denominators for further
-keys, such as "defaultvalue", "unit",
+The latter two will be parsed when provided, hence, not passed-through. 
+Furthermore, "value" and "datatype" are also reserved keys, since they
+will be generated in the output dictionary. Additional dictionary key/value
+pairs may be provided in the client registry mapping, which are just passed to
+the output. To maintain consistancy over the various modbus clients, we urge
+selecting same denominators for further keys, such as "defaultvalue", "unit",
 "min", or "max".
 
 The register key are in the formate: e.g. "30011", "30011/1" or "30011/2" for
@@ -160,7 +160,7 @@ the following formate, e.g.:
 }
 ```
 The result for the housekeeping (Kafka consumer) is a list of dictionaries, 
-where most of its content is parsed through from the register mapping.
+where most of its content is passed-through from the client-mapping JSON.
 
 The current repository comprises a 
 * MODBUS server simulator (the python code is extracted from 
