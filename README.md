@@ -11,14 +11,14 @@ comprises keys pointing to the register(s) and nested keys, such as
 2) "function" (mandatory for input and holding registers).
 3) "description" (optional).
 4) "map" (optional), in case a value needs to match an entry from a list 
-   provided. This field value is then passed-through as description. A map 
+   provided. This field value is then passed on as description. A map 
    might contain one entry that matches one bit out of the leading or 
    trailing byte.
 5) "muliplier" (optional for input and holding registers of datatype integer).
 6) "offset" (optional for input and holding registers of datatype integer).
 
-The latter two will be parsed when provided, hence, not passed-through. 
-Furthermore, "value" and "datatype" are also reserved keys, since they
+The latter two will be parsed when provided, hence, not passed on to the 
+output. Furthermore, "value" and "datatype" are also reserved keys, since they
 will be generated in the output dictionary. Additional dictionary key/value
 pairs may be provided in the client registry mapping, which are just passed to
 the output. To maintain consistancy over the various modbus clients, we urge
@@ -160,7 +160,8 @@ the following formate, e.g.:
 }
 ```
 The result for the housekeeping (Kafka consumer) is a list of dictionaries, 
-where most of its content is passed-through from the client-mapping JSON.
+where most of its content is passed on from the client-mapping JSON to the 
+output.
 
 The current repository comprises a 
 * MODBUS server simulator (the python code is extracted from 
