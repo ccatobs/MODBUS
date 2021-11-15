@@ -10,20 +10,20 @@ comprises keys pointing to the register(s) and nested keys, such as
 1) "parameter" (mandatory and unique over all register classes). 
 2) "function" (mandatory for input and holding registers).
 3) "description" (optional).
-4) "map" (optional), in case a value needs to match an entry from a list 
-   provided. This field value is then passed on as description. A map 
+4) "map" (optional), in case a value needs to match an entry from a provided 
+   list. The corresponding field value is passed on as description. A map 
    might contain one entry that matches one bit out of the leading or 
    trailing byte.
 5) "muliplier" (optional for input and holding registers of datatype integer).
 6) "offset" (optional for input and holding registers of datatype integer).
 
-The latter two will be parsed when provided, hence, not passed on to the 
-output. Furthermore, "value" and "datatype" are also reserved keys, since they
-will be generated in the output dictionary. Additional dictionary key/value
-pairs may be provided in the client registry mapping, which are just passed to
-the output. To maintain consistancy over the various modbus clients, we urge
-selecting same denominators for further keys, such as "defaultvalue", "unit",
-"min", or "max".
+The latter two will be parsed to recompute "value", when provided, hence, not
+passed on to the output. Furthermore, "value" and "datatype" are also reserved
+key words, since they will be generated in the output dictionary. Additional
+dictionary key/value pairs may be provided in the client registry mapping, which
+are just passed on to the output. To maintain consistancy over the various
+modbus clients, we urge selecting same denominators for further keys, such as "
+defaultvalue", "unit", "min", or "max".
 
 The register key are in the formate: e.g. "30011", "30011/1" or "30011/2" for
 the leading and trailing byte of the (16 bit) register, respectively, and

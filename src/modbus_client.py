@@ -24,11 +24,11 @@ change history
 - version 0.1
 2021/10/24 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.2
-    * for additional key/value pairs in client mapping parse'em through.
+    * for additional key/value pairs in client mapping pass them through.
 2021/10/27 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.3
     * adapted for hk
-    * also function parsed through as indicator for data type     
+    * also function passed-through as indicator for data type     
 2021/11/01 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.4
     * skip first byte of register if starts with 'xxxxx/2'
