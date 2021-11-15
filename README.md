@@ -173,9 +173,8 @@ where the MODBUS server connection details, etc. are defined in
 
 #### Caveat:
 not implemented yet:
-* decoder.bit_chunks() - classmethod
-* strings of length>1
-* for coil and discrete input only the first 2000 bits are read in (hardcoded).
+* decoder.bit_chunks()
+* strings of length > 1
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de
