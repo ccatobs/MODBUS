@@ -17,13 +17,14 @@ comprises keys pointing to the register(s) and nested keys, such as
 5) "muliplier" (optional for input and holding registers of datatype integer).
 6) "offset" (optional for input and holding registers of datatype integer).
 
-The latter two, when provided, will be parsed to recompute "value", hence, not
-passed on to the output. Furthermore, "value" and "datatype" are also reserved
-keywords, since they will be generated in the output dictionary. Additional
-dictionary key/value pairs may be provided in the client registry mapping, which
-are just passed on to the output. To maintain consistancy over the various
-modbus clients, we urge selecting same denominators for further keys, such as 
-"defaultvalue", "unit", "min", or "max".
+The latter two, when provided, will not be passed on to the output, though.
+They are parsed, such that the register's value is multiplied by "multiplier" 
+and "offset" is added. Moreover, "value" and "datatype" are
+reserved keywords, since they will be generated in the output dictionary.
+Additional dictionary key/value pairs may be provided in the client registry
+mapping, which are merely passed on to the output. To maintain consistancy over
+the various modbus clients, we urge selecting same denominators for further
+keys, such as "defaultvalue", "unit", "min", or "max".
 
 The register keys are in the formate: e.g. "30011", "30011/1" or "30011/2" for
 the leading and trailing byte of the (16 bit) register, respectively,
