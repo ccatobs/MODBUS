@@ -10,16 +10,17 @@ comprises keys pointing to the register(s) and nested keys, such as
 1) "parameter" (mandatory and unique over all register classes). 
 2) "function" (mandatory for input and holding registers).
 3) "description" (optional).
-4) "map" (optional), in case a value needs to match an entry from a provided 
-   list. The corresponding field value is passed on as description. A map 
-   might contain one entry that matches one bit out of the leading or 
-   trailing byte.
+4) "map" (optional). 
 5) "muliplier" (optional for input and holding registers of datatype integer).
 6) "offset" (optional for input and holding registers of datatype integer).
 
 The latter two, when provided, will not be passed on to the output, though.
 They are parsed, such that the register's value is multiplied by "multiplier" 
-and "offset" is added. Moreover, "value" and "datatype" are
+and "offset" is added. A map is to be provided in case a value needs to match 
+an entry from a list provided. The corresponding field value is passed on to 
+the output as description that superseeds the input "description". A map might 
+contain entries matching bits of the leading or trailing byte.
+Moreover, "value" and "datatype" are
 reserved keywords, since they will be generated in the output dictionary.
 Additional dictionary key/value pairs may be provided in the client registry
 mapping, which are merely passed on to the output. To maintain consistancy over
