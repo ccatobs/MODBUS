@@ -166,7 +166,7 @@ confusion about Little-Endian vs. Big-Endian Word Order. The current modbus
 client allows the endiannesses of the byteorder (the Byte order of each word)
 and the wordorder (the endianess of the word, when wordcount is >= 2) to be 
 adjusted (see
-[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json)):
+[Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json)):
 
     ">" = Endian.Big 
     "<" = Endian.Little
