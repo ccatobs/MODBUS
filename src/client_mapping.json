@@ -95,10 +95,31 @@
     "function": "decode_16bit_float",
     "parameter": "test first register"
   },
+  "40002": {
+    "function": "decode_16bit_int",
+    "parameter": "write int register"
+  },
+  "40003/40004": {
+    "function": "decode_32bit_float",
+    "parameter": "write float 32 bit register"
+  },
+  "40005/40008": {
+    "function": "decode_64bit_float",
+    "parameter": "write float 64 bit register"
+  },
+  "40009": {
+    "function": "decode_16bit_int",
+    "parameter": "write 16 bit int register"
+  },
+  "40010": {
+    "function": "decode_16bit_uint",
+    "parameter": "write 16 bit uint register"
+  },
   "41000/41001": {
     "function": "decode_32bit_int",
     "parameter": "test 32 bit int",
-    "multiplier": 0.001
+    "multiplier": 0.001,
+    "offset": -273
   },
   "41301/41304": {
     "function": "decode_64bit_float",

@@ -2,13 +2,12 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.6.2 - 2021/11/15
+version 0.7.1 - 2021/11/22
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
 
-from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 import pymodbus.exceptions
@@ -35,10 +34,13 @@ change history
 2021/11/08 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.5
     * introduce datatype for avro, disregard function for output dictionary
-21021/11/11
+2021/11/11
 - version 0.6
     * complete redesign: registers are read consecutively, one-by-one.
     * multiplier & offset are processed for output to hk
+2021/11/22
+- version 0.7
+    * introduce endiannesses of byte- and wordorder
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -46,7 +48,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "0.6.2"
+__version__ = "0.7.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -87,18 +89,21 @@ class DuplicateParameterError(Exception):
 
 
 class ObjectType(object):
-    def __init__(self, client, mapping, entity):
+    def __init__(self, init, entity):
         """
-        :param client: instance- MODBUS client
-        :param mapping: dictionary - mapping of all registers as from JSON
+        :param init: dictionary - client parameter
+            init["client"] instance- MODBUS client
+            init["mapping"] mapping of all registers as from JSON
+            init["endianness"] endianness's of byte and word
         :param entity: str - register prefix
         """
-        self.__client = client
+        self.__client = init["client"]
+        self.__endianness = init["endianness"]
         self.__entity = entity
         # select mapping for each entity and sort by key
         self.__register_maps = {
             key: value for key, value in
-            sorted(mapping.items()) if key[0] == self.__entity
+            sorted(init["mapping"].items()) if key[0] == self.__entity
         }
 
     @staticmethod
@@ -313,7 +318,8 @@ class ObjectType(object):
             elif self.__entity in ['3', '4']:
                 decoder = BinaryPayloadDecoder.fromRegisters(
                     registers=result.registers,
-                    byteorder=Endian.Big
+                    byteorder=self.__endianness["byteorder"],
+                    wordorder=self.__endianness["wordorder"]
                 )
                 # skip leading byte, if key = "xxxxx/2"
                 first_key = key.split("/")
@@ -384,14 +390,25 @@ def initialize():
         logging.error("Could not connect to server.")
         sys.exit(1)
 
-    return client, mapping
+    return {
+        "client": client,
+        "mapping": mapping,
+        # if endianness not found, apply default:
+        # "byteorder": Endian.Little, "wordorder": Endian:Big
+        "endianness": client_config.get(
+            "endianness",
+            {"byteorder": "<",
+             "wordorder": ">"})
+    }
 
 
-def retrieve(client, mapping):
+def retrieve(init):
     """
     invoke for monitoring
-    :param client: object
-    :param mapping: dictionary
+    :param init: dictionary - client parameter
+        init["client"] instance- MODBUS client
+        init["mapping"] mapping of all registers as from JSON
+        init["endianness"] endianness's of byte and word
     :return: list of dictionaries (in asc order) for hk
     """
     register_class = ['0', '1', '3', '4']
@@ -400,10 +417,10 @@ def retrieve(client, mapping):
 
     for regs in register_class:
         instance_list.append(
-            ObjectType(client=client,
-                       mapping=mapping,
-                       entity=regs
-                       )
+            ObjectType(
+                init=init,
+                entity=regs
+            )
         )
     for insts in instance_list:
         decoded = decoded + insts.run()
@@ -423,12 +440,12 @@ def close(client):
 if __name__ == '__main__':
 
     _start_time = timer()
-    modbus_client, registry_mapping = initialize()
-    to_hk = retrieve(client=modbus_client,
-                     mapping=registry_mapping
-                     )
-    close(client=modbus_client)
-    print(json.dumps(to_hk,
+
+    initial = initialize()
+    to_housekeeping = retrieve(init=initial)
+    close(client=initial["client"])
+
+    print(json.dumps(to_housekeeping,
                      indent=4))
     print("Time consumed to process modbus interface: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
