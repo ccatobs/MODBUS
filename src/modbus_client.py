@@ -2,7 +2,7 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.7.1 - 2021/11/22
+version 0.7 - 2021/11/22
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -34,11 +34,11 @@ change history
 2021/11/08 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.5
     * introduce datatype for avro, disregard function for output dictionary
-2021/11/11
+2021/11/11 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.6
     * complete redesign: registers are read consecutively, one-by-one.
     * multiplier & offset are processed for output to hk
-2021/11/22
+2021/11/22 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.7
     * introduce endiannesses of byte- and wordorder
 """
@@ -48,7 +48,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "0.7.1"
+__version__ = "0.7"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -394,7 +394,7 @@ def initialize():
         "client": client,
         "mapping": mapping,
         # if endianness not found, apply default:
-        # "byteorder": Endian.Little, "wordorder": Endian:Big
+        # "byteorder": Endian.Little, "wordorder": Endian.Big
         "endianness": client_config.get(
             "endianness",
             {"byteorder": "<",
