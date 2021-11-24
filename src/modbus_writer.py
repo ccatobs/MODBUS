@@ -72,6 +72,36 @@ class ObjectWrite(object):
             sorted(init["mapping"].items()) if key[0] == self.__entity
         }
 
+    @staticmethod
+    def __register_width(address):
+        """
+        determine the number of registers to read for a given key
+        :param address: string
+        :return: (int, int) - address to start from and its width
+        """
+        width = 0
+        comp = address.split("/")
+        start = int(comp[0][1:])
+        if len(comp) == 1:
+            width = 1
+        elif len(comp) == 2:
+            if comp[1] in ["1", "2"]:
+                width = 1
+            else:
+                width = int(comp[1]) - int(comp[0]) + 1
+        if width not in [1, 2, 4]:
+            logging.error("Error in number of registers to read for "
+                          "address: {0}".format(comp[0]))
+            sys.exit(1)
+
+        return start, width
+
+    @staticmethod
+    def trailing_byte_check(address):
+        if len(address.split("/")) == 2:
+            return address.split("/")[1] == "2"
+        return False
+
     def run(self, wr):
         """
 
@@ -82,30 +112,41 @@ class ObjectWrite(object):
             byteorder=self.__endianness['byteorder'],
             wordorder=self.__endianness['wordorder']
         )
-
-        for item in wr:
-            (parameter, value), = item.items()
+        print("entity: ", self.__entity)
+        for parameter, value in wr.items():
             for address, attributes in self.__register_maps.items():
                 if attributes['parameter'] == parameter:
                     function = attributes['function'].replace("decode_", "add_")
-
+                    # holding register updates
                     if self.__entity == '4':
-                        register = address.split("/")[0]
-                        if len(address.split("/")) == 2:
-                            if address.split("/")[1] == 2:
-                                # fill leading byte with zeros
-                                builder.add_bits([False]*8)
-                        multiplier = attributes.get('multiplier', 1)
-                        offset = attributes.get('offset', 0)
-                        value = int((value - offset) / multiplier)
+                        register, width = self.__register_width(address)
+                        if "int" in function:
+                            multiplier = attributes.get('multiplier', 1)
+                            offset = attributes.get('offset', 0)
+                            value = int((value - offset) / multiplier)
+                        if "string" in function:
+                            if len(value) / 2 > width:
+                                logging.error(
+                                    "'{0}' too long for parameter '{1}'"
+                                    .format(value, parameter)
+                                )
+                                sys.exit(1)
+                        if "bits" in function:
+                            if len(value) / 16 > width:
+                                logging.error(
+                                    "'{0}' too long for parameter '{1}'"
+                                    .format(value, parameter)
+                                )
+                                sys.exit(1)
                         getattr(builder, function)(value)
                         payload = builder.to_registers()
                         rq = self.__client.write_registers(
-                            int(register[1:]),
+                            register,
                             payload,
                             unit=UNIT)
                         assert (not rq.isError())  # test we are not an error
                         builder.reset()  # reset builder
+                        break
 
                     elif self.__entity == '0':
                         pass
@@ -216,10 +257,13 @@ def close(client):
 
 if __name__ == '__main__':
 
-    test = [
-        {"test 32 bit int": 720.04},
-        {"write int register": 10}
-    ]
+    test = {"test 32 bit int": 720.04,
+            "write int register": 10,
+            "string of register/1": "YZ",
+            "Write bits/1": [
+                True, True, True, False, True, False, True, False,
+                True, False, True, False, True, False, False, False]
+            }
 
     initial = initialize()
     writer(init=initial, wr=test)
