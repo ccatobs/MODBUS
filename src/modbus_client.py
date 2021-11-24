@@ -2,7 +2,7 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.7 - 2021/11/22
+version 0.8 - 2021/11/24
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -41,6 +41,9 @@ change history
 2021/11/22 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.7
     * introduce endiannesses of byte- and wordorder
+2021/11/24 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 0.8
+    * strings of variable length to be decoded
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -48,7 +51,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "0.7.1"
+__version__ = "0.8"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -111,24 +114,29 @@ class ObjectType(object):
         """
         determine the number of registers to read for a given key
         :param address: string
-        :return: (int, int) - address to start from and its width
+        :return: (int, int, int) - address to start from, its register
+        and byte widths
         """
         width = 0
+        no_bytes = 0
+
         comp = address.split("/")
         start = int(comp[0][1:])
         if len(comp) == 1:
             width = 1
+            no_bytes = 2
         elif len(comp) == 2:
             if comp[1] in ["1", "2"]:
                 width = 1
+                no_bytes = 1
             else:
                 width = int(comp[1]) - int(comp[0]) + 1
-        if width not in [1, 2, 4]:
-            logging.error("Error in number of registers to read for "
-                          "address: {0}".format(comp[0]))
-            sys.exit(1)
+                no_bytes = width * 2
+                if width < 2:
+                    logging.error("Error in address: {0}".format(address))
+                    sys.exit(1)
 
-        return start, width
+        return start, width, no_bytes
 
     @staticmethod
     def __binary_map(binarystring):
@@ -236,30 +244,35 @@ class ObjectType(object):
         return [dict(**di,
                      **optional)]
 
-    def __formatter(self, decoder, register):
+    def __formatter(self, decoder, register, no_bytes):
         """
         format the output dictionary and append by scanning through the mapping
         of the registers. If gaps in the mappings are detected they are skipped
         by the number of bytes.
         :param decoder: A deferred response handle from the register readings
         :param register: dictionary
+        :param no_bytes: int - no of bytes to decode for strings
         :return: list with dictionary
         """
         function = self.__register_maps[register]['function']
         if function not in function2avro:
             logging.error("Decoding function not defined.")
             sys.exit(1)
-        value = getattr(decoder, function)()
         if function == 'decode_bits':
+            value = getattr(decoder, function)()
             return self.__decode_byte(register=register,
                                       value=value,
                                       function=function)
+        elif function == "decode_string":
+            encod = getattr(decoder, function)(no_bytes)
+            # ToDo for the time being replace \x00 bytes by nothing
+            value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
         else:
-            if function == "decode_string":
-                value = value.decode()
-            return self.__decode_prop(register=register,
-                                      value=value,
-                                      function=function)
+            value = getattr(decoder, function)()
+
+        return self.__decode_prop(register=register,
+                                  value=value,
+                                  function=function)
 
     def __formatter_bit(self, decoder, register):
         """
@@ -287,7 +300,7 @@ class ObjectType(object):
         decoded = list()
 
         for key in self.__register_maps.keys():
-            start, width = self.__register_width(key)
+            start, width, no_bytes = self.__register_width(key)
             # read appropriate register(s)
             if self.__entity == '0':
                 result = self.__client.read_coils(
@@ -332,7 +345,8 @@ class ObjectType(object):
                     decoder.skip_bytes(nbytes=1)
                 decoded = decoded + self.__formatter(
                     decoder=decoder,
-                    register=key
+                    register=key,
+                    no_bytes=no_bytes
                 )
 
         return decoded

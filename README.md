@@ -1,6 +1,8 @@
 # MODBUS
 
-A simple universal MODBUS interface, where the mapping to coil,
+## MODBUS READER
+
+A universal MODBUS interface, where the mapping to coil,
 discrete input, input registers, and holding registers is entirely defined
 by a
 [JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json)
@@ -37,7 +39,7 @@ e.g. "decode_32bit_uint" (see below for a selection):
 | Function | Value | Avro |
 |----------|-------|------|
 | 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_bits | boolean |
-| 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte = 1 character | decode_string | string| 
+| string of variable length | decode_string | string| 
 | 8 int of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_8bit_int | int |
 | 8 uint of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_8bit_uint | int |
 | 16 int|  decode_16bit_int|  int |
@@ -175,19 +177,30 @@ The result for the housekeeping (Kafka consumer) is a list of dictionaries,
 where most of its content is passed on from the client-mapping JSON to the 
 output.
 
+Not implemented yet:
+* decoder.bit_chunks()
+
+## MODBUS WRITER
+
+yet to come.
+
+
+## Content
+
 The current repository comprises a 
 * MODBUS server simulator (the python code is extracted from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
 [config](https://github.com/ccatp/MODBUS/blob/master/src/modbus_server.json) 
 file.
-* MODBUS [client](https://github.com/ccatp/MODBUS/blob/master/src/modbus_client.py), 
-where the MODBUS server connection details, etc. are defined in
-[Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
+* MODBUS 
+[Reader](https://github.com/ccatp/MODBUS/blob/master/src/modbus_client.py) 
+* MODBUS
+[Writer](https://github.com/ccatp/MODBUS/blob/master/src/modbus_writer.py)
 
-#### Caveat:
-not implemented yet:
-* decoder.bit_chunks()
-* strings of length > 1
+For Reader and Writer the MODBUS server connection details are defined in
+[Config](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
+Registry information is provided in
+[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json)
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de
