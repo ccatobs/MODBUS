@@ -102,8 +102,9 @@ class ObjectWrite(object):
 
     def __holding(self, wr):
         """
-
-        :param wr:
+        dictionary with "parameter: value" pairs to be changed in coil and
+        holding registers.
+        :param wr: dictionary with {parameter: value} pairs
         :return:
         """
         builder = BinaryPayloadBuilder(
@@ -150,7 +151,7 @@ class ObjectWrite(object):
     def run(self, wr):
         """
         call coil or holding register writes
-        :param wr: list of dictionaries with {parameter: value}
+        :param wr: dictionary with {parameter: value} pairs
         :return:
         """
         if self.__entity == '4':
@@ -281,7 +282,8 @@ if __name__ == '__main__':
             "string of register/1": "YZ",
             "Write bits/1": [
                 True, True, True, False, True, False, True, False,
-                True, False, True, False, True, False, False, False],
+                True, False, True, False, True, False, False, False
+            ],
             "Coil 0": True,
             "Coil 1": True,
             "Coil 10": True
