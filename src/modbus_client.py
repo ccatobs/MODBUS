@@ -43,7 +43,7 @@ change history
     * introduce endiannesses of byte- and wordorder
 2021/11/24 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.8
-    * strings of variable length to be decoded
+    * strings of variable length to be decoded as well
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -265,8 +265,9 @@ class ObjectType(object):
                                       function=function)
         elif function == "decode_string":
             encod = getattr(decoder, function)(no_bytes)
-            # ToDo for the time being replace \x00 bytes by nothing
-            value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
+            # ToDo what kind of characters need to be removed?
+#            value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
+            value = ''.join(list(s for s in encod.decode() if s.isprintable()))
         else:
             value = getattr(decoder, function)()
 
