@@ -48,7 +48,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "0.7"
+__version__ = "0.7.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -107,14 +107,14 @@ class ObjectType(object):
         }
 
     @staticmethod
-    def __register_width(register):
+    def __register_width(address):
         """
         determine the number of registers to read for a given key
-        :param register: string
+        :param address: string
         :return: (int, int) - address to start from and its width
         """
         width = 0
-        comp = register.split("/")
+        comp = address.split("/")
         start = int(comp[0][1:])
         if len(comp) == 1:
             width = 1
@@ -148,6 +148,12 @@ class ObjectType(object):
         except BinaryStringError:
             logging.error("Wrong binary string in mapping.")
             sys.exit(1)
+
+    @staticmethod
+    def __trailing_byte_check(address):
+        if len(address.split("/")) == 2:
+            return address.split("/")[1] == "2"
+        return False
 
     def __decode_byte(self, register, value, function):
         """
@@ -322,10 +328,8 @@ class ObjectType(object):
                     wordorder=self.__endianness["wordorder"]
                 )
                 # skip leading byte, if key = "xxxxx/2"
-                first_key = key.split("/")
-                if len(first_key) == 2:
-                    if first_key[1] == '2':
-                        decoder.skip_bytes(nbytes=1)
+                if self.__trailing_byte_check(key):
+                    decoder.skip_bytes(nbytes=1)
                 decoded = decoded + self.__formatter(
                     decoder=decoder,
                     register=key
