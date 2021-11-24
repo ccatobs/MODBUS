@@ -2,13 +2,12 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.1 - 2021/11/23
+version 0.1 - 2021/11/24
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
 
-# from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.payload import BinaryPayloadBuilder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 import pymodbus.exceptions
@@ -77,79 +76,99 @@ class ObjectWrite(object):
         """
         determine the number of registers to read for a given key
         :param address: string
-        :return: (int, int) - address to start from and its width
+        :return: (int, int, int) - address to start from, its register
+        and byte widths
         """
         width = 0
+        no_bytes = 0
+
         comp = address.split("/")
         start = int(comp[0][1:])
         if len(comp) == 1:
             width = 1
+            no_bytes = 2
         elif len(comp) == 2:
             if comp[1] in ["1", "2"]:
                 width = 1
+                no_bytes = 1
             else:
                 width = int(comp[1]) - int(comp[0]) + 1
-        if width not in [1, 2, 4]:
-            logging.error("Error in number of registers to read for "
-                          "address: {0}".format(comp[0]))
-            sys.exit(1)
+                no_bytes = width * 2
+                if width < 2:
+                    logging.error("Error in address: {0}".format(address))
+                    sys.exit(1)
 
-        return start, width
+        return start, width, no_bytes
 
-    @staticmethod
-    def trailing_byte_check(address):
-        if len(address.split("/")) == 2:
-            return address.split("/")[1] == "2"
-        return False
-
-    def run(self, wr):
+    def __holding(self, wr):
         """
 
-        :param wr: list of dictionaries with {parameter: value}
+        :param wr:
         :return:
         """
         builder = BinaryPayloadBuilder(
             byteorder=self.__endianness['byteorder'],
             wordorder=self.__endianness['wordorder']
         )
-        print("entity: ", self.__entity)
+
         for parameter, value in wr.items():
             for address, attributes in self.__register_maps.items():
                 if attributes['parameter'] == parameter:
-                    function = attributes['function'].replace("decode_", "add_")
                     # holding register updates
-                    if self.__entity == '4':
-                        register, width = self.__register_width(address)
-                        if "int" in function:
-                            multiplier = attributes.get('multiplier', 1)
-                            offset = attributes.get('offset', 0)
-                            value = int((value - offset) / multiplier)
-                        if "string" in function:
-                            if len(value) / 2 > width:
-                                logging.error(
-                                    "'{0}' too long for parameter '{1}'"
-                                    .format(value, parameter)
-                                )
-                                sys.exit(1)
-                        if "bits" in function:
-                            if len(value) / 16 > width:
-                                logging.error(
-                                    "'{0}' too long for parameter '{1}'"
-                                    .format(value, parameter)
-                                )
-                                sys.exit(1)
-                        getattr(builder, function)(value)
-                        payload = builder.to_registers()
-                        rq = self.__client.write_registers(
-                            register,
-                            payload,
+                    function = attributes['function'].replace("decode_", "add_")
+                    register, width, _ = self.__register_width(address)
+                    if "int" in function:
+                        multiplier = attributes.get('multiplier', 1)
+                        offset = attributes.get('offset', 0)
+                        value = int((value - offset) / multiplier)
+                    if "string" in function:
+                        if len(value) / 2 > width:
+                            logging.error(
+                                "'{0}' too long for parameter '{1}'"
+                                .format(value, parameter)
+                            )
+                            sys.exit(1)
+                    if "bits" in function:
+                        if len(value) / 16 > width:
+                            logging.error(
+                                "'{0}' too long for parameter '{1}'"
+                                .format(value, parameter)
+                            )
+                            sys.exit(1)
+                    getattr(builder, function)(value)
+                    payload = builder.to_registers()
+                    rq = self.__client.write_registers(
+                        address=register,
+                        values=payload,
+                        unit=UNIT)
+                    assert (not rq.isError())  # test we are not an error
+                    builder.reset()  # reset builder
+                    break # if parameter matched
+
+        return 0
+
+    def run(self, wr):
+        """
+        call coil or holding register writes
+        :param wr: list of dictionaries with {parameter: value}
+        :return:
+        """
+        if self.__entity == '4':
+            self.__holding(wr=wr)
+
+        elif self.__entity == '0':
+            for parameter, value in wr.items():
+                for address, attributes in self.__register_maps.items():
+                    if attributes['parameter'] == parameter:
+                        # coil register updates one-by-one
+                        rq = self.__client.write_coil(
+                            address=int(address),
+                            value=value,
                             unit=UNIT)
                         assert (not rq.isError())  # test we are not an error
-                        builder.reset()  # reset builder
                         break
 
-                    elif self.__entity == '0':
-                        pass
+        return 0
 
 
 def initialize():
@@ -262,11 +281,20 @@ if __name__ == '__main__':
             "string of register/1": "YZ",
             "Write bits/1": [
                 True, True, True, False, True, False, True, False,
-                True, False, True, False, True, False, False, False]
+                True, False, True, False, True, False, False, False],
+            "Coil 0": True,
+            "Coil 1": True,
+            "Coil 10": True
             }
+
+    _start_time = timer()
 
     initial = initialize()
     writer(init=initial, wr=test)
     close(client=initial["client"])
+
+    print("Time consumed to process modbus writer: {0:.1f} ms".format(
+        (timer() - _start_time) * 1000)
+    )
 
     exit(0)
