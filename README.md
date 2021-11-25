@@ -199,8 +199,9 @@ bytes (yet to be thorougly tested). Pitfall: Endianness of byteorder.
 
 ## MODBUS REST API
 
-Run the MODBUS Rest API (modbus_client.py and modbus_reader.py present in 
-same directory:
+Run the MODBUS Rest API with modbus_client.py and modbus_reader.py 
+present in same directory, the same applies for the client_config.json and 
+client_mapping.json files.
 
     python3 modbus_REST_API.py
 

@@ -8,7 +8,7 @@ from timeit import default_timer as timer
 app = Flask(__name__)
 
 
-@app.route('/write', methods=['POST'])
+@app.route('/write', methods=['PUT'])
 def write():
     _start_time = timer()
 
