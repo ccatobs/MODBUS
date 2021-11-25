@@ -2,7 +2,7 @@
 """
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-version 0.8 - 2021/11/24
+version 0.8.1 - 2021/11/25
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -51,7 +51,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "0.8"
+__version__ = "0.8.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -117,24 +117,16 @@ class ObjectType(object):
         :return: (int, int, int) - address to start from, its register
         and byte widths
         """
-        width = 0
-        no_bytes = 0
+        width, no_bytes = 1, 2
 
         comp = address.split("/")
         start = int(comp[0][1:])
-        if len(comp) == 1:
-            width = 1
-            no_bytes = 2
-        elif len(comp) == 2:
+        if len(comp) == 2:
             if comp[1] in ["1", "2"]:
-                width = 1
                 no_bytes = 1
             else:
                 width = int(comp[1]) - int(comp[0]) + 1
                 no_bytes = width * 2
-                if width < 2:
-                    logging.error("Error in address: {0}".format(address))
-                    sys.exit(1)
 
         return start, width, no_bytes
 
@@ -363,6 +355,18 @@ def initialize():
     object - modbus client
     dictionary - mapping
     """
+
+    def address_integrity(address):
+        if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", address):
+            return False
+        comp = address.split("/")
+        if len(comp) == 2:
+            if comp[1] not in ["1", "2"] and \
+                    (comp[0][0] != comp[1][0] or
+                     int(comp[1]) - int(comp[0]) < 1):
+                return False
+        return True
+
     rev_dict = dict()
     key = None
     parameter = None
@@ -383,9 +387,7 @@ def initialize():
     # 2) parameter must not be duplicate
     try:
         for key, value in mapping.items():
-            if not re.match(
-                    r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$",
-                    key):
+            if not address_integrity(key):
                 raise MappingKeyError
             rev_dict.setdefault(value["parameter"], set()).add(key)
         parameter = [key for key, values in rev_dict.items()
