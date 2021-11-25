@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """
-For a detailed description, see https://github.com/ccatp/MODBUS
-
+MODBUS WRITER
 version 0.1.1 - 2021/11/24
+
+For a detailed description, see https://github.com/ccatp/MODBUS
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.

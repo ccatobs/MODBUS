@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """
-For a detailed description, see https://github.com/ccatp/MODBUS
-
+MODBUS READER
 version 0.8.1 - 2021/11/25
+
+For a detailed description, see https://github.com/ccatp/MODBUS
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
