@@ -182,8 +182,20 @@ Not implemented yet:
 
 ## MODBUS WRITER
 
-yet to come.
+The reader - in its final version - will be invoked through a Flask Rest-API.
+For the time being it accepts - as input - a dictionary with "parameter": 
+value pairs, where the parameters need to match their counterparts as defined in
+[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json).
 
+Basic idea: write only to coil and holding registers that are defined in the 
+appropriate reader.
+
+Modbus server connection parameters are defined in the client config 
+parameter file, as well.
+
+Caveat: owing to Python's pymodus module, registers are can be solely updated as
+a whole, e.g. for strings, bits and 8bit integers in leading and trailing
+bytes (yet to be thorougly tested). Pitfall: Endianness of byteorder.
 
 ## Content
 
