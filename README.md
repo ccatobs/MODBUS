@@ -197,6 +197,22 @@ Caveat: owing to Python's pymodus module, registers are can be solely updated as
 a whole, e.g. for strings, bits and 8bit integers in leading and trailing
 bytes (yet to be thorougly tested). Pitfall: Endianness of byteorder.
 
+## MODBUS REST API
+
+Run the MODBUS Rest API (modbus_client.py and modbus_reader.py present in 
+same directory:
+
+    python3 modbus_REST_API.py
+
+to invoke the Writer through:
+    
+    curl 127.0.0.1:5000/write -X POST -H "Content-Type: application/json" -d '{"test 32 bit int": 720.04}'
+
+to invoke the Reader through:
+
+    curl 127.0.0.1:5000/read 
+
+
 ## Content
 
 The current repository comprises a 
@@ -208,6 +224,9 @@ file.
 [Reader](https://github.com/ccatp/MODBUS/blob/master/src/modbus_client.py) 
 * MODBUS
 [Writer](https://github.com/ccatp/MODBUS/blob/master/src/modbus_writer.py)
+* MDOBUS 
+[REST API](https://github.com/ccatp/MODBUS/blob/master/src/modbus_REST_API.py)
+comprising a Reader and Writer
 
 For Reader and Writer the MODBUS server connection details are defined in
 [Config](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
