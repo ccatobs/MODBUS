@@ -183,19 +183,26 @@ Not implemented yet:
 ## MODBUS WRITER
 
 The reader - in its final version - will be invoked through a Flask Rest-API.
-For the time being it accepts - as input - a dictionary with "parameter": 
-value pairs, where the parameters need to match their counterparts as defined in
+For the time being it accepts - as input - a dictionary with 
+{"parameter": "value"} pairs, where the parameters need to match their 
+counterparts as defined in
 [JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json).
 
-Basic idea: write only to coil and holding registers that are defined in the 
-appropriate reader.
+Basic idea: write only to coil and holding registers defined in the 
+appropriate reader mapping.
 
 Modbus server connection parameters are defined in the client config 
 parameter file, as well.
 
-Caveat: owing to Python's pymodus module, registers are can be solely updated as
-a whole, e.g. for strings, bits and 8bit integers in leading and trailing
-bytes (yet to be thorougly tested). Pitfall: Endianness of byteorder.
+Caveat: 
+
+* Owing to Python's pymodbus module, registers can solely be updated on the
+  whole, which applies for strings, bits and 8bit-integers in the leading and
+  trailing bytes. Hence, a leading or 
+  trailing byte being updated, will result in "0x00" (empty) of the 
+  respective other.
+
+* Endianness of byteorder. 
 
 ## MODBUS REST API
 
@@ -205,11 +212,11 @@ client_mapping.json files.
 
     python3 modbus_REST_API.py
 
-to invoke the Writer through:
+Invoke the Writer:
     
     curl 127.0.0.1:5000/write -X POST -H "Content-Type: application/json" -d '{"test 32 bit int": 720.04}'
 
-to invoke the Reader through:
+Invoke the Reader:
 
     curl 127.0.0.1:5000/read 
 
@@ -227,7 +234,7 @@ file.
 [Writer](https://github.com/ccatp/MODBUS/blob/master/src/modbus_writer.py)
 * MDOBUS 
 [REST API](https://github.com/ccatp/MODBUS/blob/master/src/modbus_REST_API.py)
-comprising a Reader and Writer
+comprising a Reader and Writer (see above)
 
 For Reader and Writer the MODBUS server connection details are defined in
 [Config](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
