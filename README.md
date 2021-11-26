@@ -214,7 +214,7 @@ client_mapping.json files.
 
 Invoke the Writer:
     
-    curl 127.0.0.1:5000/write -X POST -H "Content-Type: application/json" -d '{"test 32 bit int": 720.04}'
+    curl 127.0.0.1:5000/write -X PUT -H "Content-Type: application/json" -d '{"MAX_COOLING": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]}' 
 
 Invoke the Reader:
 
