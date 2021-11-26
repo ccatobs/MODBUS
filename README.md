@@ -212,13 +212,13 @@ client_mapping.json files.
 
     python3 modbus_REST_API.py
 
-Invoke the Writer:
+Invoke the Writer (e.g. from nanten):
     
-    curl 127.0.0.1:5000/write -X PUT -H "Content-Type: application/json" -d '{"MAX_COOLING": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]}' 
+    curl 10.10.1.9:5000/write -X PUT -H "Content-Type: application/json" -d '{"MAX_COOLING": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]}' 
 
 Invoke the Reader:
 
-    curl 127.0.0.1:5000/read 
+    curl 10.10.1.9:5000/read 
 
 
 ## Content
