@@ -501,18 +501,18 @@
     "function": "decode_32bit_uint",
     "parameter": "OEM_Version.Main_udi"
   },
-  "30036/30037": {
+  "30036": {
     "function": "decode_16bit_uint",
     "parameter": "OEM_Version.Sub_ui"
   },
   "40000/1": {
     "function": "decode_bits",
-    "parameter": "POU_Unit_Mng.BmsOn_dummy",
+    "parameter": "POU_Unit_Mng.BmsOn/1",
     "map": {}
   },
   "40000/2": {
     "function": "decode_bits",
-    "parameter": "POU_Unit_Mng.BmsOn",
+    "parameter": "POU_Unit_Mng.BmsOn/2",
     "defaultvalue": "TRUE",
     "map": {
       "0b00000001": "Unit On/Off by BMS"
@@ -520,12 +520,12 @@
   },
   "40001/1": {
     "function": "decode_bits",
-    "parameter": "MAX_COOLING_dummy",
+    "parameter": "MAX_COOLING/1",
     "map": {}
   },
   "40001/2": {
     "function": "decode_bits",
-    "parameter": "MAX_COOLING",
+    "parameter": "MAX_COOLING/2",
     "defaultvalue": "FALSE",
     "map": {
       "0b00000001": "max cooling"
