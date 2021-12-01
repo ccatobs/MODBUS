@@ -135,12 +135,11 @@ class ObjectType(object):
         """
         position of True in binary string. Report if malformated in mapping.
         source for regular expression:
-        https://stackoverflow.com/questions/16762492/regex-to-match-only-if-symbol-in-string-used-once
+        https://stackoverflow.com/questions/469913/regular-expressions-is-there-an-and-operator
         :param binarystring: str
         :return: integer
         """
-        if re.match(r"^0b[01]{8}$", binarystring) and \
-                re.match(r"^0b[^1]*1[^1]*$", binarystring):
+        if re.match(r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)", binarystring):
             return binarystring.split("0b")[1][::-1].index('1')
         else:
             logging.error("Error in binary string in mapping.")

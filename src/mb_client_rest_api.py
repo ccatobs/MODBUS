@@ -12,6 +12,9 @@ app = Flask(__name__)
 
 class LockGroup(object):
     """
+    Returns a lock object, unique for each unique value of param.
+    The first call with a given value of param creates a new lock, subsequent
+    calls return the same lock.
     source:
     https://stackoverflow.com/questions/37624289/value-based-thread-lock
     """
@@ -20,9 +23,6 @@ class LockGroup(object):
         self.lock_dict = {}
         self.__lock = Lock()
 
-    # Returns a lock object, unique for each unique value of param.
-    # The first call with a given value of param creates a new lock, subsequent
-    # calls return the same lock.
     def __call__(self, param: str = None):
         with self.__lock:
             if param not in self.lock_dict:
@@ -63,7 +63,7 @@ def write(name: str = None) -> json:
     payload = request.json
     try:
         lock_mb_client(name).acquire()
-        initial = mb_client_writer.initialize(name)
+        initial = mb_client_writer.initialize(name=name)
         mb_client_writer.writer(init=initial,
                                 wr=payload)
         mb_client_writer.close(client=initial["client"])
@@ -85,7 +85,7 @@ def read(name: str = None) -> json:
     g.name = name
     try:
         lock_mb_client(name).acquire()
-        initial = mb_client_reader.initialize(name)
+        initial = mb_client_reader.initialize(name=name)
         result = mb_client_reader.retrieve(init=initial)
         mb_client_reader.close(client=initial["client"])
         lock_mb_client(name).release()
