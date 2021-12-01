@@ -212,15 +212,36 @@ client_mapping.json files.
 
     python3 mb_client_rest_api.py
 
-Invoke the Writer (e.g. from nanten):
-    
-    curl 10.10.1.9:5000/<device name>/write -X PUT -H "Content-Type: application/json" -d '{"MAX_COOLING": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]}' 
-
 Invoke the Reader:
 
     curl 10.10.1.9:5000/<device name>/read 
 
-where `<device name>` denotes the extention for each device (equipment) or server.
+Invoke the Writer (e.g. from nanten). The JSON comprises 1 to many 
+`<parameter>`: `<value>` pairs to be updated on the modbus device
+    
+    curl 10.10.1.9:5000/<device name>/write -X PUT -H "Content-Type: application/json" 
+            -d '{"test 32 bit int": 720.04,
+            "write int register": 10,
+            "string of register/1": "YZ",
+            "Coil 0": True,
+            "Coil 1": True,
+            "Coil 10": True
+            }' 
+
+where `<device name>` denotes the extention for each modbus device:
+
+| Extension | MODBUS Device |
+|----------|-------|
+| default | server simulator |
+| lhx | Rack |
+| cryo | Cryocooler |
+| tbd. | ... |  
+
+In order to activate a new modbus device for the REST API, provide the following 
+config 
+and mapping files mb_client_config_`<device name>`.json and mb_client_mapping_`<device name>`.json, 
+respectively.
+
 
 ## Content
 
