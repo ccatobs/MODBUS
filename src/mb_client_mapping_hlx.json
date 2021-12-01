@@ -505,27 +505,17 @@
     "function": "decode_16bit_uint",
     "parameter": "OEM_Version.Sub_ui"
   },
-  "40000/1": {
-    "function": "decode_bits",
-    "parameter": "POU_Unit_Mng.BmsOn/1",
-    "map": {}
-  },
   "40000/2": {
     "function": "decode_bits",
-    "parameter": "POU_Unit_Mng.BmsOn/2",
+    "parameter": "POU_Unit_Mng.BmsOn",
     "defaultvalue": "TRUE",
     "map": {
       "0b00000001": "Unit On/Off by BMS"
     }
   },
-  "40001/1": {
-    "function": "decode_bits",
-    "parameter": "MAX_COOLING/1",
-    "map": {}
-  },
   "40001/2": {
     "function": "decode_bits",
-    "parameter": "MAX_COOLING/2",
+    "parameter": "MAX_COOLING",
     "defaultvalue": "FALSE",
     "map": {
       "0b00000001": "max cooling"

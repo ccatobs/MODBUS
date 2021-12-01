@@ -5,7 +5,7 @@
 A universal MODBUS interface, where the mapping to coil,
 discrete input, input registers, and holding registers is entirely defined
 by a
-[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json)
+[JSON](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_mapping_default.json)
 file, with no modification to the coding required whatsoever. This JSON file
 comprises keys pointing to the register(s) and nested keys, such as
 
@@ -168,7 +168,7 @@ confusion about Little-Endian vs. Big-Endian Word Order. The current modbus
 client allows the endiannesses of the byteorder (the Byte order of each word)
 and the wordorder (the endianess of the word, when wordcount is >= 2) to be 
 adjusted (see
-[Parameters](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json)):
+[Parameters](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_config_default.json)):
 
     ">" = Endian.Big 
     "<" = Endian.Little
@@ -186,7 +186,7 @@ The reader - in its final version - will be invoked through a Flask Rest-API.
 For the time being it accepts - as input - a dictionary with 
 {"parameter": "value"} pairs, where the parameters need to match their 
 counterparts as defined in
-[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json).
+[JSON](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_mapping_default.json).
 
 Basic idea: write only to coil and holding registers defined in the 
 appropriate reader mapping.
@@ -210,16 +210,18 @@ Run the MODBUS Rest API with modbus_client.py and modbus_reader.py
 present in same directory, the same applies for the client_config.json and 
 client_mapping.json files.
 
-    python3 modbus_REST_API.py
+    python3 mb_client_rest_api.py
 
 Invoke the Writer (e.g. from nanten):
     
-    curl 10.10.1.9:5000/write -X PUT -H "Content-Type: application/json" -d '{"MAX_COOLING": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]}' 
+    curl 10.10.1.9:5000/<device name>/write -X PUT -H "Content-Type: application/json" 
+    -d '{"MAX_COOLING": [false,false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]}' 
 
 Invoke the Reader:
 
-    curl 10.10.1.9:5000/read 
+    curl 10.10.1.9:5000/<device name>/read 
 
+where `<device name>` denotes the extention for each device (equipment) or server.
 
 ## Content
 
@@ -229,17 +231,16 @@ https://hub.docker.com/r/oitc/modbus-server) with its
 [config](https://github.com/ccatp/MODBUS/blob/master/src/modbus_server.json) 
 file.
 * MODBUS 
-[Reader](https://github.com/ccatp/MODBUS/blob/master/src/modbus_client.py) 
+[Reader](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_reader.py) 
 * MODBUS
-[Writer](https://github.com/ccatp/MODBUS/blob/master/src/modbus_writer.py)
+[Writer](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_writer.py)
 * MDOBUS 
-[REST API](https://github.com/ccatp/MODBUS/blob/master/src/modbus_REST_API.py)
-comprising a Reader and Writer (see above)
+[REST API](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_rest_api.py)
+comprising a Reader and Writer (see above). For Reader and Writer the MODBUS 
+server connection details are defined in
+mb_client_config_`<device name>`.json, whereas registry information is provided in 
+mb_client_mapping_`<device name>`.json
 
-For Reader and Writer the MODBUS server connection details are defined in
-[Config](https://github.com/ccatp/MODBUS/blob/master/src/client_config.json).
-Registry information is provided in
-[JSON](https://github.com/ccatp/MODBUS/blob/master/src/client_mapping.json)
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de

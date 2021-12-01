@@ -21,6 +21,7 @@ class LockGroup(object):
     source:
     https://stackoverflow.com/questions/37624289/value-based-thread-lock
     """
+
     def __init__(self):
         self.lock_dict = {}
         self.__lock = Lock()
@@ -76,7 +77,7 @@ def write(name: str = None) -> json:
 def read(name: str = None) -> json:
     _start_time = timer()
     g.name = name
-    
+
     lock_mb_client(name).acquire()
     initial = modbus_client.initialize()
     result = modbus_client.retrieve(init=initial)
