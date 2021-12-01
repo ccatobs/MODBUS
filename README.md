@@ -214,8 +214,7 @@ client_mapping.json files.
 
 Invoke the Writer (e.g. from nanten):
     
-    curl 10.10.1.9:5000/<device name>/write -X PUT -H "Content-Type: application/json" 
-    -d '{"MAX_COOLING": [false,false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]}' 
+    curl 10.10.1.9:5000/<device name>/write -X PUT -H "Content-Type: application/json" -d '{"MAX_COOLING": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true]}' 
 
 Invoke the Reader:
 
