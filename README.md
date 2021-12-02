@@ -223,9 +223,9 @@ Invoke the Writer (e.g. from nanten). The JSON comprises 1 to many
             -d '{"test 32 bit int": 720.04,
             "write int register": 10,
             "string of register/1": "YZ",
-            "Coil 0": True,
-            "Coil 1": True,
-            "Coil 10": True
+            "Coil 0": true,
+            "Coil 1": true,
+            "Coil 10": true
             }' 
 
 where `<device name>` denotes the extention for each modbus device:
@@ -237,10 +237,9 @@ where `<device name>` denotes the extention for each modbus device:
 | cryo | Cryocooler |
 | tbd. | ... |  
 
-In order to activate a new modbus device for the REST API, provide the following 
-config 
-and mapping files mb_client_config_`<device name>`.json and mb_client_mapping_`<device name>`.json, 
-respectively.
+In order to activate a new modbus device for the REST API, just provide the  
+config and mapping files mb_client_config_`<device name>`.json and mb_client_mapping_`<device name>`.json, 
+respectively. That's it!
 
 
 ## Content
