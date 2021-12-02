@@ -1,3 +1,24 @@
+#!/usr/bin/env python
+"""
+Flask REST API for multiple MODBUS reader and writer.
+
+run: python3 mb_client_rest_api.py --host <host> (default: 127.0.0.1) --port
+<port> (default: 5000)
+
+methods to call
+1) http://<host>:<port>:/<device>/read
+
+2) http://<host>:<port>:/<device>/write -X PUT -H "Content-Type: application/json"
+-d '{"parameter": value, ["parameter": value]}'
+
+version 1.0 - 2021/12/02
+
+For a detailed description, see https://github.com/ccatp/MODBUS
+
+Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
+Astronomy (AIfA), University Bonn.
+"""
+
 from flask import Flask, jsonify, request, Response, g, abort
 import mb_client_writer
 import mb_client_reader
@@ -6,6 +27,26 @@ import os
 import json
 from threading import Lock
 from timeit import default_timer as timer
+import argparse
+
+"""
+change history
+2021/12/02 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 1.0 
+    * initial version
+"""
+
+__author__ = "Dr. Ralf Antonius Timmermann"
+__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
+                "University Bonn"
+__credits__ = ""
+__license__ = "BSD"
+__version__ = "1.0"
+__maintainer__ = "Dr. Ralf Antonius Timmermann"
+__email__ = "rtimmermann@astro.uni-bonn.de"
+__status__ = "Dev"
+
+print(__doc__)
 
 app = Flask(__name__)
 
@@ -100,6 +141,19 @@ def read(name: str = None) -> json:
 
 if __name__ == '__main__':
 
+    argparser = argparse.ArgumentParser(
+        description="REST API for Housekeeping and Device Control")
+    argparser.add_argument('--host',
+                           required=False,
+                           help='IP address for REST API (default: "127.0.0.1")',
+                           default='127.0.0.1'
+                           )
+    argparser.add_argument('--port',
+                           required=False,
+                           help='Port (default: 5000)',
+                           default=5000
+                           )
+
     myformat = "%(asctime)s.%(msecs)03d :: %(levelname)s: " \
                "%(filename)s - %(lineno)s - %(funcName)s()\t%(message)s"
     logging.basicConfig(format=myformat,
@@ -110,8 +164,8 @@ if __name__ == '__main__':
     logging.info("PID: {0}".format(os.getpid()))
 
     try:
-        app.run(host='127.0.0.1',
-                port=5000,
+        app.run(host=argparser.parse_args().host,
+                port=argparser.parse_args().port,
                 threaded=True)
     except:
         logging.error("Unable to open port")

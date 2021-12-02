@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 """
 MODBUS WRITER
-version 1.0 - 2021/12/01
+version 1.0 - 2021/12/02
 
 For a detailed description, see https://github.com/ccatp/MODBUS
+
+run: python3 mb_client_writer.py --device <device extention> (default: default)
+--payload "{\"test 32 bit int\": 720.04}"
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -18,6 +21,7 @@ import sys
 import logging
 from timeit import default_timer as timer
 from os import path
+import argparse
 
 """
 change history
@@ -286,12 +290,23 @@ def close(client):
 
 if __name__ == '__main__':
 
+    argparser = argparse.ArgumentParser(
+        description="Universal MODBUS Writer")
+    argparser.add_argument('--device',
+                           required=False,
+                           help='Device extention (default: "default")',
+                           default='default'
+                           )
+    argparser.add_argument('--payload',
+                           required=True,
+                           help="Payload ('{parameter: value}')"
+                           )
     myformat = "%(asctime)s.%(msecs)03d :: %(levelname)s: " \
                "%(filename)s - %(lineno)s - %(funcName)s()\t%(message)s"
     logging.basicConfig(format=myformat,
                         level=logging.INFO,
                         datefmt="%Y-%m-%d %H:%M:%S")
-
+    """
     test = {"test 32 bit int": 720.04,
             "write int register": 10,
             "string of register/1": "YZ",
@@ -303,13 +318,15 @@ if __name__ == '__main__':
             "Coil 1": True,
             "Coil 10": True
             }
-
+    """
     _start_time = timer()
 
+    print("Device extention: {0}".format(argparser.parse_args().device))
+    print(argparser.parse_args().payload)
     try:
-        initial = initialize()
+        initial = initialize(argparser.parse_args().device)
         writer(init=initial,
-               wr=test)
+               wr=json.loads(argparser.parse_args().payload))
         close(client=initial["client"])
     except SystemExit as e:
         exit("Error code {0}".format(e))

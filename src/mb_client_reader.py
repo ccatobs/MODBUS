@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 """
 MODBUS READER
-version 0.8.1 - 2021/11/25
+version 1.0 - 2021/12/02
 
 For a detailed description, see https://github.com/ccatp/MODBUS
+
+run: python3 mb_client_reader.py --device <device extention> (default: default)
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -18,6 +20,7 @@ import sys
 import logging
 from timeit import default_timer as timer
 from os import path
+import argparse
 
 """
 change history
@@ -56,7 +59,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "0.8.1"
+__version__ = "1.0"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -463,6 +466,13 @@ def close(client):
 
 if __name__ == '__main__':
 
+    argparser = argparse.ArgumentParser(
+        description="Universal MODBUS Reader")
+    argparser.add_argument('--device',
+                           required=False,
+                           help='Device extention (default: "default")',
+                           default='default'
+                           )
     myformat = "%(asctime)s.%(msecs)03d :: %(levelname)s: " \
                "%(filename)s - %(lineno)s - %(funcName)s()\t%(message)s"
     logging.basicConfig(format=myformat,
@@ -471,8 +481,9 @@ if __name__ == '__main__':
     to_housekeeping = dict()
     _start_time = timer()
 
+    print("Device extention: {0}".format(argparser.parse_args().device))
     try:
-        initial = initialize()
+        initial = initialize(argparser.parse_args().device)
         to_housekeeping = retrieve(init=initial)
         close(client=initial["client"])
     except SystemExit as e:

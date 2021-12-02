@@ -36,21 +36,21 @@ A function needs to be defined for input and holding registers that translates
 the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
 e.g. "decode_32bit_uint" (see below for a selection):
 
-| Function | Value | Avro |
-|----------|-------|------|
-| 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_bits | boolean |
-| string of variable length | decode_string | string| 
-| 8 int of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_8bit_int | int |
-| 8 uint of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_8bit_uint | int |
-| 16 int|  decode_16bit_int|  int |
-| 16 uint|  decode_16bit_uint|  int |
-| 32 int|   decode_32bit_int|  int |
-| 32 uint|   decode_32bit_uint|  int |
-| 16 float|   decode_16bit_float| float |
-| 32 float|   decode_32bit_float| float |
-| 64 int|   decode_64bit_int| long |
-| 64 uint|   decode_64bit_uint| long | 
-| 64 float|   decode_64bit_float | double |
+| Function                                     | Value              | Avro    |
+|----------------------------------------------|--------------------|---------|
+| 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_bits        | boolean |
+| string of variable length                    | decode_string      | string  | 
+| 8 int of 1<sup>st</sup>/2<sup>nd</sup> byte  | decode_8bit_int    | int     |
+| 8 uint of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_8bit_uint   | int     |
+| 16 int                                       | decode_16bit_int   | int     |
+| 16 uint                                      | decode_16bit_uint  | int     |
+| 32 int                                       | decode_32bit_int   | int     |
+| 32 uint                                      | decode_32bit_uint  | int     |
+| 16 float                                     | decode_16bit_float | float   |
+| 32 float                                     | decode_32bit_float | float   |
+| 64 int                                       | decode_64bit_int   | long    |
+| 64 uint                                      | decode_64bit_uint  | long    | 
+| 64 float                                     | decode_64bit_float | double  |
 
 If a map is defined, the description is chosen according to round(value). Gaps
 between keys are permitted. A check on the uniqueness of "parameter" is 
@@ -180,6 +180,11 @@ output.
 Not implemented yet:
 * decoder.bit_chunks()
 
+Run:
+    
+    python3 mb_client_reader.py --device <device extention> (default: default)
+
+
 ## MODBUS WRITER
 
 The reader - in its final version - will be invoked through a Flask Rest-API.
@@ -192,7 +197,11 @@ Basic idea: write only to coil and holding registers defined in the
 appropriate reader mapping.
 
 Modbus server connection parameters are defined in the client config 
-parameter file, as well.
+parameter file, as well. 
+
+Run:
+    
+    python3 mb_client_writer.py --device <device extention> (default: default) --payload "{\"test 32 bit int\": 720.04}"
 
 Caveat: 
 
@@ -210,15 +219,16 @@ Run the MODBUS Rest API with modbus_client.py and modbus_reader.py
 present in same directory, the same applies for the client_config.json and 
 client_mapping.json files.
 
-    python3 mb_client_rest_api.py
+    python3 mb_client_rest_api.py --host <host> (default: 127.0.0.1) --port <port> (default: 5000)
 
 Invoke the Reader:
 
     curl 10.10.1.9:5000/<device name>/read 
 
-Invoke the Writer (e.g. from nanten). The JSON comprises 1 to many 
-`<parameter>`: `<value>` pairs to be updated on the modbus device
-    
+Invoke the Writer (e.g. from nanten). The JSON comprises one to many 
+{"parameter": "value"} pairs to be updated on the modbus device,
+where `<device name>` denotes the extention for each modbus device:
+
     curl 10.10.1.9:5000/<device name>/write -X PUT -H "Content-Type: application/json" 
             -d '{"test 32 bit int": 720.04,
             "write int register": 10,
@@ -226,20 +236,19 @@ Invoke the Writer (e.g. from nanten). The JSON comprises 1 to many
             "Coil 0": true,
             "Coil 1": true,
             "Coil 10": true
-            }' 
+            }'
 
-where `<device name>` denotes the extention for each modbus device:
+| Extension | MODBUS Device    |
+|-----------|------------------|
+| default   | server simulator |
+| lhx       | Rack             |
+| cryo      | Cryocooler       |
+| tbd.      | ...              |  
 
-| Extension | MODBUS Device |
-|----------|-------|
-| default | server simulator |
-| lhx | Rack |
-| cryo | Cryocooler |
-| tbd. | ... |  
-
-In order to activate a new modbus device for the REST API, just provide the  
-config and mapping files mb_client_config_`<device name>`.json and mb_client_mapping_`<device name>`.json, 
-respectively. That's it!
+In order to enroll a new modbus device, just provide the 
+config and mapping files mb_client_config_`<device name>`.json and 
+mb_client_mapping_`<device name>`.json to the working directory, 
+respectively. That's about it!
 
 
 ## Content
