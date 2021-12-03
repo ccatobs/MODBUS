@@ -1,0 +1,2 @@
+pymodbus==2.5.3
+flask==2.0.2

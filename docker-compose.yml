@@ -1,0 +1,8 @@
+version: '3.7'
+services:
+  mb_rest_api:
+    build: .
+    image: 'mb_rest_api:0.1'
+    container_name: "mb_rest_api"
+    ports:
+      - "5000:5000"

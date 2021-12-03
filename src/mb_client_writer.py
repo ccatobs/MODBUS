@@ -5,7 +5,8 @@ version 1.0 - 2021/12/02
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-run: python3 mb_client_writer.py --device <device extention> (default: default)
+run, e.g.:
+python3 mb_client_writer.py --device <device extention> (default: default)
 --payload "{\"test 32 bit int\": 720.04}"
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
@@ -99,7 +100,7 @@ class ObjectWrite(object):
     def __holding(self, wr):
         """
         dictionary with "parameter: value" pairs to be changed in coil and
-        holding registers.
+        holding registers
         :param wr: dictionary with {parameter: value} pairs
         :return:
         """

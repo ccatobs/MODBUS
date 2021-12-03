@@ -163,6 +163,10 @@ if __name__ == '__main__':
 
     logging.info("PID: {0}".format(os.getpid()))
 
+    print("Host: {0}, Port: {1}".format(
+        argparser.parse_args().host,
+        argparser.parse_args().port)
+    )
     try:
         app.run(host=argparser.parse_args().host,
                 port=argparser.parse_args().port,
