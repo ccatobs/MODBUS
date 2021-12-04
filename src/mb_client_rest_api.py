@@ -143,16 +143,18 @@ if __name__ == '__main__':
 
     argparser = argparse.ArgumentParser(
         description="REST API for Housekeeping and Device Control")
-    argparser.add_argument('--host',
-                           required=False,
-                           help='IP address for REST API (default: "127.0.0.1")',
-                           default='127.0.0.1'
-                           )
-    argparser.add_argument('--port',
-                           required=False,
-                           help='Port (default: 5000)',
-                           default=5000
-                           )
+    argparser.add_argument(
+        '--host',
+        required=False,
+        help='IP address for REST API (default: "127.0.0.1")',
+        default='127.0.0.1'
+    )
+    argparser.add_argument(
+        '--port',
+        required=False,
+        help='Port (default: 5000)',
+        default=5000
+    )
 
     myformat = "%(asctime)s.%(msecs)03d :: %(levelname)s: " \
                "%(filename)s - %(lineno)s - %(funcName)s()\t%(message)s"
