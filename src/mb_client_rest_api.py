@@ -169,10 +169,7 @@ if __name__ == '__main__':
         argparser.parse_args().host,
         argparser.parse_args().port)
     )
-    try:
-        app.run(host=argparser.parse_args().host,
-                port=argparser.parse_args().port,
-                threaded=True)
-    except:
-        logging.error("Unable to open port")
-        exit(1)
+
+    app.run(host=argparser.parse_args().host,
+            port=argparser.parse_args().port,
+            threaded=True)
