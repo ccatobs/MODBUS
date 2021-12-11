@@ -5,21 +5,15 @@ Flask REST API for multiple MODBUS reader and writer.
 run: python3 mb_client_rest_api.py --host <host> (default: 127.0.0.1) --port
 <port> (default: 5000)
 
-methods to call
-1) http://<host>:<port>:/<device>/read
-
-2) http://<host>:<port>:/<device>/write -X PUT -H "Content-Type: application/json"
--d '{"parameter": value, ["parameter": value]}'
-
-version 1.0 - 2021/12/02
+version 1.1 - 2021/12/11
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
-
-from flask import Flask, jsonify, request, Response, g, abort
+from flask import Flask, jsonify, Response, g, abort
+from flask_restx import Api, Resource, reqparse
 import mb_client_writer
 import mb_client_reader
 import logging
@@ -34,6 +28,9 @@ change history
 2021/12/02 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 1.0 
     * initial version
+2021/12/11 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 1.1 
+    * included flask_restplus aka flask_restx
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -41,14 +38,27 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "1.0"
+__version__ = "1.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
 
 print(__doc__)
 
-app = Flask(__name__)
+flask_app = Flask(__name__)
+api = Api(app=flask_app)
+ns = api.namespace(
+    'modbus',
+    description='APIs for reading from/writing to MODBUS devices'
+)
+
+# main parser
+parser = reqparse.RequestParser()
+# branch parser
+parser_write = parser.copy()
+parser_write.add_argument(name='payload',
+                          required=True,
+                          help="argument is of JSON format")
 
 
 class LockGroup(object):
@@ -74,73 +84,90 @@ class LockGroup(object):
 lock_mb_client = LockGroup()
 
 
-@app.teardown_request
+@flask_app.teardown_request
 def teardown_request(error=None):
     if error:
         logging.error(
             "Teardown_request: cleaning up...: {0}".format(str(error))
         )
-    if lock_mb_client(g.name).locked():
-        logging.warning(
-            "Release lock for: {0}".format(g.name)
-        )
-        lock_mb_client(g.name).release()
+    # if name exists
+    try:
+        if lock_mb_client(g.name).locked():
+            logging.warning(
+                "Release lock for: {0}".format(g.name)
+            )
+            lock_mb_client(g.name).release()
+    except AttributeError:
+        pass
 
 
-@app.errorhandler(404)
+@flask_app.errorhandler(404)
 def resource_not_found(e):
     return jsonify(error=str(e)), 404
 
 
-@app.errorhandler(501)
+@flask_app.errorhandler(501)
 def not_implemented(e):
     return jsonify(error=str(e)), 501
 
 
-@app.route('/<name>/write', methods=['PUT'])
-def write(name: str = None) -> json:
-    _start_time = timer()
-    g.name = name
-    payload = request.json
-    try:
-        lock_mb_client(name).acquire()
-        initial = mb_client_writer.initialize(name=name)
-        mb_client_writer.writer(init=initial,
-                                wr=payload)
-        mb_client_writer.close(client=initial["client"])
-        lock_mb_client(name).release()
-    except SystemExit as e:
-        abort(int(str(e)))
-    logging.info("Time consumed to process modbus writer: {0:.1f} ms".format(
-        (timer() - _start_time) * 1000)
-    )
+@ns.route("/write/<id>")
+@ns.doc(params={"id": "device ID"})
+@api.expect(parser_write)
+class WriteClass(Resource):
+    @api.response(201, 'Success')
+    @api.response(501, 'Not Implemented')
+    @api.response(404, 'Not Found')
+    def put(self, id: str):
+        _start_time = timer()
+        g.name = id
+        payload = json.loads(parser_write.parse_args()['payload'])
+        if not payload:
+            abort(404)
+        try:
+            lock_mb_client(id).acquire()
+            initial = mb_client_writer.initialize(name=id)
+            mb_client_writer.writer(init=initial,
+                                    wr=payload)
+            mb_client_writer.close(client=initial["client"])
+            lock_mb_client(id).release()
+        except SystemExit as e:
+            abort(int(str(e)))
+        logging.info(
+            "Time consumed to process modbus writer: {0:.1f} ms".format(
+                (timer() - _start_time) * 1000)
+        )
 
-    return Response(response=json.dumps(payload),
-                    status=201)
+        return Response(response=json.dumps(payload),
+                        status=201)
 
 
-@app.route('/<name>/read', methods=['GET'])
-def read(name: str = None) -> json:
-    _start_time = timer()
-    result = dict()
-    g.name = name
-    try:
-        lock_mb_client(name).acquire()
-        initial = mb_client_reader.initialize(name=name)
-        result = mb_client_reader.retrieve(init=initial)
-        mb_client_reader.close(client=initial["client"])
-        lock_mb_client(name).release()
-    except SystemExit as e:
-        abort(int(str(e)))
-    logging.info("Time consumed to process modbus reader: {0:.1f} ms".format(
-        (timer() - _start_time) * 1000)
-    )
+@ns.route("/read/<id>")
+@ns.doc(params={"id": "device ID"})
+class ReadClass(Resource):
+    @api.response(501, 'Not Implemented')
+    @api.response(404, 'Not Found')
+    def get(self, id: str):
+        _start_time = timer()
+        result = dict()
+        g.name = id
+        try:
+            lock_mb_client(id).acquire()
+            initial = mb_client_reader.initialize(name=id)
+            result = mb_client_reader.retrieve(init=initial)
+            mb_client_reader.close(client=initial["client"])
+            lock_mb_client(id).release()
+        except SystemExit as e:
+            abort(int(str(e)))
+        logging.info(
+            "Time consumed to process modbus reader: {0:.1f} ms".format(
+                (timer() - _start_time) * 1000)
+        )
 
-    return jsonify(result)
+        return jsonify(result)
 
 
 if __name__ == '__main__':
-
     argparser = argparse.ArgumentParser(
         description="REST API for Housekeeping and Device Control")
     argparser.add_argument(
@@ -170,6 +197,6 @@ if __name__ == '__main__':
         argparser.parse_args().port)
     )
 
-    app.run(host=argparser.parse_args().host,
-            port=argparser.parse_args().port,
-            threaded=True)
+    flask_app.run(host=argparser.parse_args().host,
+                  port=argparser.parse_args().port,
+                  threaded=True)

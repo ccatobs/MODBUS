@@ -221,22 +221,27 @@ client_mapping.json files.
 
     python3 mb_client_rest_api.py --host <host> (default: 127.0.0.1) --port <port> (default: 5000)
 
-Invoke the Reader:
+Get a list of available APIs, type in the browser URL
 
-    curl 10.10.1.9:5000/<device name>/read 
+    10.10.1.9:5000
 
-Invoke the Writer (e.g. from nanten). The JSON comprises one to many 
+![](pics/API_swagger_MODBUS.png)
+
+Alternatively, invoke the Reader in the terminal window:
+
+    curl 10.10.1.9:5000/modbus/read/<device name> 
+
+and the Writer (e.g. from nanten). The JSON comprises one to many 
 {"parameter": "value"} pairs to be updated on the modbus device,
 where `<device name>` denotes the extention for each modbus device:
 
-    curl 10.10.1.9:5000/<device name>/write -X PUT -H "Content-Type: application/json" 
-            -d '{"test 32 bit int": 720.04,
-            "write int register": 10,
-            "string of register/1": "YZ",
-            "Coil 0": true,
-            "Coil 1": true,
-            "Coil 10": true
-            }'
+    curl 10.10.1.9:5000/modbus/write/<device name> -X PUT \
+            -d 'payload={"test 32 bit int": 720.04, \
+            "write int register": 10, \
+            "string of register/1": "YZ", \
+            "Coil 0": true, \
+            "Coil 1": true, \
+            "Coil 10": true}'
 
 | Extension | MODBUS Device    |
 |-----------|------------------|
