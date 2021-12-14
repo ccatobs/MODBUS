@@ -146,7 +146,7 @@ class ObjectType(object):
             return binarystring.split("0b")[1][::-1].index('1')
         else:
             logging.error("Error in binary string in mapping.")
-            sys.exit(501)
+            sys.exit(500)
 
     @staticmethod
     def __trailing_byte_check(address):
@@ -248,7 +248,7 @@ class ObjectType(object):
         function = self.__register_maps[register]['function']
         if function not in function2avro:
             logging.error("Decoding function not defined.")
-            sys.exit(501)
+            sys.exit(500)
         if function == 'decode_bits':
             value = getattr(decoder, function)()
             return self.__decode_byte(register=register,
@@ -402,10 +402,10 @@ def initialize(name: str = "default"):
             raise DuplicateParameterError
     except MappingKeyError:
         logging.error("Wrong key in mapping: {0}.".format(key))
-        sys.exit(501)
+        sys.exit(500)
     except DuplicateParameterError:
         logging.error("Duplicate parameter: {0}.".format(parameter))
-        sys.exit(501)
+        sys.exit(500)
 
     try:
         client = ModbusClient(host=client_config["server"]["listenerAddress"],
@@ -415,7 +415,7 @@ def initialize(name: str = "default"):
         client.debug_enabled()
     except pymodbus.exceptions.ConnectionException:
         logging.error("Could not connect to server.")
-        sys.exit(501)
+        sys.exit(503)
 
     return {
         "client": client,

@@ -7,7 +7,7 @@ For a detailed description, see https://github.com/ccatp/MODBUS
 
 run, e.g.:
 python3 mb_client_writer.py --device <device extention> (default: default)
---payload "{\"test 32 bit int\": 720.04}"
+--payload \'{\"test 32 bit int\": 720.04}\'
 
 Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -125,14 +125,14 @@ class ObjectWrite(object):
                                 "'{0}' too long for parameter '{1}'"
                                 .format(value, parameter)
                             )
-                            sys.exit(1)
+                            sys.exit(500)
                     if "bits" in function:
                         if len(value) / 16 > width:
                             logging.error(
                                 "'{0}' too long for parameter '{1}'"
                                 .format(value, parameter)
                             )
-                            sys.exit(1)
+                            sys.exit(500)
                     getattr(builder, function)(value)
                     payload = builder.to_registers()
                     rq = self.__client.write_registers(
@@ -227,10 +227,10 @@ def initialize(name: str = "default"):
             raise DuplicateParameterError
     except MappingKeyError:
         logging.error("Wrong key in mapping: {0}.".format(key))
-        sys.exit(501)
+        sys.exit(500)
     except DuplicateParameterError:
         logging.error("Duplicate parameter: {0}.".format(parameter))
-        sys.exit(501)
+        sys.exit(500)
 
     try:
         client = ModbusClient(host=client_config["server"]["listenerAddress"],
@@ -240,7 +240,7 @@ def initialize(name: str = "default"):
         client.debug_enabled()
     except pymodbus.exceptions.ConnectionException:
         logging.error("Could not connect to server.")
-        sys.exit(501)
+        sys.exit(503)
 
     return {
         "client": client,

@@ -46,10 +46,15 @@ __status__ = "Dev"
 print(__doc__)
 
 flask_app = Flask(__name__)
-api = Api(app=flask_app)
+api = Api(app=flask_app,
+          version='1.0',
+          title="CCATp API For Device Management",
+          description="(C) Ralf A. Timmermann, AIfA, University Bonn",
+          license="license: BSD")
+
 ns = api.namespace(
     'modbus',
-    description='APIs for reading from/writing to MODBUS devices'
+    description="APIs for reading from/writing to various MODBUS devices"
 )
 
 # main parser
@@ -106,9 +111,14 @@ def resource_not_found(e):
     return jsonify(error=str(e)), 404
 
 
-@flask_app.errorhandler(501)
-def not_implemented(e):
-    return jsonify(error=str(e)), 501
+@flask_app.errorhandler(500)
+def server_error(e):
+    return jsonify(error=str(e)), 500
+
+
+@flask_app.errorhandler(503)
+def service_unavailable(e):
+    return jsonify(error=str(e)), 503
 
 
 @ns.route("/write/<id>")
@@ -116,7 +126,8 @@ def not_implemented(e):
 @api.expect(parser_write)
 class WriteClass(Resource):
     @api.response(201, 'Success')
-    @api.response(501, 'Not Implemented')
+    @api.response(500, 'Server Error')
+    @api.response(503, 'Service Unavailable')
     @api.response(404, 'Not Found')
     def put(self, id: str):
         _start_time = timer()
@@ -145,7 +156,9 @@ class WriteClass(Resource):
 @ns.route("/read/<id>")
 @ns.doc(params={"id": "device ID"})
 class ReadClass(Resource):
-    @api.response(501, 'Not Implemented')
+    @api.response(200, 'Success')
+    @api.response(500, 'Server Error')
+    @api.response(503, 'Service Unavailable')
     @api.response(404, 'Not Found')
     def get(self, id: str):
         _start_time = timer()
