@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 MODBUS READER
-version 1.0 - 2021/12/02
+version 1.1 - 2021/12/18
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 
@@ -52,6 +52,9 @@ change history
 2021/11/30
 - version 1.0
     * variable filenames
+2021/12/18
+- version 1.1
+    * strings modified
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -59,7 +62,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "1.0"
+__version__ = "1.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -120,18 +123,24 @@ class ObjectType(object):
         :return: (int, int, int) - address to start from, its register
         and byte widths
         """
-        width, no_bytes = 1, 2
+        width, no_bytes, pos_byte = 1, 2, 1
 
         comp = address.split("/")
         start = int(comp[0][1:])
         if len(comp) == 2:
             if comp[1] in ["1", "2"]:
                 no_bytes = 1
+                pos_byte = int(comp[1])
             else:
                 width = int(comp[1]) - int(comp[0]) + 1
                 no_bytes = width * 2
 
-        return start, width, no_bytes
+        return {
+            "start": start,
+            "width": width,
+            "no_bytes": no_bytes,
+            "pos_byte": pos_byte
+        }
 
     @staticmethod
     def __binary_map(binarystring):
@@ -258,7 +267,9 @@ class ObjectType(object):
             encod = getattr(decoder, function)(no_bytes)
             # ToDo what kind of characters need to be removed?
 #            value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
-            value = ''.join(list(s for s in encod.decode() if s.isprintable()))
+            value = "".join(
+                list(s for s in encod.decode() if s.isprintable())
+                ).rstrip()
         else:
             value = getattr(decoder, function)()
 
@@ -292,30 +303,30 @@ class ObjectType(object):
         decoded = list()
 
         for key in self.__register_maps.keys():
-            start, width, no_bytes = self.__register_width(key)
+            reg_info = self.__register_width(key)
             # read appropriate register(s)
             if self.__entity == '0':
                 result = self.__client.read_coils(
-                    address=start,
+                    address=reg_info['start'],
                     count=1,
                     unit=UNIT
                 )
             elif self.__entity == '1':
                 result = self.__client.read_discrete_inputs(
-                    address=start,
+                    address=reg_info['start'],
                     count=1,
                     unit=UNIT
                 )
             elif self.__entity == '3':
                 result = self.__client.read_input_registers(
-                    address=start,
-                    count=width,
+                    address=reg_info['start'],
+                    count=reg_info['width'],
                     unit=UNIT
                 )
             elif self.__entity == '4':
                 result = self.__client.read_holding_registers(
-                    address=start,
-                    count=width,
+                    address=reg_info['start'],
+                    count=reg_info['width'],
                     unit=UNIT
                 )
             assert (not result.isError())
@@ -338,7 +349,7 @@ class ObjectType(object):
                 decoded = decoded + self.__formatter(
                     decoder=decoder,
                     register=key,
-                    no_bytes=no_bytes
+                    no_bytes=reg_info['no_bytes']
                 )
 
         return decoded

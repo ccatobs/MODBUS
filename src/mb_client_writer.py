@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 MODBUS WRITER
-version 1.0 - 2021/12/02
+version 1.1 - 2021/12/18
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 
@@ -31,6 +31,9 @@ change history
 2021/12/01 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 1.0
     * adapted for modbus REST API
+2021/12/18 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 1.1
+    * strings modified
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -38,7 +41,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
                 "University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "1.0"
+__version__ = "1.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -84,18 +87,24 @@ class ObjectWrite(object):
         :return: (int, int, int) - address to start from, its register
         and byte widths
         """
-        width, no_bytes = 1, 2
+        width, no_bytes, pos_byte = 1, 2, 1
 
         comp = address.split("/")
         start = int(comp[0][1:])
         if len(comp) == 2:
             if comp[1] in ["1", "2"]:
                 no_bytes = 1
+                pos_byte = int(comp[1])
             else:
                 width = int(comp[1]) - int(comp[0]) + 1
                 no_bytes = width * 2
 
-        return start, width, no_bytes
+        return {
+            "start": start,
+            "width": width,
+            "no_bytes": no_bytes,
+            "pos_byte": pos_byte
+        }
 
     def __holding(self, wr):
         """
@@ -114,20 +123,24 @@ class ObjectWrite(object):
                 if attributes['parameter'] == parameter:
                     # holding register updates
                     function = attributes['function'].replace("decode_", "add_")
-                    register, width, _ = self.__register_width(address)
+                    reg_info = self.__register_width(address)
                     if "int" in function:
                         multiplier = attributes.get('multiplier', 1)
                         offset = attributes.get('offset', 0)
                         value = int((value - offset) / multiplier)
                     if "string" in function:
-                        if len(value) / 2 > width:
+                        if len(value) > reg_info['no_bytes']:
                             logging.error(
                                 "'{0}' too long for parameter '{1}'"
                                 .format(value, parameter)
                             )
                             sys.exit(500)
+                        # fill entire string with spaces
+                        s = list(" " * (2*reg_info['width']))
+                        s[reg_info['pos_byte'] - 1] = value
+                        value = "".join(s)
                     if "bits" in function:
-                        if len(value) / 16 > width:
+                        if len(value) / 16 > reg_info['width']:
                             logging.error(
                                 "'{0}' too long for parameter '{1}'"
                                 .format(value, parameter)
@@ -136,7 +149,7 @@ class ObjectWrite(object):
                     getattr(builder, function)(value)
                     payload = builder.to_registers()
                     rq = self.__client.write_registers(
-                        address=register,
+                        address=reg_info['start'],
                         values=payload,
                         unit=UNIT)
                     assert (not rq.isError())  # test we are not an error

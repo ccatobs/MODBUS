@@ -215,9 +215,11 @@ Caveat:
 
 ## MODBUS REST API
 
-Run the MODBUS Rest API with modbus_client.py and modbus_reader.py 
-present in same directory, the same applies for the client_config.json and 
-client_mapping.json files.
+Run the Rest API with the previously described MODBUS READER and WRITER: 
+mb_client_reader.py, mb_client_writer.py need to reside in same directory, the same 
+applies for the mb_client_config_<deviceID>.json and 
+mb_client_mapping_<deviceID>.json files. An internal 
+locking mechanism prevents reading and writing to the same device smulaneously.
 
     python3 mb_client_rest_api.py --host <host> (default: 127.0.0.1) --port <port> (default: 5000)
 
@@ -229,13 +231,13 @@ Get a list of available APIs, type in the browser URL
 
 Alternatively, invoke the Reader in the terminal window:
 
-    curl 10.10.1.9:5000/modbus/read/<device name> 
+    curl 10.10.1.9:5000/modbus/read/<deviceID> 
 
 and the Writer (e.g. from nanten). The JSON comprises one to many 
 {"parameter": "value"} pairs to be updated on the modbus device,
-where `<device name>` denotes the extention for each modbus device:
+where `<deviceID>` denotes the extention for each modbus device:
 
-    curl 10.10.1.9:5000/modbus/write/<device name> -X PUT \
+    curl 10.10.1.9:5000/modbus/write/<deviceID> -X PUT \
             -d 'payload={"test 32 bit int": 720.04, \
             "write int register": 10, \
             "string of register/1": "YZ", \
@@ -251,8 +253,8 @@ where `<device name>` denotes the extention for each modbus device:
 | tbd.      | ...              |  
 
 In order to enroll a new modbus device, just provide the 
-config and mapping files mb_client_config_`<device name>`.json and 
-mb_client_mapping_`<device name>`.json to the working directory, 
+config and mapping files mb_client_config_`<deviceID>`.json and 
+mb_client_mapping_`<deviceID>`.json to the working directory, 
 respectively. That's about it!
 
 
@@ -271,8 +273,8 @@ file.
 [REST API](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_rest_api.py)
 comprising a Reader and Writer (see above). For Reader and Writer the MODBUS 
 server connection details are defined in
-mb_client_config_`<device name>`.json, whereas registry information is provided in 
-mb_client_mapping_`<device name>`.json
+mb_client_config_`<deviceID>`.json, whereas registry information is provided in 
+mb_client_mapping_`<deviceID>`.json
 
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 

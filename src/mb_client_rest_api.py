@@ -76,14 +76,14 @@ class LockGroup(object):
     """
 
     def __init__(self):
-        self.lock_dict = {}
+        self.__lock_dict = {}
         self.__lock = Lock()
 
     def __call__(self, param: str = None):
         with self.__lock:
-            if param not in self.lock_dict:
-                self.lock_dict[param] = Lock()
-            return self.lock_dict[param]
+            if param not in self.__lock_dict:
+                self.__lock_dict[param] = Lock()
+            return self.__lock_dict[param]
 
 
 lock_mb_client = LockGroup()
@@ -122,7 +122,7 @@ def service_unavailable(e):
 
 
 @ns.route("/write/<id>")
-@ns.doc(params={"id": "device ID"})
+@ns.doc(params={"id": "deviceID"})
 @api.expect(parser_write)
 class WriteClass(Resource):
     @api.response(201, 'Success')
@@ -154,7 +154,7 @@ class WriteClass(Resource):
 
 
 @ns.route("/read/<id>")
-@ns.doc(params={"id": "device ID"})
+@ns.doc(params={"id": "deviceID"})
 class ReadClass(Resource):
     @api.response(200, 'Success')
     @api.response(500, 'Server Error')
