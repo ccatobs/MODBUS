@@ -7,5 +7,5 @@
     "byteorder": ">",
     "wordorder": ">"
   },
-  "debug": false
+  "debug": true
 }

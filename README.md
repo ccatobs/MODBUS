@@ -173,16 +173,32 @@ adjusted (see
     ">" = Endian.Big 
     "<" = Endian.Little
 
+
+Packing/unpacking depends on your CPU's word/byte order. Modbus messages
+are always using big endian. BinaryPayloadBuilder will per default use
+what your CPU uses. The wordorder is applicable only for 32 and 64 bit values
+Lets say we need to write a value 0x12345678 to a 32 bit register.
+The following combinations could be used to write the register 
+[see also here](https://github.com/pymodbus-dev/pymodbus/blob/217469a234bc023a660acb9c448900288131022b/examples/client_payload.py).
+
+|Word Order  | Byte order | Word1  | Word2  |
+|------------|------------|--------|--------|
+|    Big     |     Big    | 0x1234 | 0x5678 |
+|    Big     |    Little  | 0x3412 | 0x7856 |
+|   Little   |     Big    | 0x5678 | 0x1234 |
+|   Little   |    Little  | 0x7856 | 0x3412 |
+
 The result for the housekeeping (Kafka consumer) is a list of dictionaries, 
 where most of its content is passed on from the client-mapping JSON to the 
 output.
 
-Not implemented yet:
+Caveat: not implemented:
 * decoder.bit_chunks()
 
 Run:
     
-    python3 mb_client_reader.py --device <device extention> (default: default)
+    python3 mb_client_reader.py --device <device extention> (default: default) \
+                                --path <path of config files> (default: .)
 
 
 ## MODBUS WRITER

@@ -1,16 +1,22 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-MODBUS READER
-version 1.1 - 2021/12/18
+MODBUS Client, version 2.0 - 2023/02/22
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 
-run: python3 mb_client_reader.py --device <device extention> (default: default)
+For running and testing
 
-Copyright (C) 2021 Dr. Ralf Antonius Timmermann, Argelander Institute for
-Astronomy (AIfA), University Bonn.
+python3 mb_client_reader.py --device <device extention> (default: default) \
+                            --path <path to config files>
+
+python3 mb_client_writer.py --device <device extention> (default: default) \
+                            --path <path to config files>
+
+Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
+Argelander Institute for Astronomy (AIfA), University Bonn.
 """
 
+from __future__ import annotations
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 import pymodbus.exceptions
@@ -18,9 +24,8 @@ import json
 import re
 import sys
 import logging
-from timeit import default_timer as timer
 from os import path
-import argparse
+from typing import Dict, List
 
 """
 change history
@@ -55,22 +60,29 @@ change history
 2021/12/18
 - version 1.1
     * strings modified
+2023/02/23
+-version 2.0
+    * MODBUS client as library
+    * merge reader and writer
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
-__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, " \
-                "University Bonn"
+__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, University Bonn"
 __credits__ = ""
-__license__ = "BSD"
-__version__ = "1.1"
+__license__ = "BSD-3"
+__version__ = "2.0"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
 
-print(__doc__)
+myformat = "%(asctime)s.%(msecs)03d :: %(levelname)s: " \
+           "%(filename)s - %(lineno)s - %(funcName)s()\t%(message)s"
+logging.basicConfig(format=myformat,
+                    level=logging.INFO,
+                    datefmt="%Y-%m-%d %H:%M:%S")
 
 UNIT = 0x1
-function2avro = {
+FUNCTION2AVRO = {
     "decode_bits": "boolean",
     "decode_8bit_int": "int",
     "decode_8bit_uint": "int",
@@ -87,20 +99,21 @@ function2avro = {
 }
 
 
-class MappingKeyError(Exception):
+class _MappingKeyError(Exception):
     """Base class for other exceptions"""
     pass
 
 
-class DuplicateParameterError(Exception):
+class _DuplicateParameterError(Exception):
     """Base class for other exceptions"""
     pass
 
 
-class ObjectType(object):
-    def __init__(self, init, entity):
+class _ObjectType(object):
+
+    def __init__(self, init: Dict, entity: str):
         """
-        :param init: dictionary - client parameter
+        :param init: Dict - client parameter
             init["client"] instance - MODBUS client
             init["mapping"] mapping of all registers as from JSON
             init["endianness"] endianness's of byte and word
@@ -116,14 +129,17 @@ class ObjectType(object):
         }
 
     @staticmethod
-    def __register_width(address):
+    def __register_width(address: str) -> Dict:
         """
         determine the number of registers to read for a given key
         :param address: string
-        :return: (int, int, int) - address to start from, its register
-        and byte widths
+        :return: Dict
+            start - address to start from,
+            width - byte widths
+            no_bytes - no of total bytes contained
+            pos_byte - position of the byte to extract
         """
-        width, no_bytes, pos_byte = 1, 2, 1
+        width, no_bytes, pos_byte = 1, 2, 1  # default
 
         comp = address.split("/")
         start = int(comp[0][1:])
@@ -134,16 +150,18 @@ class ObjectType(object):
             else:
                 width = int(comp[1]) - int(comp[0]) + 1
                 no_bytes = width * 2
-
-        return {
+        result = {
             "start": start,
             "width": width,
             "no_bytes": no_bytes,
             "pos_byte": pos_byte
         }
+        logging.debug("register:{0} -> {1}".format(address, json.dumps(result)))
+
+        return result
 
     @staticmethod
-    def __binary_map(binarystring):
+    def __binary_map(binarystring: str) -> int:
         """
         position of True in binary string. Report if malformated in mapping.
         source for regular expression:
@@ -158,19 +176,22 @@ class ObjectType(object):
             sys.exit(500)
 
     @staticmethod
-    def __trailing_byte_check(address):
+    def __trailing_byte_check(address: str) -> bool:
         if len(address.split("/")) == 2:
             return address.split("/")[1] == "2"
         return False
 
-    def __decode_byte(self, register, value, function):
+    def __decode_byte(self,
+                      register: str,
+                      value: List[bool],
+                      function: str) -> List[Dict]:
         """
         decode payload messages from a modbus reponse message and enrich with
         add. parameters from input mapping
         :param register: string - key in dictionary mapping
-        :param value: ? - result from payload decoder method
+        :param value: List[bool] - result from payload decoder method
         :param function: string - decoder method
-        :return: list with dictionary
+        :return: List of Dict
         """
         decoded = list()
 
@@ -197,25 +218,28 @@ class ObjectType(object):
                         self.__register_maps[register]['parameter'],
                     "value": value[self.__binary_map(binarystring=key)],
                     "description": name,
-                    "datatype": function2avro[function]
+                    "datatype": FUNCTION2AVRO[function]
                 },
                 **optional)
             )
 
         return decoded
 
-    def __decode_prop(self, register, value, function):
+    def __decode_prop(self,
+                      register: str,
+                      value: str | int | float,
+                      function: str) -> List[Dict]:
         """
         decode payload messages from a modbus reponse message and enrich with
         add. parameters from input mapping
         :param register: string - key in dictionary mapping
-        :param value: ? - result from payload decoder method
+        :param value: str | int | float - result from payload decoder method
         :param function: string - decoder method
-        :return: list with dictionary
+        :return: List of Dict
         """
         maps = self.__register_maps[register].get('map')
         desc = self.__register_maps[register].get('description')
-        datatype = function2avro[function]
+        datatype = FUNCTION2AVRO[function]
         optional = {
             key: self.__register_maps[register][key]
             for key in self.__register_maps[register]
@@ -244,18 +268,21 @@ class ObjectType(object):
         return [dict(**di,
                      **optional)]
 
-    def __formatter(self, decoder, register, no_bytes):
+    def __formatter(self,
+                    decoder: pymodbus.payload.BinaryPayloadDecoder,
+                    register: str,
+                    no_bytes: int) -> List[Dict]:
         """
         format the output dictionary and append by scanning through the mapping
         of the registers. If gaps in the mappings are detected they are skipped
         by the number of bytes.
         :param decoder: A deferred response handle from the register readings
-        :param register: dictionary
+        :param register: str
         :param no_bytes: int - no of bytes to decode for strings
-        :return: list with dictionary
+        :return: List of Dict
         """
         function = self.__register_maps[register]['function']
-        if function not in function2avro:
+        if function not in FUNCTION2AVRO:
             logging.error("Decoding function not defined.")
             sys.exit(500)
         if function == 'decode_bits':
@@ -277,17 +304,17 @@ class ObjectType(object):
                                   value=value,
                                   function=function)
 
-    def __formatter_bit(self, decoder, register):
+    def __formatter_bit(self, decoder: List, register: str) -> List[Dict]:
         """
         indexes the result array of bits by the keys found in the mapping
         :param decoder: A deferred response handle from the register readings
-        :param register: dictionary
-        :return: list with dictionary
+        :param register: str
+        :return: List of Dict
         """
         return [
             dict(
                 **self.__register_maps[register],
-                **{"datatype": function2avro["decode_bits"],
+                **{"datatype": FUNCTION2AVRO["decode_bits"],
                    "value": decoder[0]}
             )
         ]
@@ -296,8 +323,8 @@ class ObjectType(object):
         """
         reads the coil discrete input, input, or holding registers according
         to their length defined in key and decodes them accordingly. The
-        list of dictionary/ies is appended to the result list
-        :return: list - result
+        list of dictionary/ies is appended to the result
+        :return: List
         """
         result = None
         decoded = list()
@@ -355,154 +382,114 @@ class ObjectType(object):
         return decoded
 
 
-def initialize(name: str = "default"):
-    """
-    initializing the modbus client and perform checks on
-    mb_client_mapping_<name>.json:
-    1) format of register key
-    2) existance and uniqueness of "parameter"
-    3) connection to modbus server via synchronous TCP
-    :return:
-    object - modbus client
-    dictionary - mapping
-    """
+class MODBUSClient(object):
 
-    def address_integrity(address):
-        if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", address):
-            return False
-        comp = address.split("/")
-        if len(comp) == 2:
-            if comp[1] not in ["1", "2"] and \
-                    (comp[0][0] != comp[1][0] or
-                     int(comp[1]) - int(comp[0]) < 1):
+    def __init__(self, device: str = "default", **kwargs):
+        """
+        initializing the modbus client and perform checks on
+        mb_client_mapping_<device>.json:
+        1) format of register key
+        2) existance and uniqueness of "parameter"
+        3) connection to modbus server via synchronous TCP
+        :return:
+        object - modbus client
+        dictionary - mapping
+        """
+
+        def address_integrity(address):
+            if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", address):
                 return False
-        return True
+            comp = address.split("/")
+            if len(comp) == 2:
+                if comp[1] not in ["1", "2"] and \
+                        (comp[0][0] != comp[1][0] or
+                         int(comp[1]) - int(comp[0]) < 1):
+                    return False
+            return True
 
-    rev_dict = dict()
-    key = None
-    parameter = None
-    file_config = "mb_client_config_{0}.json".format(name)
-    file_mapping = "mb_client_mapping_{0}.json".format(name)
-    # verify existance of both files
-    if not path.isfile(file_config):
-        logging.error("Client config file {0} not found".format(
-            file_config))
-        sys.exit(404)
-    if not path.isfile(file_mapping):
-        logging.error("Client config file {0} not found".format(
-            file_mapping))
-        sys.exit(404)
-    with open(file_config) as config_file:
-        client_config = json.load(config_file)
-    with open(file_mapping) as json_file:
-        mapping = json.load(json_file)
-    if client_config['debug']:
-        logging.getLogger().setLevel(logging.DEBUG)
+        rev_dict = dict()
+        key = None
+        parameter = None
 
-    # perform checks on the client mapping
-    # 1) key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y
-    # 2) parameter must not be duplicate
-    try:
-        for key, value in mapping.items():
-            if not address_integrity(key):
-                raise MappingKeyError
-            rev_dict.setdefault(value["parameter"], set()).add(key)
-        parameter = [key for key, values in rev_dict.items()
-                     if len(values) > 1]
-        if parameter:
-            raise DuplicateParameterError
-    except MappingKeyError:
-        logging.error("Wrong key in mapping: {0}.".format(key))
-        sys.exit(500)
-    except DuplicateParameterError:
-        logging.error("Duplicate parameter: {0}.".format(parameter))
-        sys.exit(500)
+        path_additional = kwargs.get("path_additional")
+        file_config = "{1}/mb_client_config_{0}.json".format(device,
+                                                             path_additional if path_additional is not None else ".")
+        file_mapping = "{1}/mb_client_mapping_{0}.json".format(device,
+                                                               path_additional if path_additional is not None else ".")
+        # verify existance of both files
+        if not path.isfile(file_config):
+            logging.error("Client config file {0} not found".format(
+                file_config))
+            sys.exit(404)
+        if not path.isfile(file_mapping):
+            logging.error("Client config file {0} not found".format(
+                file_mapping))
+            sys.exit(404)
+        with open(file_config) as config_file:
+            client_config = json.load(config_file)
+        with open(file_mapping) as json_file:
+            mapping = json.load(json_file)
 
-    try:
-        client = ModbusClient(host=client_config["server"]["listenerAddress"],
-                              port=client_config["server"]["listenerPort"])
-        if not client.connect():
-            raise pymodbus.exceptions.ConnectionException
-        client.debug_enabled()
-    except pymodbus.exceptions.ConnectionException:
-        logging.error("Could not connect to server.")
-        sys.exit(503)
+        # logging toggle debug
+        if client_config.get('debug'):
+            logging.getLogger().setLevel(logging.DEBUG)
 
-    return {
-        "client": client,
-        "mapping": mapping,
-        # if endianness not found, apply default:
-        # "byteorder": Endian.Little, "wordorder": Endian.Big
-        "endianness": client_config.get(
-            "endianness",
-            {"byteorder": ">",
-             "wordorder": ">"})
-    }
+        """perform checks on the client mapping
+        1) key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y
+        2) parameter must not be duplicate"""
+        try:
+            for key, value in mapping.items():
+                if not address_integrity(key):
+                    raise _MappingKeyError
+                rev_dict.setdefault(value["parameter"], set()).add(key)
+            parameter = [key for key, values in rev_dict.items()
+                         if len(values) > 1]
+            if parameter:
+                raise _DuplicateParameterError
+        except _MappingKeyError:
+            logging.error("Wrong key in mapping: {0}.".format(key))
+            sys.exit(500)
+        except _DuplicateParameterError:
+            logging.error("Duplicate parameter: {0}.".format(parameter))
+            sys.exit(500)
 
+        try:
+            client = ModbusClient(host=client_config["server"]["listenerAddress"],
+                                  port=client_config["server"]["listenerPort"])
+            if not client.connect():
+                raise pymodbus.exceptions.ConnectionException
+            client.debug_enabled()
+        except pymodbus.exceptions.ConnectionException:
+            logging.error("Could not connect to server.")
+            sys.exit(503)
 
-def retrieve(init):
-    """
-    invoke for monitoring
-    :param init: dictionary - client parameter
-        init["client"] instance - MODBUS client
-        init["mapping"] mapping of all registers as from JSON
-        init["endianness"] endianness's of byte and word
-    :return: list of dictionaries (in asc order) for hk
-    """
-    register_class = ['0', '1', '3', '4']
-    instance_list = list()
-    decoded = list()
+        self.__init = {
+            "client": client,
+            "mapping": mapping,
+            # if endianness not found, apply default:
+            # "byteorder": Endian.Big, "wordorder": Endian.Big
+            "endianness": client_config.get("endianness",
+                                            {"byteorder": ">",
+                                             "wordorder": ">"})
+        }
 
-    for regs in register_class:
-        instance_list.append(
-            ObjectType(
-                init=init,
-                entity=regs
+    def read_register(self) -> List[Dict]:
+        """
+        invoke for monitoring
+        :return: List of Dict (in asc order) for housekeeping
+        """
+        register_class = ['0', '1', '3', '4']
+        instance_list = list()
+        decoded = list()
+
+        for regs in register_class:
+            instance_list.append(
+                _ObjectType(
+                    init=self.__init,
+                    entity=regs
+                )
             )
-        )
-    for insts in instance_list:
-        decoded = decoded + insts.run()
+        for insts in instance_list:
+            decoded = decoded + insts.run()
 
-    return [dict(sorted(item.items())) for item in decoded]
-
-
-def close(client):
-    """
-    close the client
-    :param client: object
-    :return:
-    """
-    client.close()
-
-
-if __name__ == '__main__':
-
-    argparser = argparse.ArgumentParser(
-        description="Universal MODBUS Reader")
-    argparser.add_argument('--device',
-                           required=False,
-                           help='Device extention (default: "default")',
-                           default='default'
-                           )
-    myformat = "%(asctime)s.%(msecs)03d :: %(levelname)s: " \
-               "%(filename)s - %(lineno)s - %(funcName)s()\t%(message)s"
-    logging.basicConfig(format=myformat,
-                        level=logging.INFO,
-                        datefmt="%Y-%m-%d %H:%M:%S")
-    to_housekeeping = dict()
-    _start_time = timer()
-
-    print("Device extention: {0}".format(argparser.parse_args().device))
-    try:
-        initial = initialize(argparser.parse_args().device)
-        to_housekeeping = retrieve(init=initial)
-        close(client=initial["client"])
-    except SystemExit as e:
-        exit("Error code {0}".format(e))
-    print(json.dumps(to_housekeeping,
-                     indent=4))
-    print("Time consumed to process modbus interface: {0:.1f} ms".format(
-        (timer() - _start_time) * 1000)
-    )
-
-    exit(0)
+        return [dict(sorted(item.items())) for item in decoded]
