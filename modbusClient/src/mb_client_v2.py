@@ -344,8 +344,7 @@ class _ObjectType(object):
                     if "string" in function:
                         if len(value) > reg_info['no_bytes']:
                             logging.error(
-                                "'{0}' too long for parameter '{1}'"
-                                .format(value, parameter)
+                                "'{0}' too long for parameter '{1}'".format(value, parameter)
                             )
                             sys.exit(500)
                         # fill entire string with spaces
@@ -471,7 +470,7 @@ class MODBUSClient(object):
         dictionary - mapping
         """
 
-        # check integrity of mapping file
+        # check integrity of dictionary keys in mapping file
         def address_integrity(address):
             if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", address):
                 return False
@@ -488,10 +487,11 @@ class MODBUSClient(object):
         parameter = None
 
         path_additional = kwargs.get("path_additional")
+        path_additional = path_additional.rstrip('/') if path_additional is not None else "."
         file_config = "{1}/mb_client_config_{0}.json".format(device,
-                                                             path_additional if path_additional is not None else ".")
+                                                             path_additional)
         file_mapping = "{1}/mb_client_mapping_{0}.json".format(device,
-                                                               path_additional if path_additional is not None else ".")
+                                                               path_additional)
         # verify existance of both files
         if not path.isfile(file_config):
             logging.error("Client config file {0} not found".format(
@@ -509,6 +509,7 @@ class MODBUSClient(object):
         # logging toggle debug (default INFO)
         if client_config.get('debug'):
             logging.getLogger().setLevel(logging.DEBUG)
+        logging.debug("Config File: {0} and Mapping File: {1}".format(file_config, file_mapping))
 
         """perform checks on the client mapping
         1) key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y
@@ -554,11 +555,10 @@ class MODBUSClient(object):
         invoke for monitoring
         :return: List of Dict (in asc order) for housekeeping
         """
-        register_class = ['0', '1', '3', '4']
         instance_list = list()
         decoded = list()
 
-        for regs in register_class:
+        for regs in ['0', '1', '3', '4']:
             instance_list.append(
                 _ObjectType(
                     init=self.__init,
@@ -576,10 +576,9 @@ class MODBUSClient(object):
         :param wr: list of dicts {parameter: value} to write to register
         :return:
         """
-        register_class = ['0', '4']
         instance_list = list()
 
-        for regs in register_class:
+        for regs in ['0', '4']:
             instance_list.append(
                 _ObjectType(
                     init=self.__init,
@@ -594,5 +593,5 @@ class MODBUSClient(object):
     def close(self):
         client = self.__init.get("client")
         if client:
-            logging.info("Closing {}".format(client))
+            logging.debug("Closing {}".format(client))
             client.close()
