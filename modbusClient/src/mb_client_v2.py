@@ -260,9 +260,9 @@ class _ObjectType(object):
                 datatype = "float"
         di = {"value": value,
               "datatype": datatype}
-        if maps:
+        if maps is not None:
             desc = maps.get(str(round(value)))
-        if desc:
+        if desc is not None:
             di["description"] = desc
 
         return [dict(**di,
@@ -512,7 +512,7 @@ class MODBUSClient(object):
         logging.debug("Config File: {0} and Mapping File: {1}".format(file_config, file_mapping))
 
         """perform checks on the client mapping
-        1) key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y
+        1) key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y, where x=0000-9999 and y=1|2
         2) parameter must not be duplicate"""
         try:
             for key, value in mapping.items():
