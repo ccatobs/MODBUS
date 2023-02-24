@@ -6,18 +6,18 @@ For a detailed description, see https://github.com/ccatp/MODBUS
 
 For running and testing
 
-python3 mb_client_reader.py --device <device extention> (default: default) \
-                            --path <path to config files>
+python3 mb_client_reader_v2.py --device <device extention> (default: default) \
+                               --path <path to config files>
 
-python3 mb_client_writer.py --device <device extention> (default: default) \
-                            --path <path to config files>
+python3 mb_client_writer_v2.py --device <device extention> (default: default) \
+                               --path <path to config files>
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
 Argelander Institute for Astronomy (AIfA), University Bonn.
 """
 
 from __future__ import annotations
-from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 import pymodbus.exceptions
 import json
@@ -62,8 +62,8 @@ change history
     * strings modified
 2023/02/23
 -version 2.0
-    * MODBUS client as library
-    * merge reader and writer
+    * MODBUS client as library for housekeeping purposes
+    * merge reader and writer methods
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -293,7 +293,7 @@ class _ObjectType(object):
         elif function == "decode_string":
             encod = getattr(decoder, function)(no_bytes)
             # ToDo what kind of characters need to be removed?
-#            value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
+            # value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
             value = "".join(
                 list(s for s in encod.decode() if s.isprintable())
                 ).rstrip()
@@ -319,7 +319,59 @@ class _ObjectType(object):
             )
         ]
 
-    def run(self):
+    def __holding(self, wr: Dict) -> int:
+        """
+        dictionary with "parameter: value" pairs to be changed in coil and
+        holding registers
+        :param wr: dictionary with {parameter: value} pairs
+        :return:
+        """
+        builder = BinaryPayloadBuilder(
+            byteorder=self.__endianness['byteorder'],
+            wordorder=self.__endianness['wordorder']
+        )
+
+        for parameter, value in wr.items():
+            for address, attributes in self.__register_maps.items():
+                if attributes['parameter'] == parameter:
+                    # holding register updates
+                    function = attributes['function'].replace("decode_", "add_")
+                    reg_info = self.__register_width(address)
+                    if "int" in function:
+                        multiplier = attributes.get('multiplier', 1)
+                        offset = attributes.get('offset', 0)
+                        value = int((value - offset) / multiplier)
+                    if "string" in function:
+                        if len(value) > reg_info['no_bytes']:
+                            logging.error(
+                                "'{0}' too long for parameter '{1}'"
+                                .format(value, parameter)
+                            )
+                            sys.exit(500)
+                        # fill entire string with spaces
+                        s = list(" " * (2*reg_info['width']))
+                        s[reg_info['pos_byte'] - 1] = value
+                        value = "".join(s)
+                    if "bits" in function:
+                        if len(value) / 16 > reg_info['width']:
+                            logging.error(
+                                "'{0}' too long for parameter '{1}'"
+                                .format(value, parameter)
+                            )
+                            sys.exit(500)
+                    getattr(builder, function)(value)
+                    payload = builder.to_registers()
+                    rq = self.__client.write_registers(
+                        address=reg_info['start'],
+                        values=payload,
+                        unit=UNIT)
+                    assert (not rq.isError())  # test we are not an error
+                    builder.reset()  # reset builder
+                    break  # if parameter matched
+
+        return 0
+
+    def register_readout(self):
         """
         reads the coil discrete input, input, or holding registers according
         to their length defined in key and decodes them accordingly. The
@@ -381,6 +433,29 @@ class _ObjectType(object):
 
         return decoded
 
+    def register_write(self, wr: Dict) -> int:
+        """
+        call coil or holding register writes
+        :param wr: dictionary with {parameter: value} pairs
+        :return:
+        """
+        if self.__entity == '4':
+            self.__holding(wr=wr)
+
+        elif self.__entity == '0':
+            for parameter, value in wr.items():
+                for address, attributes in self.__register_maps.items():
+                    if attributes['parameter'] == parameter:
+                        # coil register updates one-by-one
+                        rq = self.__client.write_coil(
+                            address=int(address),
+                            value=value,
+                            unit=UNIT)
+                        assert (not rq.isError())  # test we are not an error
+                        break
+
+        return 0
+
 
 class MODBUSClient(object):
 
@@ -396,6 +471,7 @@ class MODBUSClient(object):
         dictionary - mapping
         """
 
+        # check integrity of mapping file
         def address_integrity(address):
             if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", address):
                 return False
@@ -430,7 +506,7 @@ class MODBUSClient(object):
         with open(file_mapping) as json_file:
             mapping = json.load(json_file)
 
-        # logging toggle debug
+        # logging toggle debug (default INFO)
         if client_config.get('debug'):
             logging.getLogger().setLevel(logging.DEBUG)
 
@@ -490,6 +566,33 @@ class MODBUSClient(object):
                 )
             )
         for insts in instance_list:
-            decoded = decoded + insts.run()
+            decoded = decoded + insts.register_readout()
 
         return [dict(sorted(item.items())) for item in decoded]
+
+    def write_register(self, wr: Dict) -> int:
+        """
+        invoke for monitoring
+        :param wr: list of dicts {parameter: value} to write to register
+        :return:
+        """
+        register_class = ['0', '4']
+        instance_list = list()
+
+        for regs in register_class:
+            instance_list.append(
+                _ObjectType(
+                    init=self.__init,
+                    entity=regs
+                )
+            )
+        for insts in instance_list:
+            insts.register_write(wr)
+
+        return 0
+
+    def close(self):
+        client = self.__init.get("client")
+        if client:
+            logging.info("Closing {}".format(client))
+            client.close()
