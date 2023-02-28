@@ -1,33 +1,38 @@
-# MODBUS
+# A Universal MODBUS CLient
 
-## MODBUS READER
+## READER
 
-A universal MODBUS interface, where the mapping to coil,
+*Note: links need yet to be revised!!!*
+
+A universal MODBUS interface, where the mapping of variables to coil,
 discrete input, input registers, and holding registers is entirely defined
 by a
-[JSON](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_mapping_default.json)
+[JSON](https://github.com/ccatp/MODBUS/blob/master/configFiles/mb_client_mapping_default.json)
 file, with no modification to the coding required whatsoever. This JSON file
-comprises keys pointing to the register(s) and nested keys, such as
+comprises keys pointing to single or multiple registers. Each dictionary key 
+comprises additional features, such as 
 
-1) "parameter" (mandatory and unique over all register classes). 
-2) "function" (mandatory for input and holding registers).
+1) "parameter" (name of the variable, mandatory and unique over/for all register classes). 
+2) "function" (data type, mandatory for input and holding registers).
 3) "description" (optional).
 4) "map" (optional). 
-5) "muliplier" (optional for input and holding registers of datatype integer).
-6) "offset" (optional for input and holding registers of datatype integer).
+5) "muliplier" (optional solely for input and holding registers of datatype integer).
+6) "offset" (optional solely for input and holding registers of datatype integer).
 
 The latter two, when provided, will not be passed on to the output, though.
 They are parsed, such that the register's value is multiplied by "multiplier" 
-and "offset" is added. A map is to be provided in case a value needs to match 
-an entry from a list provided. The corresponding field value is passed on to 
-the output as description that superseeds the input "description". A map might 
+and "offset" is added. This is in most instances applicable for integer of lengths
+8 and 16 bits. A map is to be provided in case a value needs to match 
+an entry from a provided list. The corresponding field value is passed on to 
+the output as description that supersedes the input "description". A map might 
 contain entries matching bits of the leading or trailing byte.
-Moreover, "value" and "datatype" are
+
+Furthermore, "value" and "datatype" are
 reserved keywords, since they will be generated in the output dictionary.
-Additional dictionary key/value pairs may be provided in the client registry
+Additional nested dictionary key/value pairs may be provided in the client registry
 mapping, which are merely passed on to the output. To maintain consistancy over
-the various modbus clients, we urge selecting same denominators for further
-keys, such as "defaultvalue", "unit", "min", or "max".
+the various modbus clients, we urge selecting same features for further
+optional keys, such as "defaultvalue", "unit", "min", or "max".
 
 The register keys are in the formate: e.g. "30011", "30011/1" or "30011/2" for
 the leading and trailing byte of the (16 bit) register, respectively,
@@ -36,24 +41,24 @@ A function needs to be defined for input and holding registers that translates
 the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
 e.g. "decode_32bit_uint" (see below for a selection):
 
-| Function                                     | Value              | Avro    |
-|----------------------------------------------|--------------------|---------|
-| 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_bits        | boolean |
-| string of variable length                    | decode_string      | string  | 
-| 8 int of 1<sup>st</sup>/2<sup>nd</sup> byte  | decode_8bit_int    | int     |
-| 8 uint of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_8bit_uint   | int     |
-| 16 int                                       | decode_16bit_int   | int     |
-| 16 uint                                      | decode_16bit_uint  | int     |
-| 32 int                                       | decode_32bit_int   | int     |
-| 32 uint                                      | decode_32bit_uint  | int     |
-| 16 float                                     | decode_16bit_float | float   |
-| 32 float                                     | decode_32bit_float | float   |
-| 64 int                                       | decode_64bit_int   | long    |
-| 64 uint                                      | decode_64bit_uint  | long    | 
-| 64 float                                     | decode_64bit_float | double  |
+| Function                                     | Value              | Avro Data Type |
+|----------------------------------------------|--------------------|----------------|
+| 8 bits of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_bits        | boolean        |
+| string of variable length                    | decode_string      | string         | 
+| 8 int of 1<sup>st</sup>/2<sup>nd</sup> byte  | decode_8bit_int    | int            |
+| 8 uint of 1<sup>st</sup>/2<sup>nd</sup> byte | decode_8bit_uint   | int            |
+| 16 int                                       | decode_16bit_int   | int            |
+| 16 uint                                      | decode_16bit_uint  | int            |
+| 32 int                                       | decode_32bit_int   | int            |
+| 32 uint                                      | decode_32bit_uint  | int            |
+| 16 float                                     | decode_16bit_float | float          |
+| 32 float                                     | decode_32bit_float | float          |
+| 64 int                                       | decode_64bit_int   | long           |
+| 64 uint                                      | decode_64bit_uint  | long           | 
+| 64 float                                     | decode_64bit_float | double         |
 
 If a map is defined, the description is chosen according to round(value). Gaps
-between keys are permitted. A check on the uniqueness of "parameter" is 
+between registers are permitted. A check on the uniqueness of "parameter" is 
 performed. The JSON format for the mapping is to be defined in
 the following formate, e.g.:
 
@@ -168,56 +173,60 @@ confusion about Little-Endian vs. Big-Endian Word Order. The current modbus
 client allows the endiannesses of the byteorder (the Byte order of each word)
 and the wordorder (the endianess of the word, when wordcount is >= 2) to be 
 adjusted (see
-[Parameters](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_config_default.json)):
+[Parameters](https://github.com/ccatp/MODBUS/blob/master/configFiles/mb_client_config_default.json)):
 
     ">" = Endian.Big 
     "<" = Endian.Little
 
 
-Packing/unpacking depends on your CPU's word/byte order. Modbus messages
+Packing/unpacking depends on your CPU's word/byte order. MODBUS messages
 are always using big endian. BinaryPayloadBuilder will per default use
-what your CPU uses. The wordorder is applicable only for 32 and 64 bit values
-Lets say we need to write a value 0x12345678 to a 32 bit register.
+what your CPU uses. The wordorder is applicable only for 32 and 64 bit values.
+Let's say we need to write a value 0x12345678 to a 32 bit register.
 The following combinations could be used to write the register 
-[see also here](https://github.com/pymodbus-dev/pymodbus/blob/217469a234bc023a660acb9c448900288131022b/examples/client_payload.py).
+[see also here](https://github.com/pymodbus-dev/pymodbus/blob/217469a234bc023a660acb9c448900288131022b/examples/client_payload.py). 
 
-|Word Order  | Byte order | Word1  | Word2  |
+| Word Order | Byte order | Word1  | Word2  |
 |------------|------------|--------|--------|
-|    Big     |     Big    | 0x1234 | 0x5678 |
-|    Big     |    Little  | 0x3412 | 0x7856 |
-|   Little   |     Big    | 0x5678 | 0x1234 |
-|   Little   |    Little  | 0x7856 | 0x3412 |
+| Big        |     Big    | 0x1234 | 0x5678 |
+| Big        |    Little  | 0x3412 | 0x7856 |
+| Little     |     Big    | 0x5678 | 0x1234 |
+| Little     |    Little  | 0x7856 | 0x3412 |
 
-The result for the housekeeping (Kafka consumer) is a list of dictionaries, 
+The result for the housekeeping (Kafka producer) is a list of dictionary objects, 
 where most of its content is passed on from the client-mapping JSON to the 
 output.
 
 Caveat: not implemented:
 * decoder.bit_chunks()
 
-Run:
-    
-    python3 mb_client_reader.py --device <device extention> (default: default) \
-                                --path <path of config files> (default: .)
-
-
-## MODBUS WRITER
-
-The reader - in its final version - will be invoked through a Flask Rest-API.
-For the time being it accepts - as input - a dictionary with 
-{"parameter": "value"} pairs, where the parameters need to match their 
-counterparts as defined in
-[JSON](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_mapping_default.json).
-
-Basic idea: write only to coil and holding registers defined in the 
-appropriate reader mapping.
-
-Modbus server connection parameters are defined in the client config 
-parameter file, as well. 
+For the time being the MODBUS client deployes the syncronous ModbusTcpClient
+in its version v3.1.3
 
 Run:
     
-    python3 mb_client_writer.py --device <device extention> (default: default) --payload "{\"test 32 bit int\": 720.04}"
+    python3 mb_client_reader_v2.py --device <device extention> (default: default) \
+                                   --path <path of config files> (default: .)
+
+
+## WRITER
+
+Only the register classes coil (class 0) and holding registers (class 4)
+are eligible for reading and writing. Values in those register classes may be 
+changed by utilizing the writer method of MODBUSClient class.
+
+Run:
+    
+    python3 mb_client_writer_v2.py --device <device extention> (default: default) \
+                                   --path <path of config files> (default: .) \
+                                   --payload "{\"test 32 bit int\": 720.04}"
+
+For the time being it accepts - as input - a JSON with one or multiple
+{"parameter": "value"} pairs, where parameter needs to match its 
+counterpart as defined in
+[JSON](https://github.com/ccatp/MODBUS/blob/master/configFiles/mb_client_mapping_default.json).
+
+Parameters defined for MODBUS classes 1 and 3 will just be ignored.
 
 Caveat: 
 
@@ -226,10 +235,12 @@ Caveat:
   trailing bytes. Hence, a leading or 
   trailing byte being updated, will result in "0x00" (empty) of the 
   respective other.
-
 * Endianness of byteorder. 
+* No locking mechanism applied for parallel reading and writing yet.
 
 ## MODBUS REST API
+
+*this section is unter construction until we got a strategy how we will invoke the writer*
 
 Run the Rest API with the previously described MODBUS READER and WRITER: 
 mb_client_reader.py, mb_client_writer.py need to reside in same directory, the same 
@@ -261,25 +272,25 @@ where `<deviceID>` denotes the extention for each modbus device:
             "Coil 1": true, \
             "Coil 10": true}'
 
-| Extension | MODBUS Device    |
-|-----------|------------------|
-| default   | server simulator |
-| lhx       | Rack             |
-| cryo      | Cryocooler       |
-| tbd.      | ...              |  
+| Extension | MODBUS Device                     |
+|-----------|-----------------------------------|
+| default   | simulator                         |
+| test      | testing reader & writer integrity |
+| lhx       | Rack                              |
+| cryo      | Cryocooler                        |
+
 
 In order to enroll a new modbus device, just provide the 
 config and mapping files mb_client_config_`<deviceID>`.json and 
 mb_client_mapping_`<deviceID>`.json to the working directory, 
-respectively. That's about it!
-
+respectively.
 
 ## Content
 
 The current repository comprises a 
 * MODBUS server simulator (the python code is extracted from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
-[config](https://github.com/ccatp/MODBUS/blob/master/src/modbus_server.json) 
+[config](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.json) 
 file.
 * MODBUS 
 [Reader](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_reader.py) 
