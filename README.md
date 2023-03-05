@@ -295,7 +295,7 @@ file.
 * MODBUS 
 [Reader](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_reader_v2.py) 
 * MODBUS
-[Writer](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_writer.py)
+[Writer](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_writer_v2.py)
 * MDOBUS 
 [REST API](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_RestAPI.py)
 
