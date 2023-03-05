@@ -35,19 +35,17 @@ if __name__ == '__main__':
 
     _start_time = timer()
     to_housekeeping = dict()
-
     print("Device extention: {0}".format(argparser.parse_args().device))
     try:
         mb_client = MODBUSClient(device=argparser.parse_args().device,
                                  path_additional=argparser.parse_args().path)
         to_housekeeping = mb_client.read_register()
+        mb_client.close()
     except SystemExit as e:
         exit("Error code {0}".format(e))
-    finally:
-        mb_client.close()
-
     print(json.dumps(to_housekeeping,
                      indent=4))
+
     print("Time consumed to process modbus interface: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )

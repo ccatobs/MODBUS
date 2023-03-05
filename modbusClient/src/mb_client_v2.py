@@ -7,10 +7,11 @@ For a detailed description, see https://github.com/ccatp/MODBUS
 For running and testing
 
 python3 mb_client_reader_v2.py --device <device extention> (default: default) \
-                               --path <path to config files>
+                               --path <path to config files> (default: .)
 
 python3 mb_client_writer_v2.py --device <device extention> (default: default) \
-                               --path <path to config files>
+                               --path <path to config files> (default: .) \
+                               --payload "{\"test 32 bit int\": 720.04, ...}"
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
 Argelander Institute for Astronomy (AIfA), University Bonn.
@@ -18,7 +19,7 @@ Argelander Institute for Astronomy (AIfA), University Bonn.
 
 from __future__ import annotations
 from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
-from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.client import ModbusTcpClient as ModbusTcpClient
 import pymodbus.exceptions
 import json
 import re
@@ -26,6 +27,8 @@ import sys
 import logging
 from os import path
 from typing import Dict, List
+# internal
+from mb_client_aux import mytimer
 
 """
 change history
@@ -64,6 +67,7 @@ change history
 -version 2.0
     * MODBUS client as library for housekeeping purposes
     * merge reader and writer methods
+    * pymodbus v3.1.3
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -265,8 +269,7 @@ class _ObjectType(object):
         if desc is not None:
             di["description"] = desc
 
-        return [dict(**di,
-                     **optional)]
+        return [dict(**di, **optional)]
 
     def __formatter(self,
                     decoder: pymodbus.payload.BinaryPayloadDecoder,
@@ -294,9 +297,13 @@ class _ObjectType(object):
             encod = getattr(decoder, function)(no_bytes)
             # ToDo what kind of characters need to be removed?
             # value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
-            value = "".join(
-                list(s for s in encod.decode() if s.isprintable())
-                ).rstrip()
+            try:
+                value = "".join(
+                    list(s for s in encod.decode() if s.isprintable())
+                    ).rstrip()
+            except UnicodeDecodeError as e:
+                logging.error(str(e))
+                sys.exit(500)
         else:
             value = getattr(decoder, function)()
 
@@ -343,9 +350,7 @@ class _ObjectType(object):
                         value = int((value - offset) / multiplier)
                     if "string" in function:
                         if len(value) > reg_info['no_bytes']:
-                            logging.error(
-                                "'{0}' too long for parameter '{1}'".format(value, parameter)
-                            )
+                            logging.error("'{0}' too long for parameter '{1}'".format(value, parameter))
                             sys.exit(500)
                         # fill entire string with spaces
                         s = list(" " * (2*reg_info['width']))
@@ -353,17 +358,14 @@ class _ObjectType(object):
                         value = "".join(s)
                     if "bits" in function:
                         if len(value) / 16 > reg_info['width']:
-                            logging.error(
-                                "'{0}' too long for parameter '{1}'"
-                                .format(value, parameter)
-                            )
+                            logging.error("'{0}' too long for parameter '{1}'".format(value, parameter))
                             sys.exit(500)
                     getattr(builder, function)(value)
                     payload = builder.to_registers()
                     rq = self.__client.write_registers(
                         address=reg_info['start'],
                         values=payload,
-                        unit=UNIT)
+                        slave=UNIT)
                     assert (not rq.isError())  # test we are not an error
                     builder.reset()  # reset builder
                     break  # if parameter matched
@@ -387,25 +389,25 @@ class _ObjectType(object):
                 result = self.__client.read_coils(
                     address=reg_info['start'],
                     count=1,
-                    unit=UNIT
+                    slave=UNIT
                 )
             elif self.__entity == '1':
                 result = self.__client.read_discrete_inputs(
                     address=reg_info['start'],
                     count=1,
-                    unit=UNIT
+                    slave=UNIT
                 )
             elif self.__entity == '3':
                 result = self.__client.read_input_registers(
                     address=reg_info['start'],
                     count=reg_info['width'],
-                    unit=UNIT
+                    slave=UNIT
                 )
             elif self.__entity == '4':
                 result = self.__client.read_holding_registers(
                     address=reg_info['start'],
                     count=reg_info['width'],
-                    unit=UNIT
+                    slave=UNIT
                 )
             assert (not result.isError())
             # decode and append to list
@@ -449,7 +451,7 @@ class _ObjectType(object):
                         rq = self.__client.write_coil(
                             address=int(address),
                             value=value,
-                            unit=UNIT)
+                            slave=UNIT)
                         assert (not rq.isError())  # test we are not an error
                         break
 
@@ -469,23 +471,7 @@ class MODBUSClient(object):
         object - modbus client
         dictionary - mapping
         """
-
-        # check integrity of dictionary keys in mapping file
-        def address_integrity(address):
-            if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", address):
-                return False
-            comp = address.split("/")
-            if len(comp) == 2:
-                if comp[1] not in ["1", "2"] and \
-                        (comp[0][0] != comp[1][0] or
-                         int(comp[1]) - int(comp[0]) < 1):
-                    return False
-            return True
-
-        rev_dict = dict()
-        key = None
-        parameter = None
-
+        self.__device = device
         path_additional = kwargs.get("path_additional")
         path_additional = path_additional.rstrip('/') if path_additional is not None else "."
         file_config = "{1}/mb_client_config_{0}.json".format(device,
@@ -505,37 +491,21 @@ class MODBUSClient(object):
             client_config = json.load(config_file)
         with open(file_mapping) as json_file:
             mapping = json.load(json_file)
-
+        logging.info("Config File: {0} and Mapping File: {1}".format(file_config, file_mapping))
         # logging toggle debug (default INFO)
-        if client_config.get('debug'):
-            logging.getLogger().setLevel(logging.DEBUG)
-        logging.debug("Config File: {0} and Mapping File: {1}".format(file_config, file_mapping))
+        debug = client_config.get('debug', False)
+        logging.getLogger().setLevel(getattr(logging, "DEBUG" if debug else "INFO"))
 
-        """perform checks on the client mapping
-        1) key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y, where x=0000-9999 and y=1|2
-        2) parameter must not be duplicate"""
-        try:
-            for key, value in mapping.items():
-                if not address_integrity(key):
-                    raise _MappingKeyError
-                rev_dict.setdefault(value["parameter"], set()).add(key)
-            parameter = [key for key, values in rev_dict.items()
-                         if len(values) > 1]
-            if parameter:
-                raise _DuplicateParameterError
-        except _MappingKeyError:
-            logging.error("Wrong key in mapping: {0}.".format(key))
-            sys.exit(500)
-        except _DuplicateParameterError:
-            logging.error("Duplicate parameter: {0}.".format(parameter))
-            sys.exit(500)
+        # make integrity checks
+        self.__client_mapping_checks(mapping=mapping)
 
         try:
-            client = ModbusClient(host=client_config["server"]["listenerAddress"],
-                                  port=client_config["server"]["listenerPort"])
+            client = ModbusTcpClient(host=client_config["server"]["listenerAddress"],
+                                     port=client_config["server"]["listenerPort"],
+                                     debug=debug)
             if not client.connect():
                 raise pymodbus.exceptions.ConnectionException
-            client.debug_enabled()
+        #    client.de
         except pymodbus.exceptions.ConnectionException:
             logging.error("Could not connect to server.")
             sys.exit(503)
@@ -549,46 +519,86 @@ class MODBUSClient(object):
                                             {"byteorder": ">",
                                              "wordorder": ">"})
         }
+        # initialize _ObjectType objects for each entity
+        self.__entity_list = list()
+        for regs in ['0', '1', '3', '4']:
+            self.__entity_list.append(
+                _ObjectType(
+                    init=self.__init,
+                    entity=regs
+                )
+            )
 
+    def __client_mapping_checks(self, mapping: Dict) -> None:
+        """
+        perform checks on the client mapping
+        parameter must not be duplicate
+        :param mapping: Dict
+        :return:
+        """
+        rev_dict = dict()
+        key = None
+        parameter = None
+        try:
+            for key, value in mapping.items():
+                if not self.__register_integrity(address=key):
+                    raise _MappingKeyError
+                rev_dict.setdefault(value["parameter"], set()).add(key)
+            parameter = [key for key, values in rev_dict.items()
+                         if len(values) > 1]
+            if parameter:
+                raise _DuplicateParameterError
+        except _MappingKeyError:
+            logging.error("Wrong key in mapping: {0}.".format(key))
+            sys.exit(500)
+        except _DuplicateParameterError:
+            logging.error("Duplicate parameter: {0}.".format(parameter))
+            sys.exit(500)
+
+    @staticmethod
+    def __register_integrity(address: str) -> bool:
+        """
+        check integrity of dictionary keys in mapping file
+        key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y, where x=0000-9999 and y=1|2
+        :param address: str
+        :return: bool
+        """
+        if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", address):
+            return False
+        comp = address.split("/")
+        if len(comp) == 2:
+            if comp[1] not in ["1", "2"] and \
+                    (comp[0][0] != comp[1][0] or
+                     int(comp[1]) - int(comp[0]) < 1):
+                return False
+        return True
+
+    @mytimer
     def read_register(self) -> List[Dict]:
         """
         invoke for monitoring
         :return: List of Dict (in asc order) for housekeeping
         """
-        instance_list = list()
         decoded = list()
-
-        for regs in ['0', '1', '3', '4']:
-            instance_list.append(
-                _ObjectType(
-                    init=self.__init,
-                    entity=regs
-                )
-            )
-        for insts in instance_list:
-            decoded = decoded + insts.register_readout()
-
+        try:
+            for entity in self.__entity_list:
+                decoded = decoded + entity.register_readout()
+        except SystemExit as e:
+            sys.exit(e.code)
         return [dict(sorted(item.items())) for item in decoded]
 
-    def write_register(self, wr: Dict) -> int:
+    @mytimer
+    def write_register(self, wr: Dict) -> None:
         """
-        invoke for monitoring
+        invoke for writing to registers
         :param wr: list of dicts {parameter: value} to write to register
         :return:
         """
-        instance_list = list()
-
-        for regs in ['0', '4']:
-            instance_list.append(
-                _ObjectType(
-                    init=self.__init,
-                    entity=regs
-                )
-            )
-        for insts in instance_list:
-            insts.register_write(wr)
-
-        return 0
+        try:
+            for entity in self.__entity_list:
+                entity.register_write(wr)
+        except SystemExit as e:
+            sys.exit(e.code)
 
     def close(self):
         client = self.__init.get("client")

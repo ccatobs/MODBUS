@@ -51,17 +51,15 @@ if __name__ == '__main__':
             }
     """
     _start_time = timer()
-
     print("Device extention: {0}".format(argparser.parse_args().device))
     print(argparser.parse_args().payload)
     try:
         mb_client = MODBUSClient(device=argparser.parse_args().device,
                                  path_additional=argparser.parse_args().path)
         mb_client.write_register(wr=json.loads(argparser.parse_args().payload))
+        mb_client.close()
     except SystemExit as e:
         exit("Error code {0}".format(e))
-    finally:
-        mb_client.close()
 
     print("Time consumed to process modbus writer: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)

@@ -1,0 +1,287 @@
+{
+  "00000": {
+    "parameter": "Write Coil 0",
+    "description": true
+  },
+  "00001": {
+    "parameter": "Write Coil 1",
+    "description": false
+  },
+  "00004": {
+    "parameter": "Write Coil 4",
+    "description": true
+  },
+
+  "10000": {
+    "parameter": "Discrete Input 0",
+    "description": true
+  },
+  "10001": {
+    "parameter": "Discrete Input 1",
+    "description": false
+  },
+  "10006": {
+    "parameter": "Discrete Input 6",
+    "description": true
+  },
+  "30000": {
+    "function": "decode_16bit_int",
+    "multiplier": 0.1,
+    "parameter": "decode_16bit_int",
+    "description": -408.1
+  },
+  "30001": {
+    "function": "decode_16bit_uint",
+    "parameter": "decode_16bit_uint",
+    "description": 3
+  },
+  "30002/30003": {
+    "function": "decode_32bit_int",
+    "parameter": "decode_32bit_int",
+    "description": -268308096
+  },
+  "30004/30005": {
+    "function": "decode_32bit_uint",
+    "parameter": "decode_32bit_uint",
+    "description": 4026659200
+  },
+  "30006": {
+    "function": "decode_16bit_float",
+    "parameter": "decode_16bit_float",
+    "description": 0.000489
+  },
+  "30007/30008": {
+    "function": "decode_32bit_float",
+    "parameter": "decode_32bit_float",
+    "description": 3.1415927
+  },
+  "30009/30012": {
+    "function": "decode_64bit_int",
+    "parameter": "decode_64bit_int",
+    "description": -1150350866482189032
+  },
+  "30013/30016": {
+    "function": "decode_64bit_uint",
+    "parameter": "decode_64bit_uint",
+    "description": 4614256656552045848
+  },
+  "30017/30020": {
+    "function": "decode_64bit_float",
+    "parameter": "decode_64bit_float",
+    "description": 3.141592653589793
+  },
+  "30021/1": {
+    "function": "decode_8bit_int",
+    "parameter": "decode_8bit_int",
+    "description": -1
+  },
+  "30022/2": {
+    "function": "decode_8bit_uint",
+    "parameter": "decode_8bit_uint",
+    "description": 128
+  },
+  "30023/1": {
+    "function": "decode_string",
+    "parameter": "decode_string_1",
+    "description": "C"
+  },
+  "30023/2": {
+    "function": "decode_string",
+    "parameter": "decode_string_2",
+    "description": "H"
+  },
+  "30024": {
+    "function": "decode_string",
+    "parameter": "decode_string_full",
+    "description": "gx"
+  },
+  "30032/2": {
+    "function": "decode_8bit_uint",
+    "parameter": "Model Minor Number",
+    "description": "9C correct!",
+    "map": {
+      "1": "A1",
+      "2": "01",
+      "3": "02",
+      "4": "03",
+      "5": "H3",
+      "6": "I3",
+      "7": "04",
+      "8": "H4",
+      "9": "05",
+      "10": "H5",
+      "11": "I6",
+      "12": "06",
+      "13": "07",
+      "14": "H7",
+      "15": "I7",
+      "16": "08",
+      "17": "09",
+      "18": "9C",
+      "19": "10",
+      "20": "1I",
+      "21": "11",
+      "22": "12",
+      "23": "13",
+      "24": "14"
+    }
+  },
+  "30033": {
+    "function": "decode_16bit_uint",
+    "parameter": "Software Rev",
+    "description": 17
+  },
+  "30034/1": {
+    "function": "decode_bits",
+    "parameter": "Dummy",
+    "default value": "ZERO",
+    "map": {
+      "0b00000100": "special test"
+    }
+  },
+  "30034/2": {
+    "function": "decode_bits",
+    "parameter": "TEST",
+    "default value": "this is not parsed!",
+    "map": {
+      "0b00000001": "test0",
+      "0b00000010": "test1",
+      "0b00000100": "test2",
+      "0b00001000": "test3",
+      "0b00010000": "test4",
+      "0b00100000": "test5",
+      "0b01000000": "test6",
+      "0b10000000": "test7"
+    }
+  },
+  "40000": {
+    "function": "decode_16bit_int",
+    "multiplier": 0.1,
+    "parameter": "decode_16bit_int_4",
+    "description": -408.1
+  },
+  "40001": {
+    "function": "decode_16bit_uint",
+    "parameter": "decode_16bit_uint_4",
+    "description": 3
+  },
+  "40002/40003": {
+    "function": "decode_32bit_int",
+    "parameter": "decode_32bit_int_4",
+    "description": -268308096
+  },
+  "40004/40005": {
+    "function": "decode_32bit_uint",
+    "parameter": "decode_32bit_uint_4",
+    "description": 4026659200
+  },
+  "40006": {
+    "function": "decode_16bit_float",
+    "parameter": "decode_16bit_float_4",
+    "description": 0.000489
+  },
+  "40007/40008": {
+    "function": "decode_32bit_float",
+    "parameter": "decode_32bit_float_4",
+    "description": 3.1415927
+  },
+  "40009/40012": {
+    "function": "decode_64bit_int",
+    "parameter": "decode_64bit_int_4",
+    "description": -1150350866482189032
+  },
+  "40013/40016": {
+    "function": "decode_64bit_uint",
+    "parameter": "decode_64bit_uint_4",
+    "description": 4614256656552045848
+  },
+  "40017/40020": {
+    "function": "decode_64bit_float",
+    "parameter": "decode_64bit_float_4",
+    "description": 3.141592653589793
+  },
+  "40021/1": {
+    "function": "decode_8bit_int",
+    "parameter": "decode_8bit_int_4",
+    "description": -1
+  },
+  "40022/2": {
+    "function": "decode_8bit_uint",
+    "parameter": "decode_8bit_uint_4",
+    "description": 128
+  },
+  "40023/1": {
+    "function": "decode_string",
+    "parameter": "decode_string_1_4",
+    "description": "C"
+  },
+  "40023/2": {
+    "function": "decode_string",
+    "parameter": "decode_string_2_4",
+    "description": "H"
+  },
+  "40024": {
+    "function": "decode_string",
+    "parameter": "decode_string_full_4",
+    "description": "gx"
+  },
+  "40032/2": {
+    "function": "decode_8bit_uint",
+    "parameter": "Model Minor Number_4",
+    "description": "9C correct!",
+    "map": {
+      "1": "A1",
+      "2": "01",
+      "3": "02",
+      "4": "03",
+      "5": "H3",
+      "6": "I3",
+      "7": "04",
+      "8": "H4",
+      "9": "05",
+      "10": "H5",
+      "11": "I6",
+      "12": "06",
+      "13": "07",
+      "14": "H7",
+      "15": "I7",
+      "16": "08",
+      "17": "09",
+      "18": "9C",
+      "19": "10",
+      "20": "1I",
+      "21": "11",
+      "22": "12",
+      "23": "13",
+      "24": "14"
+    }
+  },
+  "40033": {
+    "function": "decode_16bit_uint",
+    "parameter": "Software Rev_4",
+    "description": 17
+  },
+  "40034/1": {
+    "function": "decode_bits",
+    "parameter": "Dummy_4",
+    "default value": "ZERO",
+    "map": {
+      "0b00000100": "special test"
+    }
+  },
+  "40034/2": {
+    "function": "decode_bits",
+    "parameter": "TEST_4",
+    "default value": "this is not parsed!",
+    "map": {
+      "0b00000001": "test0",
+      "0b00000010": "test1",
+      "0b00000100": "test2",
+      "0b00001000": "test3",
+      "0b00010000": "test4",
+      "0b00100000": "test5",
+      "0b01000000": "test6",
+      "0b10000000": "test7"
+    }
+  }
+}

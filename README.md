@@ -1,30 +1,29 @@
-# A Universal MODBUS CLient
+# A Universal MODBUS Client
 
-## READER
-
-*Note: links need yet to be revised!!!*
+## The READER
 
 A universal MODBUS interface, where the mapping of variables to coil,
 discrete input, input registers, and holding registers is entirely defined
-by a
-[JSON](https://github.com/ccatp/MODBUS/blob/master/configFiles/mb_client_mapping_default.json)
-file, with no modification to the coding required whatsoever. This JSON file
+by a JSON file (see below), 
+with no modification to the coding required whatsoever. The JSON file
 comprises keys pointing to single or multiple registers. Each dictionary key 
 comprises additional features, such as 
 
-1) "parameter" (name of the variable, mandatory and unique over/for all register classes). 
-2) "function" (data type, mandatory for input and holding registers).
+1) "parameter" (mandatory, name of the variable and unique over all register classes). 
+2) "function" (mandatory, data type for input and holding registers).
 3) "description" (optional).
 4) "map" (optional). 
-5) "muliplier" (optional solely for input and holding registers of datatype integer).
-6) "offset" (optional solely for input and holding registers of datatype integer).
+5) "muliplier" (optional, solely for input and holding registers of datatype integer).
+6) "offset" (optional, solely for input and holding registers of datatype integer).
 
 The latter two, when provided, will not be passed on to the output, though.
 They are parsed, such that the register's value is multiplied by "multiplier" 
 and "offset" is added. This is in most instances applicable for integer of lengths
-8 and 16 bits. A map is to be provided in case a value needs to match 
+8 and 16 bits. 
+
+A map is provided in case a value needs to match 
 an entry from a provided list. The corresponding field value is passed on to 
-the output as description that supersedes the input "description". A map might 
+the output as description superseding the input "description". A map might 
 contain entries matching bits of the leading or trailing byte.
 
 Furthermore, "value" and "datatype" are
@@ -34,9 +33,12 @@ mapping, which are merely passed on to the output. To maintain consistancy over
 the various modbus clients, we urge selecting same features for further
 optional keys, such as "defaultvalue", "unit", "min", or "max".
 
-The register keys are in the formate: e.g. "30011", "30011/1" or "30011/2" for
-the leading and trailing byte of the (16 bit) register, respectively,
-furthermore, "30011/30012" or "30011/30014" for 32 or 64 bit register addresses.
+Register keys are in the following formates: 
+e.g. "30011" addressing the 12th register
+of the input register class, "30011/1" or "30011/2" for
+the leading and trailing byte of the 16 bit register, respectively.
+Furthermore, "30011/30012" or "30011/30014" address the 32 or 64 bit 
+broad registers starting at the 12th register.
 A function needs to be defined for input and holding registers that translates
 the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
 e.g. "decode_32bit_uint" (see below for a selection):
@@ -197,25 +199,25 @@ The result for the housekeeping (Kafka producer) is a list of dictionary objects
 where most of its content is passed on from the client-mapping JSON to the 
 output.
 
-Caveat: not implemented:
+Not implemented:
 * decoder.bit_chunks()
 
 For the time being the MODBUS client deployes the syncronous ModbusTcpClient
 in its version v3.1.3
 
-Run:
+Run (for testing):
     
     python3 mb_client_reader_v2.py --device <device extention> (default: default) \
                                    --path <path of config files> (default: .)
 
 
-## WRITER
+## The WRITER
 
 Only the register classes coil (class 0) and holding registers (class 4)
 are eligible for reading and writing. Values in those register classes may be 
 changed by utilizing the writer method of MODBUSClient class.
 
-Run:
+Run (for testing):
     
     python3 mb_client_writer_v2.py --device <device extention> (default: default) \
                                    --path <path of config files> (default: .) \
@@ -223,10 +225,9 @@ Run:
 
 For the time being it accepts - as input - a JSON with one or multiple
 {"parameter": "value"} pairs, where parameter needs to match its 
-counterpart as defined in
-[JSON](https://github.com/ccatp/MODBUS/blob/master/configFiles/mb_client_mapping_default.json).
+counterpart in the Reader JSON as already defined above.
 
-Parameters defined for MODBUS classes 1 and 3 will just be ignored.
+Note: parameters defined for MODBUS classes 1 and 3 will just be ignored.
 
 Caveat: 
 
@@ -238,39 +239,37 @@ Caveat:
 * Endianness of byteorder. 
 * No locking mechanism applied for parallel reading and writing yet.
 
-## MODBUS REST API
+## The MODBUS REST API
 
-*this section is unter construction until we got a strategy how we will invoke the writer*
+Run the Rest API with the previously described MODBUS READER and WRITER methods
+of the *MODBUSClient* class. An internal 
+locking mechanism prevents reading and writing to the same device simulaneously.
 
-Run the Rest API with the previously described MODBUS READER and WRITER: 
-mb_client_reader.py, mb_client_writer.py need to reside in same directory, the same 
-applies for the mb_client_config_<deviceID>.json and 
-mb_client_mapping_<deviceID>.json files. An internal 
-locking mechanism prevents reading and writing to the same device smulaneously.
-
-    python3 mb_client_rest_api.py --host <host> (default: 127.0.0.1) --port <port> (default: 5000)
+    python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) --port <port> (default: 5000)
 
 Get a list of available APIs, type in the browser URL
 
-    10.10.1.9:5000
+    <host>:5000/docs#
 
 ![](pics/API_swagger_MODBUS.png)
 
-Alternatively, invoke the Reader in the terminal window:
+Alternatively, invoke cli command *curl* for the Reader:
 
-    curl 10.10.1.9:5000/modbus/read/<deviceID> 
+    curl <host>:5000/modbus/read/<device> 
 
-and the Writer (e.g. from nanten). The JSON comprises one to many 
-{"parameter": "value"} pairs to be updated on the modbus device,
-where `<deviceID>` denotes the extention for each modbus device:
+and for the Writer:
 
-    curl 10.10.1.9:5000/modbus/write/<deviceID> -X PUT \
+    curl <host>:5000/modbus/write/<deviceID> -X PUT \
             -d 'payload={"test 32 bit int": 720.04, \
             "write int register": 10, \
             "string of register/1": "YZ", \
             "Coil 0": true, \
             "Coil 1": true, \
             "Coil 10": true}'
+
+The JSON comprises one to many 
+{"parameter": "value"} pairs to be updated on the modbus device,
+where `<device>` denotes the extention for each modbus device:
 
 | Extension | MODBUS Device                     |
 |-----------|-----------------------------------|
@@ -281,28 +280,31 @@ where `<deviceID>` denotes the extention for each modbus device:
 
 
 In order to enroll a new modbus device, just provide the 
-config and mapping files mb_client_config_`<deviceID>`.json and 
-mb_client_mapping_`<deviceID>`.json to the working directory, 
+config and mapping files mb_client_config_`<device>`.json and 
+mb_client_mapping_`<device>`.json to the ConfigFiles directory, 
 respectively.
 
 ## Content
 
 The current repository comprises a 
-* MODBUS server simulator (the python code is extracted from 
+* MODBUS server simulator (the code is extracted from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
 [config](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.json) 
 file.
+* [MODBUSClient](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_v2.py)
 * MODBUS 
-[Reader](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_reader.py) 
+[Reader](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_reader_v2.py) 
 * MODBUS
-[Writer](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_writer.py)
+[Writer](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_writer.py)
 * MDOBUS 
-[REST API](https://github.com/ccatp/MODBUS/blob/master/src/mb_client_rest_api.py)
-comprising a Reader and Writer (see above). For Reader and Writer the MODBUS 
-server connection details are defined in
-mb_client_config_`<deviceID>`.json, whereas registry information is provided in 
-mb_client_mapping_`<deviceID>`.json
+[REST API](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_RestAPI.py)
 
+For Reader and Writer the MODBUS 
+server connection details are defined in
+mb_client_config_`<device>`.json, whereas registry information is provided in 
+mb_client_mapping_`<device>`.json.
+
+MODBUS Server and RestAPI can also be run in a Docker Container. Have fun...
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de
