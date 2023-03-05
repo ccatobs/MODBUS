@@ -44,8 +44,9 @@ def mytimer(supersede: Callable | str = None) -> Callable:
     wrapper around function for which the consumed time is measured in
     DEBUG mode. Call either via mytimer, mytimer(), or
     mytimer("<supersede function name>").
-    Caveat: for the time being this works only for decorated non-staticmethod
-    functions in classes because args[0] is to be "self" or "cls".
+    Caveat:
+    works only for decorated non-staticmethod functions in classes,
+    because args[0] is to be "self" or "cls".
     :param supersede: string (default=None)
     """
 
@@ -54,12 +55,14 @@ def mytimer(supersede: Callable | str = None) -> Callable:
         def wrapper(*args, **kwargs):
             start_time = default_timer()
             result = func(*args, **kwargs)
-            logging.debug("Time utilized for '{0}' of '{1}': {2:.2f} ms".format(
-                func.__name__ if 'supersede' not in locals()
-                                 or callable(supersede)
-                                 or supersede is None else supersede,
-                args[0].__dict__.get('_MODBUSClient__device', 'n.a.'),
-                (default_timer() - start_time) * 1_000)
+            logging.debug(
+                "Time utilized for '{0}' of '{1}': {2:.2f} ms".format(
+                    func.__name__ if 'supersede' not in locals()
+                                     or callable(supersede)
+                                     or supersede is None else supersede,
+                    args[0].__dict__.get('_MODBUSClient__device', 'n.a.'),
+                    (default_timer() - start_time) * 1_000
+                )
             )
 
             return result

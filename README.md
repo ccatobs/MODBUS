@@ -239,7 +239,7 @@ Caveat:
 * Endianness of byteorder. 
 * No locking mechanism applied for parallel reading and writing yet.
 
-## The MODBUS Rest API
+## The MODBUS RestAPI
 
 Run the Rest API with the previously described MODBUS READER and WRITER methods
 of the *MODBUSClient* class. An internal 
@@ -259,7 +259,7 @@ Alternatively, invoke cli *curl* for the Reader:
 
 and for the Writer:
 
-    curl <host>:5000/modbus/write/<deviceID> -X PUT \
+    curl <host>:5000/modbus/write/<device> -X PUT \
             -d 'payload={"test 32 bit int": 720.04, \
             "write int register": 10, \
             "string of register/1": "YZ", \
