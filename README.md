@@ -239,7 +239,7 @@ Caveat:
 * Endianness of byteorder. 
 * No locking mechanism applied for parallel reading and writing yet.
 
-## The MODBUS REST API
+## The MODBUS Rest API
 
 Run the Rest API with the previously described MODBUS READER and WRITER methods
 of the *MODBUSClient* class. An internal 
@@ -247,13 +247,13 @@ locking mechanism prevents reading and writing to the same device simulaneously.
 
     python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) --port <port> (default: 5000)
 
-Get a list of available APIs, type in the browser URL
+Get a list of available endpoints, type in the browser URL
 
     <host>:5000/docs#
 
 ![](pics/API_swagger_MODBUS.png)
 
-Alternatively, invoke cli command *curl* for the Reader:
+Alternatively, invoke cli *curl* for the Reader:
 
     curl <host>:5000/modbus/read/<device> 
 
