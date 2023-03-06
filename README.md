@@ -236,13 +236,13 @@ Note: parameters defined for MODBUS classes 1 and 3 will just be ignored.
 Caveat: 
 
 * Owing to Python's pymodbus module, registers can solely be updated on the
-  whole, which particularly applies for strings, bits and 8bit-integers 
-  in the leading and trailing bytes. Hence, solely a leading or 
-  trailing byte being updated, will result in "0x00" (empty) of the 
-  respective other.
+whole, which particularly applies for strings, bits and 8bit-integers 
+in the leading and trailing bytes. Hence, solely a leading or 
+trailing byte being updated, will result in "0x00" (empty) of the 
+respective other.
 * Endianness of byteorder is sort of a hassle
-* No locking mechanism applied for parallel reading and writing yet. 
-* This would only make sense if one instance exists utilizing reading and writing 
+* No locking mechanism applied for parallel reading and writing yet that would 
+only make sense if one instance exists utilizing reading and writing 
 methods.
 
 ## The MODBUS RestAPI
