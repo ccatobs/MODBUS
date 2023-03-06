@@ -9,7 +9,7 @@ with no modification to the coding required whatsoever. The JSON file
 comprises keys pointing to single or multiple registers. Each dictionary key 
 comprises additional features, such as 
 
-1) "parameter" (mandatory, variable name that is unique over all register classes). 
+1) "parameter" (mandatory, variable name unique over all register classes). 
 2) "function" (mandatory, data type for input and holding registers).
 3) "description" (optional).
 4) "map" (optional). 
@@ -23,8 +23,9 @@ and "offset" is added. This is in most instances applicable for integer of lengt
 
 A map is provided in case a value needs to match 
 an entry from a provided list. The corresponding field value is passed on to 
-the output as description superseding the input "description". A map might 
+the output as description superseding the input "description". A map might also 
 contain entries matching bits of the leading or trailing byte.
+If a map is defined, the description is chosen according to round(value). 
 
 Furthermore, "value" and "datatype" are
 reserved keywords, since they will be generated in the output dictionary.
@@ -59,11 +60,10 @@ e.g. "decode_32bit_uint" (see below for a selection):
 | 64 uint                                      | decode_64bit_uint  | long           | 
 | 64 float                                     | decode_64bit_float | double         |
 
-If a map is defined, the description is chosen according to round(value). Gaps
-between registers are permitted. A check on the uniqueness of "parameter" is 
+Gaps between registers are permitted. A check on the uniqueness of "parameter" is 
 performed as well as validity checks on the JSON keys. 
 Not checked is if, e.g. an odd number of registers
-is allocated for floats, though.
+is allocated for float or int, though.
 
 The JSON format for the mapping is to be defined in
 the following formate, e.g.:
@@ -241,8 +241,9 @@ Caveat:
   trailing byte being updated, will result in "0x00" (empty) of the 
   respective other.
 * Endianness of byteorder is sort of a hassle
-* No locking mechanism applied for parallel reading and writing yet. This would make
-  sense if only one instance exist for the reading and writing methods.
+* No locking mechanism applied for parallel reading and writing yet. 
+* This would only make sense if one instance exists utilizing reading and writing 
+methods.
 
 ## The MODBUS RestAPI
 
