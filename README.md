@@ -9,7 +9,7 @@ with no modification to the coding required whatsoever. The JSON file
 comprises keys pointing to single or multiple registers. Each dictionary key 
 comprises additional features, such as 
 
-1) "parameter" (mandatory, name of the variable and unique over all register classes). 
+1) "parameter" (mandatory, variable name that is unique over all register classes). 
 2) "function" (mandatory, data type for input and holding registers).
 3) "description" (optional).
 4) "map" (optional). 
@@ -61,7 +61,11 @@ e.g. "decode_32bit_uint" (see below for a selection):
 
 If a map is defined, the description is chosen according to round(value). Gaps
 between registers are permitted. A check on the uniqueness of "parameter" is 
-performed. The JSON format for the mapping is to be defined in
+performed as well as validity checks on the JSON keys. 
+Not checked is if, e.g. an odd number of registers
+is allocated for floats, though.
+
+The JSON format for the mapping is to be defined in
 the following formate, e.g.:
 
 ```JSON
@@ -232,12 +236,13 @@ Note: parameters defined for MODBUS classes 1 and 3 will just be ignored.
 Caveat: 
 
 * Owing to Python's pymodbus module, registers can solely be updated on the
-  whole, which applies for strings, bits and 8bit-integers in the leading and
-  trailing bytes. Hence, a leading or 
+  whole, which particularly applies for strings, bits and 8bit-integers 
+  in the leading and trailing bytes. Hence, solely a leading or 
   trailing byte being updated, will result in "0x00" (empty) of the 
   respective other.
-* Endianness of byteorder. 
-* No locking mechanism applied for parallel reading and writing yet.
+* Endianness of byteorder is sort of a hassle
+* No locking mechanism applied for parallel reading and writing yet. This would make
+  sense if only one instance exist for the reading and writing methods.
 
 ## The MODBUS RestAPI
 
@@ -286,17 +291,23 @@ respectively.
 
 ## Content
 
-The current repository comprises a 
-* MODBUS server simulator (the code is extracted from 
-https://hub.docker.com/r/oitc/modbus-server) with its 
-[config](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.json) 
-file.
-* [MODBUSClient](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_v2.py)
+The current repository comprises:
+
+* [MODBUSClient](
+https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_v2.py) 
+module with the following methods:
+  * read_register()
+  * write_register(wr: JSON)
+  * close()
 * MODBUS 
 [Reader](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_reader_v2.py) 
 * MODBUS
 [Writer](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_writer_v2.py)
-* MDOBUS 
+* MODBUS server simulator (coding from 
+https://hub.docker.com/r/oitc/modbus-server) with its 
+[config](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.json) 
+file.
+* MODBUS 
 [REST API](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_RestAPI.py)
 
 For Reader and Writer the MODBUS 
@@ -304,7 +315,7 @@ server connection details are defined in
 mb_client_config_`<device>`.json, whereas registry information is provided in 
 mb_client_mapping_`<device>`.json.
 
-MODBUS Server and RestAPI can also be run in a Docker Container. Have fun...
+MODBUS Server and RestAPI can also be run inside a Docker Container.
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de
