@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
+
 """
-MODBUS Client, version 2.0 - 2023/02/22
+MODBUS Client
 
 For a detailed description, see https://github.com/ccatp/MODBUS
-
-For running and testing
-
+Running and testing:
 python3 mb_client_reader_v2.py --device <device extention> (default: default) \
                                --path <path to config files> (default: .)
 
@@ -19,9 +18,8 @@ Argelander Institute for Astronomy (AIfA), University Bonn.
 
 from __future__ import annotations
 from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
-from pymodbus.client import ModbusTcpClient as ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 import pymodbus.exceptions
-from fastapi import status
 import json
 import re
 import sys
@@ -58,27 +56,29 @@ change history
 2021/11/24 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.8
     * strings of variable length to be decoded as well
-2021/11/30
+2021/11/30 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 1.0
     * variable filenames
-2021/12/18
+2021/12/18 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 1.1
     * strings modified
-2023/02/23
+2023/02/23 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 -version 2.0
     * MODBUS client as library for housekeeping purposes
     * merge reader and writer methods
     * pymodbus v3.1.3
-2023/03/07
+2023/03/07 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 -version 2.1
     * config and mapping files merged
+    * number of bytes allocated for integers or floats is checked
+    * notify when attempting to write to read-only registers
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
 __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD-3"
-__version__ = "2.0"
+__version__ = "2.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -108,12 +108,10 @@ FUNCTION2AVRO = {
 
 
 class _MappingKeyError(Exception):
-    """Base class for other exceptions"""
     pass
 
 
 class _DuplicateParameterError(Exception):
-    """Base class for other exceptions"""
     pass
 
 
@@ -139,13 +137,13 @@ class _ObjectType(object):
     @staticmethod
     def __register_width(address: str) -> Dict:
         """
-        determine the number of registers to read for a given key
+        determine the specs for an address
         :param address: string
         :return: Dict
             start - address to start from,
-            width - byte widths
+            width - no of 16-bit register
             no_bytes - no of total bytes contained
-            pos_byte - position of the byte to extract
+            pos_byte - position of byte in register (1: leading, 2: trailing)
         """
         width, no_bytes, pos_byte = 1, 2, 1  # default
 
@@ -265,7 +263,7 @@ class _ObjectType(object):
             offset = self.__register_maps[register].get('offset', 0)
             value = value * multiplier + offset
             if isinstance(value, float):
-                datatype = "float"
+                datatype = "float"  # to serve Reinhold's AVRO schema
         di = {"value": value,
               "datatype": datatype}
         if maps is not None:
@@ -309,6 +307,9 @@ class _ObjectType(object):
                 logging.error(str(e))
                 sys.exit(500)
         else:
+            if no_bytes not in [1, 2, 4, 8]:
+                logging.error("Number of bytes allocated for int or float is wrong!")
+                sys.exit(500)
             value = getattr(decoder, function)()
 
         return self.__decode_prop(register=register,
@@ -459,6 +460,16 @@ class _ObjectType(object):
                         assert (not rq.isError())  # test we are not an error
                         break
 
+        # if attempting to writing to an read-only register, issue warning
+        elif self.__entity in ['1', '3']:
+            for parameter, value in wr.items():
+                for address, attributes in self.__register_maps.items():
+                    if attributes['parameter'] == parameter:
+                        logging.warning("Parameter '{0}' of MODBUS register class {1} ignored!".
+                                        format(parameter,
+                                               self.__entity))
+                        break
+
         return 0
 
 
@@ -572,7 +583,7 @@ class MODBUSClient(object):
     @mytimer
     def read_register(self) -> List[Dict]:
         """
-        invoke for monitoring
+        invoke the read all mapped registers for monitoring
         :return: List of Dict (in asc order) for housekeeping
         """
         decoded = list()
@@ -586,8 +597,8 @@ class MODBUSClient(object):
     @mytimer
     def write_register(self, wr: Dict) -> None:
         """
-        invoke for writing to registers
-        :param wr: list of dicts {parameter: value} to write to register
+        invoke the writer to registers, where
+        :param wr: list of dicts {parameter: value}
         :return:
         """
         try:
