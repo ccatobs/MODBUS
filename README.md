@@ -65,112 +65,123 @@ performed as well as validity checks on the JSON keys.
 Not checked is if, e.g. an odd number of registers
 is allocated for float or int, though.
 
-The JSON format for the mapping is to be defined in
-the following formate, e.g.:
+The JSON format for the mapping + config 
+is to be defined in the following formate, e.g.:
 
 ```JSON
 {
-  "10000": {
-    "parameter": "UnitOn",
-    "description": "Unit On status: TRUE = Unit ON"
+  "server": {
+    "listenerAddress": "127.0.0.40",
+    "listenerPort": 5020
   },
-  "10001": {
-    "parameter": "Unit_Alarm"
+  "endianness": {
+    "byteorder": ">",
+    "wordorder": ">"
   },
-  "30001": {
-    "function": "decode_16bit_uint",
-    "parameter": "Operating State",
-    "map": {
-      "0": "Idling ‐ ready to start",
-      "2": "Starting",
-      "3": "Running",
-      "5": "Stopping",
-      "6": "Error Lockout",
-      "7": "Error",
-      "8": "Helium Cool Down",
-      "9": "Power related Error",
-      "15": "Recovered from Error"
+  "debug": true,
+  "mapping": {
+    "10000": {
+      "parameter": "UnitOn",
+      "description": "Unit On status: TRUE = Unit ON"
+    },
+    "10001": {
+      "parameter": "Unit_Alarm"
+    },
+    "30001": {
+      "function": "decode_16bit_uint",
+      "parameter": "Operating State",
+      "map": {
+        "0": "Idling ‐ ready to start",
+        "2": "Starting",
+        "3": "Running",
+        "5": "Stopping",
+        "6": "Error Lockout",
+        "7": "Error",
+        "8": "Helium Cool Down",
+        "9": "Power related Error",
+        "15": "Recovered from Error"
+      }
+    },
+    "30002": {
+      "function": "decode_16bit_uint",
+      "parameter": "Compressor Running",
+      "map": {
+        "0": "Off",
+        "1": "On"
+      }
+    },
+    "30003/30004": {
+      "function": "decode_32bit_float",
+      "parameter": "Warning State",
+      "map": {
+        "0": "No warnings",
+        "-1": "Coolant IN running High",
+        "-2": "Coolant IN running Low",
+        "-4": "Coolant OUT running High",
+        "-8": "Coolant OUT running Low",
+        "-16": "Oil running High",
+        "-32": "Oil running Low",
+        "-64": "Helium running High",
+        "-128": "Helium running Low",
+        "-256": "Low Pressure running High",
+        "-512": "Low Pressure running Low",
+        "-1024": "High Pressure running High",
+        "-2048": "High Pressure running Low",
+        "-4096": "Delta Pressure running High",
+        "-8192": "Delta Pressure running Low",
+        "-131072": "Static Pressure running High",
+        "-262144": "Static Pressure running Low",
+        "-524288": "Cold head motor Stall"
+      }
+    },
+    "30011/30012": {
+      "function": "decode_32bit_float",
+      "parameter": "Oil Temp",
+      "description": "unit is provided here...",
+      "unit": "e.g. Fahrenheit"
+    },
+    "30031": {
+      "function": "decode_16bit_uint",
+      "parameter": "Panel Serial Number",
+      "description": "This is supposed to be the Panel Serial Number"
+    },
+    "30033": {
+      "function": "decode_16bit_uint",
+      "parameter": "Software Rev"
+    },
+    "30034/1": {
+      "function": "decode_bits",
+      "parameter": "TEST1",
+      "default": "test7",
+      "map": {
+        "0b10000000": "test7"
+      }
+    },
+    "30034/2": {
+      "function": "decode_bits",
+      "parameter": "TEST2",
+      "map": {
+        "0b00000001": "test0",
+        "0b00000010": "test1",
+        "0b00000100": "test2",
+        "0b00001000": "test3",
+        "0b00010000": "test4",
+        "0b00100000": "test5",
+        "0b01000000": "test6",
+        "0b10000000": "test7"
+      }
+    },
+    "40009": {
+      "parameter": "Water_Setpoint.SP_r",
+      "function": "decode_16bit_int",
+      "multiplier": 0.1,
+      "offset": -273,
+      "description": "Setpoint Water",
+      "unit": "DegreesCelsius",
+      "max": "Water_Setpoint.max_r",
+      "min": "Water_Setpoint.min_r",
+      "defaultvalue": 24.0
     }
-  },
-  "30002": {
-    "function": "decode_16bit_uint",
-    "parameter": "Compressor Running",
-    "map": {
-      "0": "Off",
-      "1": "On"
-    }
-  },
-  "30003/30004": {
-    "function": "decode_32bit_float",
-    "parameter": "Warning State",
-    "map": {
-      "0": "No warnings",
-      "-1": "Coolant IN running High",
-      "-2": "Coolant IN running Low",
-      "-4": "Coolant OUT running High",
-      "-8": "Coolant OUT running Low",
-      "-16": "Oil running High",
-      "-32": "Oil running Low",
-      "-64": "Helium running High",
-      "-128": "Helium running Low",
-      "-256": "Low Pressure running High",
-      "-512": "Low Pressure running Low",
-      "-1024": "High Pressure running High",
-      "-2048": "High Pressure running Low",
-      "-4096": "Delta Pressure running High",
-      "-8192": "Delta Pressure running Low",
-      "-131072": "Static Pressure running High",
-      "-262144": "Static Pressure running Low",
-      "-524288": "Cold head motor Stall"
-    }
-  },
-  "30011/30012": {
-    "function": "decode_32bit_float",
-    "parameter": "Oil Temp",
-    "description": "unit is provided here...",
-    "unit": "e.g. Fahrenheit"
-  },
-  "30031": {
-    "function": "decode_16bit_uint",
-    "parameter": "Panel Serial Number",
-    "description": "This is supposed to be the Panel Serial Number"
-  },
-  "30033": {
-    "function": "decode_16bit_uint",
-    "parameter": "Software Rev"
-  },
-  "30034/1": {
-    "function": "decode_bits",
-    "parameter": "TEST1",
-    "default": "test7",
-    "map": {
-      "0b10000000": "test7"
-    }
-  },
-  "30034/2": {
-    "function": "decode_bits",
-    "parameter": "TEST2",
-    "map": {
-      "0b00000001": "test0",
-      "0b00000010": "test1",
-      "0b00000100": "test2",
-      "0b00001000": "test3",
-      "0b00010000": "test4",
-      "0b00100000": "test5",
-      "0b01000000": "test6",
-      "0b10000000": "test7"
-    }
-  },
-  "40009": {
-    "parameter": "Water_Setpoint.SP_r",
-    "function": "decode_16bit_int",
-    "multiplier": 0.1,
-    "offset": -273,
-    "description": "Setpoint Water",
-    "unit": "DegreesCelsius",
-    "max": "Water_Setpoint.max_r",
-    "min": "Water_Setpoint.min_r",
-    "defaultvalue": 24.0
   }
 }
 ```
@@ -286,15 +297,13 @@ where `<device>` denotes the extention for each modbus device:
 
 
 In order to enroll a new modbus device, just provide the 
-config and mapping files mb_client_config_`<device>`.json and 
-mb_client_mapping_`<device>`.json to the ConfigFiles directory, 
-respectively.
+config file mb_client_config_`<device>`.json to the ConfigFiles directory.
 
 ## Content
 
 The current repository comprises:
 
-* [MODBUSClient](
+* [class MODBUSClient](
 https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_v2.py) 
 module with the following methods:
   * read_register()
@@ -312,9 +321,8 @@ file.
 [REST API](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_RestAPI.py)
 
 For Reader and Writer the MODBUS 
-server connection details are defined in
-mb_client_config_`<device>`.json, whereas registry information is provided in 
-mb_client_mapping_`<device>`.json.
+server connection and register mapping details are defined in
+mb_client_config_`<device>`.json.
 
 MODBUS Server and RestAPI can also be run inside a Docker Container.
 

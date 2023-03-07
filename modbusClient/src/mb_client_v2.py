@@ -21,6 +21,7 @@ from __future__ import annotations
 from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 from pymodbus.client import ModbusTcpClient as ModbusTcpClient
 import pymodbus.exceptions
+from fastapi import status
 import json
 import re
 import sys
@@ -68,6 +69,9 @@ change history
     * MODBUS client as library for housekeeping purposes
     * merge reader and writer methods
     * pymodbus v3.1.3
+2023/03/07
+-version 2.1
+    * config and mapping files merged
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -460,7 +464,9 @@ class _ObjectType(object):
 
 class MODBUSClient(object):
 
-    def __init__(self, device: str = "default", **kwargs):
+    def __init__(self,
+                 device: str = "default",
+                 path_additional: str = '.'):
         """
         initializing the modbus client and perform checks on
         mb_client_mapping_<device>.json:
@@ -472,36 +478,26 @@ class MODBUSClient(object):
         dictionary - mapping
         """
         self.__device = device
-        path_additional = kwargs.get("path_additional")
-        path_additional = path_additional.rstrip('/') if path_additional is not None else "."
+        path_additional = path_additional.rstrip('/')
         file_config = "{1}/mb_client_config_{0}.json".format(device,
                                                              path_additional)
-        file_mapping = "{1}/mb_client_mapping_{0}.json".format(device,
-                                                               path_additional)
-        # verify existance of both files
+        # verify existance of config file
         if not path.isfile(file_config):
-            logging.error("Client config file {0} not found".format(
-                file_config))
-            sys.exit(404)
-        if not path.isfile(file_mapping):
-            logging.error("Client config file {0} not found".format(
-                file_mapping))
+            logging.error("Client config file {0} not found".format(file_config))
             sys.exit(404)
         with open(file_config) as config_file:
             client_config = json.load(config_file)
-        with open(file_mapping) as json_file:
-            mapping = json.load(json_file)
-        logging.info("Config File: {0} and Mapping File: {1}".format(file_config, file_mapping))
+        logging.info("Config File: {0}".format(file_config))
         # logging toggle debug (default INFO)
         debug = client_config.get('debug', False)
         logging.getLogger().setLevel(getattr(logging, "DEBUG" if debug else "INFO"))
 
         # make integrity checks
-        self.__client_mapping_checks(mapping=mapping)
+        self.__client_mapping_checks(mapping=client_config['mapping'])
 
         try:
-            client = ModbusTcpClient(host=client_config["server"]["listenerAddress"],
-                                     port=client_config["server"]["listenerPort"],
+            client = ModbusTcpClient(host=client_config['server']['listenerAddress'],
+                                     port=client_config['server']['listenerPort'],
                                      debug=debug)
             if not client.connect():
                 raise pymodbus.exceptions.ConnectionException
@@ -512,7 +508,7 @@ class MODBUSClient(object):
 
         self.__init = {
             "client": client,
-            "mapping": mapping,
+            "mapping": client_config['mapping'],
             # if endianness not found, apply default:
             # "byteorder": Endian.Big, "wordorder": Endian.Big
             "endianness": client_config.get("endianness",
