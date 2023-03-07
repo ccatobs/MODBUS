@@ -21,7 +21,6 @@ from __future__ import annotations
 from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 from pymodbus.client import ModbusTcpClient as ModbusTcpClient
 import pymodbus.exceptions
-from fastapi import status
 import json
 import re
 import sys
@@ -58,18 +57,18 @@ change history
 2021/11/24 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 0.8
     * strings of variable length to be decoded as well
-2021/11/30
+2021/11/30 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 1.0
     * variable filenames
-2021/12/18
+2021/12/18 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 1.1
     * strings modified
-2023/02/23
+2023/02/23 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 -version 2.0
     * MODBUS client as library for housekeeping purposes
     * merge reader and writer methods
     * pymodbus v3.1.3
-2023/03/07
+2023/03/07 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 -version 2.1
     * config and mapping files merged
 """
@@ -78,7 +77,7 @@ __author__ = "Dr. Ralf Antonius Timmermann"
 __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD-3"
-__version__ = "2.0"
+__version__ = "2.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
