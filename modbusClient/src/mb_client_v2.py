@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
+
 """
-MODBUS Client, version 2.0 - 2023/02/22
+MODBUS Client
 
 For a detailed description, see https://github.com/ccatp/MODBUS
-
-For running and testing
-
+Running and testing:
 python3 mb_client_reader_v2.py --device <device extention> (default: default) \
                                --path <path to config files> (default: .)
 
