@@ -71,6 +71,7 @@ change history
 2023/03/07 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 -version 2.1
     * config and mapping files merged
+    * number of bytes allocated for integers or floats is checked
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -308,6 +309,9 @@ class _ObjectType(object):
                 logging.error(str(e))
                 sys.exit(500)
         else:
+            if no_bytes not in [1, 2, 4, 8]:
+                logging.error("Number of bytes allocated for int or float is wrong!")
+                sys.exit(500)
             value = getattr(decoder, function)()
 
         return self.__decode_prop(register=register,
