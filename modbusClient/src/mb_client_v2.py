@@ -72,6 +72,7 @@ change history
 -version 2.1
     * config and mapping files merged
     * number of bytes allocated for integers or floats is checked
+    * notify when attempting to write to read-only registers
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -108,12 +109,10 @@ FUNCTION2AVRO = {
 
 
 class _MappingKeyError(Exception):
-    """Base class for other exceptions"""
     pass
 
 
 class _DuplicateParameterError(Exception):
-    """Base class for other exceptions"""
     pass
 
 
@@ -265,7 +264,7 @@ class _ObjectType(object):
             offset = self.__register_maps[register].get('offset', 0)
             value = value * multiplier + offset
             if isinstance(value, float):
-                datatype = "float"
+                datatype = "float"  # to serve Reinhold's AVRO schema
         di = {"value": value,
               "datatype": datatype}
         if maps is not None:
@@ -460,6 +459,16 @@ class _ObjectType(object):
                             value=value,
                             slave=UNIT)
                         assert (not rq.isError())  # test we are not an error
+                        break
+
+        # check for read-only registers
+        elif self.__entity in ['1', '3']:
+            for parameter, value in wr.items():
+                for address, attributes in self.__register_maps.items():
+                    if attributes['parameter'] == parameter:
+                        logging.info("Parameter '{0}' of MODBUS register class {1} ignored!".
+                                     format(parameter,
+                                            self.__entity))
                         break
 
         return 0
