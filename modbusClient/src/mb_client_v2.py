@@ -18,7 +18,7 @@ Argelander Institute for Astronomy (AIfA), University Bonn.
 
 from __future__ import annotations
 from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
-from pymodbus.client import ModbusTcpClient as ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 import pymodbus.exceptions
 import json
 import re
@@ -137,13 +137,13 @@ class _ObjectType(object):
     @staticmethod
     def __register_width(address: str) -> Dict:
         """
-        determine the number of registers to read for a given key
+        determine the specs for an address
         :param address: string
         :return: Dict
             start - address to start from,
-            width - byte widths
+            width - no of 16-bit register
             no_bytes - no of total bytes contained
-            pos_byte - position of the byte to extract
+            pos_byte - position of byte in register (1: leading, 2: trailing)
         """
         width, no_bytes, pos_byte = 1, 2, 1  # default
 
@@ -460,14 +460,14 @@ class _ObjectType(object):
                         assert (not rq.isError())  # test we are not an error
                         break
 
-        # check for read-only registers
+        # if attempting to writing to an read-only register, issue warning
         elif self.__entity in ['1', '3']:
             for parameter, value in wr.items():
                 for address, attributes in self.__register_maps.items():
                     if attributes['parameter'] == parameter:
-                        logging.info("Parameter '{0}' of MODBUS register class {1} ignored!".
-                                     format(parameter,
-                                            self.__entity))
+                        logging.warning("Parameter '{0}' of MODBUS register class {1} ignored!".
+                                        format(parameter,
+                                               self.__entity))
                         break
 
         return 0
@@ -583,7 +583,7 @@ class MODBUSClient(object):
     @mytimer
     def read_register(self) -> List[Dict]:
         """
-        invoke for monitoring
+        invoke the read all mapped registers for monitoring
         :return: List of Dict (in asc order) for housekeeping
         """
         decoded = list()
@@ -597,8 +597,8 @@ class MODBUSClient(object):
     @mytimer
     def write_register(self, wr: Dict) -> None:
         """
-        invoke for writing to registers
-        :param wr: list of dicts {parameter: value} to write to register
+        invoke the writer to registers, where
+        :param wr: list of dicts {parameter: value}
         :return:
         """
         try:

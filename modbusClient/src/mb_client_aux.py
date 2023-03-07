@@ -45,9 +45,10 @@ def mytimer(supersede: Callable | str = None) -> Callable:
     DEBUG mode. Call either via mytimer, mytimer(), or
     mytimer("<supersede function name>").
     Caveat:
-    works only for decorated non-staticmethod functions in classes,
-    because args[0] is to be "self" or "cls".
+    works for decorated non-staticmethod functions in classes,
+    because args[0] = self | cls.
     :param supersede: string (default=None)
+    :return: Callable - function wrapped
     """
 
     def _decorator(func):
