@@ -326,5 +326,7 @@ mb_client_config_`<device>`.json.
 
 MODBUS Server and RestAPI can also be run inside a Docker Container.
 
+For the Conda environment used see [here](https://github.com/ccatp/MODBUS/blob/master/modbusClient/conda-env.txt)
+
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de

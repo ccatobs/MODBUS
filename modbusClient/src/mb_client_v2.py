@@ -72,13 +72,19 @@ change history
     * config and mapping files merged
     * number of bytes allocated for integers or floats is checked
     * notify when attempting to write to read-only registers
+2023/03/08 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+-version 2.2
+    * assert replaced by sys.exit
+    * new modules created from to long code
+    * notify if non-existing parameter
+    * docstrings
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
 __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD-3"
-__version__ = "2.1"
+__version__ = "2.2"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -173,7 +179,7 @@ class _ObjectType(object):
         source for regular expression:
         https://stackoverflow.com/questions/469913/regular-expressions-is-there-an-and-operator
         :param binarystring: str
-        :return: integer
+        :return: int
         """
         if re.match(r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)", binarystring):
             return binarystring.split("0b")[1][::-1].index('1')
@@ -183,6 +189,10 @@ class _ObjectType(object):
 
     @staticmethod
     def __trailing_byte_check(address: str) -> bool:
+        """
+        :param address: str
+        :return: bool = True (NoError)
+        """
         if len(address.split("/")) == 2:
             return address.split("/")[1] == "2"
         return False
@@ -331,12 +341,36 @@ class _ObjectType(object):
             )
         ]
 
-    def __holding(self, wr: Dict) -> int:
+    def __coil(self, wr: Dict) -> bool:
         """
         dictionary with "parameter: value" pairs to be changed in coil and
         holding registers
         :param wr: dictionary with {parameter: value} pairs
-        :return:
+        :return: bool = True (NoError)
+        """
+        for parameter, value in wr.items():
+            for address, attributes in self.__register_maps.items():
+                if attributes['parameter'] == parameter:
+                    # coil register updates one-by-one
+                    rq = self.__client.write_coil(
+                        address=int(address),
+                        value=value,
+                        slave=UNIT)
+                    # assert (not rq.isError())  # test we are not an error
+                    if rq.isError():
+                        logging.error("Error writing coil register at address {0} with payload {1}".
+                                      format(int(address), value))
+                        sys.exit(500)
+                    break
+
+        return True
+
+    def __holding(self, wr: Dict) -> bool:
+        """
+        dictionary with "parameter: value" pairs to be changed in coil and
+        holding registers
+        :param wr: dictionary with {parameter: value} pairs
+        :return: bool = True (NoError)
         """
         builder = BinaryPayloadBuilder(
             byteorder=self.__endianness['byteorder'],
@@ -371,11 +405,15 @@ class _ObjectType(object):
                         address=reg_info['start'],
                         values=payload,
                         slave=UNIT)
-                    assert (not rq.isError())  # test we are not an error
+                    # assert (not rq.isError())  # test we are not an error
+                    if rq.isError():
+                        logging.error("Error writing holding register at address {0} with payload {1}".
+                                      format(reg_info['start'], payload))
+                        sys.exit(500)
                     builder.reset()  # reset builder
                     break  # if parameter matched
 
-        return 0
+        return True
 
     def register_readout(self):
         """
@@ -414,7 +452,13 @@ class _ObjectType(object):
                     count=reg_info['width'],
                     slave=UNIT
                 )
-            assert (not result.isError())
+            # assert (not result.isError())
+            if result.isError():
+                logging.error("Error reading register at address {0} and width {1} for MODBUS class {2}".
+                              format(reg_info['start'],
+                                     reg_info['width'],
+                                     self.__entity))
+                sys.exit(500)
 
             # decode and append to list
             if self.__entity in ['0', '1']:
@@ -440,26 +484,17 @@ class _ObjectType(object):
 
         return decoded
 
-    def register_write(self, wr: Dict) -> int:
+    def register_write(self, wr: Dict) -> bool:
         """
         call coil or holding register writes
         :param wr: dictionary with {parameter: value} pairs
-        :return:
+        :return: bool = True (NoError)
         """
         if self.__entity == '4':
             self.__holding(wr=wr)
 
         elif self.__entity == '0':
-            for parameter, value in wr.items():
-                for address, attributes in self.__register_maps.items():
-                    if attributes['parameter'] == parameter:
-                        # coil register updates one-by-one
-                        rq = self.__client.write_coil(
-                            address=int(address),
-                            value=value,
-                            slave=UNIT)
-                        assert (not rq.isError())  # test we are not an error
-                        break
+            self.__coil(wr=wr)
 
         # when attempting to writing to a read-only register, issue warning
         elif self.__entity in ['1', '3']:
@@ -471,7 +506,7 @@ class _ObjectType(object):
                                                self.__entity))
                         break
 
-        return 0
+        return True
 
 
 class MODBUSClient(object):
@@ -537,12 +572,30 @@ class MODBUSClient(object):
                 )
             )
 
-    def __client_mapping_checks(self, mapping: Dict) -> None:
+    def __existance_mapping_checks(self, wr: Dict) -> bool:
+        """
+        check if parameter exists in mapping at all
+        :param wr: list of dicts {parameter: value}
+        :return: bool = True (NoError)
+        """
+        rc = True
+        for parameter in wr.keys():
+            for attributes in self.__init['mapping'].values():
+                if attributes['parameter'] == parameter:
+                    break
+            else:
+                rc = False
+                logging.warning(
+                    "Parameter {} is not being mapped to registers!".format(parameter))
+
+        return rc
+
+    def __client_mapping_checks(self, mapping: Dict) -> bool:
         """
         perform checks on the client mapping
         parameter must not be duplicate
         :param mapping: Dict
-        :return:
+        :return: bool = True (NoError)
         """
         rev_dict = dict()
         key = None
@@ -563,13 +616,15 @@ class MODBUSClient(object):
             logging.error("Duplicate parameter: {0}.".format(parameter))
             sys.exit(500)
 
+        return True
+
     @staticmethod
     def __register_integrity(address: str) -> bool:
         """
         check integrity of dictionary keys in mapping file
         key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y, where x=0000-9999 and y=1|2
         :param address: str
-        :return: bool
+        :return: bool = True (NoError)
         """
         if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", address):
             return False
@@ -578,7 +633,9 @@ class MODBUSClient(object):
             if comp[1] not in ["1", "2"] and \
                     (comp[0][0] != comp[1][0] or
                      int(comp[1]) - int(comp[0]) < 1):
+
                 return False
+
         return True
 
     @mytimer
@@ -593,20 +650,24 @@ class MODBUSClient(object):
                 decoded = decoded + entity.register_readout()
         except SystemExit as e:
             sys.exit(e.code)
+
         return [dict(sorted(item.items())) for item in decoded]
 
     @mytimer
-    def write_register(self, wr: Dict) -> None:
+    def write_register(self, wr: Dict) -> Dict:
         """
         invoke the writer to registers, where
         :param wr: list of dicts {parameter: value}
-        :return:
+        :return: Dict
         """
+        if not self.__existance_mapping_checks(wr=wr):
+            sys.exit(204)
         try:
             for entity in self.__entity_list:
                 entity.register_write(wr)
         except SystemExit as e:
             sys.exit(e.code)
+
         return wr
 
     def close(self):
