@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
+
 """
-here comes docu!
+FastAPI to serve the read and write methods of the MODBUSClient class. Implements
+a locking mechanism, such that reader and writer for each device can not be
+invoked simulaneously.
+
 """
 from fastapi import HTTPException, status, FastAPI, Path, Body
 from fastapi.responses import JSONResponse
@@ -26,7 +30,7 @@ __license__ = "BSD"
 __version__ = "0.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
-__status__ = "Dev"
+__status__ = "QA"
 
 print(__doc__)
 
@@ -36,6 +40,12 @@ clients = dict()
 
 
 def mb_clients(device: str) -> MODBUSClient:
+    """
+    Helper to store MODBUSClient instances over the entire time the RestAPI is
+    running once it was called the first time
+    :param device: str
+    :return: MODBUSClient instance for each device
+    """
     if device not in clients:
         clients[device] = MODBUSClient(device=device,
                                        path_additional="../configFiles")
@@ -67,9 +77,9 @@ async def write_register(device: str = Path(title="Device Extention",
                             detail="Empty payload")
     try:
         lock_mb_client(device).acquire()
-        mb_clients(device=device).write_register(wr=payload)
+        result = mb_clients(device=device).write_register(wr=payload)
         lock_mb_client(device).release()
-        return JSONResponse(payload)
+        return JSONResponse(result)
     except SystemExit as e:
         raise HTTPException(status_code=e.code)
 

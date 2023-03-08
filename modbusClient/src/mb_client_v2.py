@@ -415,6 +415,7 @@ class _ObjectType(object):
                     slave=UNIT
                 )
             assert (not result.isError())
+
             # decode and append to list
             if self.__entity in ['0', '1']:
                 decoder = result.bits
@@ -460,7 +461,7 @@ class _ObjectType(object):
                         assert (not rq.isError())  # test we are not an error
                         break
 
-        # if attempting to writing to an read-only register, issue warning
+        # when attempting to writing to a read-only register, issue warning
         elif self.__entity in ['1', '3']:
             for parameter, value in wr.items():
                 for address, attributes in self.__register_maps.items():
@@ -606,6 +607,7 @@ class MODBUSClient(object):
                 entity.register_write(wr)
         except SystemExit as e:
             sys.exit(e.code)
+        return wr
 
     def close(self):
         client = self.__init.get("client")
