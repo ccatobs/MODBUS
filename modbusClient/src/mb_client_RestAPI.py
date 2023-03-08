@@ -19,15 +19,18 @@ from mb_client_aux import LockGroup
 
 """
 version history:
-2023/03/04 - Ralf A. Timmermann
+2023/03/04 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 1.0
+2023/03/08 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 1.1
+    * lock release in try-finally
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
 __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD"
-__version__ = "0.1"
+__version__ = "1.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -59,10 +62,11 @@ async def read_register(device: str = Path(title="Device Extention",
     try:
         lock_mb_client(device).acquire()
         result = mb_clients(device=device).read_register()
-        lock_mb_client(device).release()
         return JSONResponse(result)
     except SystemExit as e:
         raise HTTPException(status_code=e.code)
+    finally:
+        lock_mb_client(device).release()
 
 
 @app.post("/modbus/write/{device}",
@@ -78,10 +82,11 @@ async def write_register(device: str = Path(title="Device Extention",
     try:
         lock_mb_client(device).acquire()
         result = mb_clients(device=device).write_register(wr=payload)
-        lock_mb_client(device).release()
         return JSONResponse(result)
     except SystemExit as e:
         raise HTTPException(status_code=e.code)
+    finally:
+        lock_mb_client(device).release()
 
 
 @app.on_event("shutdown")

@@ -341,12 +341,12 @@ class _ObjectType(object):
             )
         ]
 
-    def __coil(self, wr: Dict) -> bool:
+    def __coil(self, wr: Dict) -> None:
         """
         dictionary with "parameter: value" pairs to be changed in coil and
         holding registers
         :param wr: dictionary with {parameter: value} pairs
-        :return: bool = True (NoError)
+        :return:
         """
         for parameter, value in wr.items():
             for address, attributes in self.__register_maps.items():
@@ -358,19 +358,17 @@ class _ObjectType(object):
                         slave=UNIT)
                     # assert (not rq.isError())  # test we are not an error
                     if rq.isError():
-                        logging.error("Error writing coil register at address {0} with payload {1}".
+                        logging.error("Error writing coil register at address '{0}' with payload '{1}'".
                                       format(int(address), value))
                         sys.exit(500)
                     break
 
-        return True
-
-    def __holding(self, wr: Dict) -> bool:
+    def __holding(self, wr: Dict) -> None:
         """
         dictionary with "parameter: value" pairs to be changed in coil and
         holding registers
         :param wr: dictionary with {parameter: value} pairs
-        :return: bool = True (NoError)
+        :return:
         """
         builder = BinaryPayloadBuilder(
             byteorder=self.__endianness['byteorder'],
@@ -407,13 +405,11 @@ class _ObjectType(object):
                         slave=UNIT)
                     # assert (not rq.isError())  # test we are not an error
                     if rq.isError():
-                        logging.error("Error writing holding register at address {0} with payload {1}".
+                        logging.error("Error writing holding register at address '{0}' with payload '{1}'".
                                       format(reg_info['start'], payload))
                         sys.exit(500)
                     builder.reset()  # reset builder
                     break  # if parameter matched
-
-        return True
 
     def register_readout(self):
         """
@@ -454,7 +450,7 @@ class _ObjectType(object):
                 )
             # assert (not result.isError())
             if result.isError():
-                logging.error("Error reading register at address {0} and width {1} for MODBUS class {2}".
+                logging.error("Error reading register at address '{0}' and width '{1}' for MODBUS class '{2}'".
                               format(reg_info['start'],
                                      reg_info['width'],
                                      self.__entity))
@@ -484,11 +480,11 @@ class _ObjectType(object):
 
         return decoded
 
-    def register_write(self, wr: Dict) -> bool:
+    def register_write(self, wr: Dict) -> None:
         """
         call coil or holding register writes
         :param wr: dictionary with {parameter: value} pairs
-        :return: bool = True (NoError)
+        :return:
         """
         if self.__entity == '4':
             self.__holding(wr=wr)
@@ -505,8 +501,6 @@ class _ObjectType(object):
                                         format(parameter,
                                                self.__entity))
                         break
-
-        return True
 
 
 class MODBUSClient(object):
@@ -530,7 +524,7 @@ class MODBUSClient(object):
                                                              path_additional)
         # verify existance of config file
         if not path.isfile(file_config):
-            logging.error("Client config file {0} not found".format(file_config))
+            logging.error("Client config file '{0}' not found".format(file_config))
             sys.exit(404)
         with open(file_config) as config_file:
             client_config = json.load(config_file)
@@ -586,16 +580,16 @@ class MODBUSClient(object):
             else:
                 rc = False
                 logging.warning(
-                    "Parameter {} is not being mapped to registers!".format(parameter))
+                    "Parameter '{}' is not being mapped to registers!".format(parameter))
 
         return rc
 
-    def __client_mapping_checks(self, mapping: Dict) -> bool:
+    def __client_mapping_checks(self, mapping: Dict) -> None:
         """
         perform checks on the client mapping
         parameter must not be duplicate
         :param mapping: Dict
-        :return: bool = True (NoError)
+        :return:
         """
         rev_dict = dict()
         key = None
@@ -615,8 +609,6 @@ class MODBUSClient(object):
         except _DuplicateParameterError:
             logging.error("Duplicate parameter: {0}.".format(parameter))
             sys.exit(500)
-
-        return True
 
     @staticmethod
     def __register_integrity(address: str) -> bool:
@@ -658,7 +650,7 @@ class MODBUSClient(object):
         """
         invoke the writer to registers, where
         :param wr: list of dicts {parameter: value}
-        :return: Dict
+        :return: Dict, returns the input unchanged
         """
         if not self.__existance_mapping_checks(wr=wr):
             sys.exit(204)
@@ -670,7 +662,7 @@ class MODBUSClient(object):
 
         return wr
 
-    def close(self):
+    def close(self) -> None:
         client = self.__init.get("client")
         if client:
             logging.debug("Closing {}".format(client))
