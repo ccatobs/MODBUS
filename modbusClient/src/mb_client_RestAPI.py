@@ -51,7 +51,7 @@ def mb_clients(device: str) -> MODBUSClient:
     """
     if device not in clients:
         clients[device] = MODBUSClient(device=device,
-                                       path_additional="../configFiles")
+                                       path_additional="modbusClient/configFiles")
     return clients[device]
 
 

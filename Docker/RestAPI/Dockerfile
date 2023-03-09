@@ -9,4 +9,4 @@ COPY requirements.txt /code/
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-ENTRYPOINT python -u src/mb_client_RestAPI.py
+ENTRYPOINT python -u modbusClient/src/mb_client_RestAPI.py --host '0.0.0.0' --port 5090

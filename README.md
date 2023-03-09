@@ -307,7 +307,7 @@ The current repository comprises:
 https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_v2.py) 
 module with the following methods:
   * read_register()
-  * write_register(wr: JSON)
+  * write_register(wr: Dict)
   * close()
 * MODBUS 
 [Reader](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_reader_v2.py) 

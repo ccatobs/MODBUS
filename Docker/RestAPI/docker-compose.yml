@@ -6,8 +6,8 @@ services:
       dockerfile: ./Docker/RestAPI/Dockerfile
     image: 'mb_restapi:0.1'
     container_name: "mb_restapi"
-#    restart: unless-stopped # always
-#    ports:
-#      - "5000:5000"
+    restart: unless-stopped # always
+    ports:
+      - "5090:5090"
 # When enabling this, disable ports!
-    network_mode: host
+#    network_mode: host
