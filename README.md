@@ -324,9 +324,10 @@ For Reader and Writer the MODBUS
 server connection and register mapping details are defined in
 mb_client_config_`<device>`.json.
 
-MODBUS Server and RestAPI can also be run inside a Docker Container.
+MODBUS Server Simulator & RestAPI and the RestAPI as stadalone 
+can also be run inside a Docker Container, see [here](https://github.com/ccatp/MODBUS/blob/master/Docker)
 
-For the Conda environment used see [here](https://github.com/ccatp/MODBUS/blob/master/modbusClient/conda-env.txt)
+For the Conda environment used, see [here](https://github.com/ccatp/MODBUS/blob/master/modbusClient/conda-env.txt)
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de

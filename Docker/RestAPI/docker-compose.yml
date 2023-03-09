@@ -2,9 +2,10 @@ version: '3.8'
 services:
   mb_rest_api:
     build:
-      context: .
-    image: 'mb_rest_api:0.1'
-    container_name: "mb_rest_api"
+      context: ../..
+      dockerfile: ./Docker/RestAPI/Dockerfile
+    image: 'mb_restapi:0.1'
+    container_name: "mb_restapi"
 #    restart: unless-stopped # always
 #    ports:
 #      - "5000:5000"
