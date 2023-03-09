@@ -7,7 +7,9 @@ services:
     image: 'mb_restapi:0.1'
     container_name: "mb_restapi"
     restart: unless-stopped # always
-    ports:
-      - "5090:5090"
+#    ports:
+#      - "5090:5090"
+#    extra_hosts:
+#      - "host.docker.internal:172.19.0.2"
 # When enabling this, disable ports!
-#    network_mode: host
+    network_mode: host
