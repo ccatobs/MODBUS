@@ -279,11 +279,11 @@ Alternatively, invoke cli *curl* for the Reader:
 and for the Writer:
 
     curl <host>:5000/modbus/write/<device> -X PUT \
-            -d 'payload={"test 32 bit int": 720.04, \
-            "write int register": 10, \
-            "string of register/1": "YZ", \
-            "Coil 0": true, \
-            "Coil 1": true, \
+            -d 'payload={"test 32 bit int": 720.04, 
+            "write int register": 10, 
+            "string of register/1": "YZ", 
+            "Coil 0": true, 
+            "Coil 1": true, 
             "Coil 10": true}'
 
 The JSON comprises one to many 
