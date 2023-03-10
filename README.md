@@ -311,8 +311,7 @@ module with the following methods:
   * close()
 * MODBUS 
 [Reader](https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_reader_v2.py) 
-* MODBUS
-[Writer]https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_writer_v2.py)
+* MODBUS [Writer](https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_writer_v2.py)
 * MODBUS [server simulator](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.py) 
 (coding from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
