@@ -24,10 +24,10 @@ import json
 import re
 import sys
 import logging
-from os import path
+import os
 from typing import Dict, List
 # internal
-from mb_client_aux import mytimer
+from .mb_client_aux import mytimer
 
 """
 change history
@@ -507,7 +507,7 @@ class MODBUSClient(object):
 
     def __init__(self,
                  device: str = "default",
-                 path_additional: str = '.'):
+                 path_additional: str = None):
         """
         initializing the modbus client and perform checks on
         mb_client_mapping_<device>.json:
@@ -518,12 +518,18 @@ class MODBUSClient(object):
         object - modbus client
         dictionary - mapping
         """
-        self.__device = device
-        path_additional = path_additional.rstrip('/')
-        file_config = "{1}/mb_client_config_{0}.json".format(device,
-                                                             path_additional)
+        self.__device = device  # used for wrapper
+        if path_additional:
+            file_config = "{0}/mb_client_config_{1}.json".\
+                format(path_additional.rstrip('/'),
+                       device)
+        else:
+            file_config = "{0}{1}/mb_client_config_{2}.json".\
+                format(os.path.dirname(os.path.realpath(__file__)),
+                       "/../configFiles",
+                       device)
         # verify existance of config file
-        if not path.isfile(file_config):
+        if not os.path.isfile(file_config):
             logging.error("Client config file '{0}' not found".format(file_config))
             sys.exit(404)
         with open(file_config) as config_file:

@@ -6,10 +6,11 @@ RUN apt-get update  \
 
 WORKDIR /code
 
-COPY modbusClient/ /code/modbusClient/
-COPY modbusServerSimulator/ /code/modbusServerSimulator/
-COPY Docker/ServerSimulator/python_wrapper.sh /code/
-COPY requirements.txt /code/
+COPY modbusClient/ modbusClient/
+COPY modbusServerSimulator/ modbusServerSimulator/
+COPY Docker/ServerSimulator/python_wrapper.sh .
+COPY RestAPI/mb_client_RestAPI.py .
+COPY requirements.txt .
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt

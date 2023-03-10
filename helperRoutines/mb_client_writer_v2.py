@@ -16,7 +16,7 @@ Astronomy (AIfA), University Bonn.
 import json
 from timeit import default_timer as timer
 import argparse
-from mb_client_v2 import MODBUSClient
+from modbusClient import MODBUSClient
 
 print(__doc__)
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
                            )
     argparser.add_argument('--path',
                            required=False,
-                           help='Path of config files (default: .)'
+                           help='Path to config files (default: .)'
                            )
     argparser.add_argument('--payload',
                            required=True,

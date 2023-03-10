@@ -14,8 +14,8 @@ import os
 import uvicorn
 from typing import Dict
 # internal
-from mb_client_v2 import MODBUSClient
-from mb_client_aux import LockGroup
+from modbusClient import MODBUSClient
+from modbusClient import LockGroup
 
 """
 version history:
@@ -42,16 +42,17 @@ app = FastAPI()
 clients = dict()
 
 
-def mb_clients(device: str) -> MODBUSClient:
+def mb_clients(device: str, path_additional: str = '.') -> MODBUSClient:
     """
     Helper to store MODBUSClient instances over the entire time the RestAPI is
     running once it was called the first time
     :param device: str
+    :param path_additional: str, path to ConfigFiles, default = '.'
     :return: MODBUSClient instance for each device
     """
     if device not in clients:
         clients[device] = MODBUSClient(device=device,
-                                       path_additional="modbusClient/configFiles")
+                                       path_additional=path_additional)
     return clients[device]
 
 
@@ -61,7 +62,7 @@ async def read_register(device: str = Path(title="Device Extention",
                                            description="Device Extention")):
     try:
         lock_mb_client(device).acquire()
-        result = mb_clients(device=device).read_register()
+        result = mb_clients(device=device, path_additional=path_additional).read_register()
         return JSONResponse(result)
     except SystemExit as e:
         raise HTTPException(status_code=e.code)
@@ -81,7 +82,7 @@ async def write_register(device: str = Path(title="Device Extention",
                             detail="Empty payload")
     try:
         lock_mb_client(device).acquire()
-        result = mb_clients(device=device).write_register(wr=payload)
+        result = mb_clients(device=device, path_additional=path_additional).write_register(wr=payload)
         return JSONResponse(result)
     except SystemExit as e:
         raise HTTPException(status_code=e.code)
@@ -112,12 +113,21 @@ if __name__ == '__main__':
         help='Port (default: 5000)',
         default=5000
     )
+    argparser.add_argument(
+        '--path',
+        required=False,
+        type=str,
+        help='Path to config files (default: /../configFiles)'
+    )
+
+    path_additional = argparser.parse_args().path
 
     logging.info("PID: {0}".format(os.getpid()))
     logging.info("Host: {0}, Port: {1}".format(
         argparser.parse_args().host,
         argparser.parse_args().port)
     )
+    logging.info("Path to configFiles: {}".format(path_additional))
 
     uvicorn.run(app,
                 host=argparser.parse_args().host,
