@@ -310,15 +310,16 @@ module with the following methods:
   * write_register(wr: Dict)
   * close()
 * MODBUS 
-[Reader](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_reader_v2.py) 
+[Reader](https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_reader_v2.py) 
 * MODBUS
-[Writer](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_writer_v2.py)
-* MODBUS server simulator (coding from 
+[Writer]https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_writer_v2.py)
+* MODBUS [server simulator](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.py) 
+(coding from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
 [config](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.json) 
 file.
 * MODBUS 
-[REST API](https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_RestAPI.py)
+[REST API](https://github.com/ccatp/MODBUS/blob/master/RestAPI/mb_client_RestAPI.py)
 
 For Reader and Writer the MODBUS 
 server connection and register mapping details are defined in
@@ -327,7 +328,7 @@ mb_client_config_`<device>`.json.
 MODBUS Server Simulator & RestAPI and the RestAPI as stadalone 
 can also be run inside a Docker Container, see [here](https://github.com/ccatp/MODBUS/blob/master/Docker)
 
-For the Conda environment used, see [here](https://github.com/ccatp/MODBUS/blob/master/modbusClient/conda-env.txt)
+For the Conda environment used, see [here](https://github.com/ccatp/MODBUS/blob/master/conda-env.txt)
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de
