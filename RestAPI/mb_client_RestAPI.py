@@ -127,7 +127,8 @@ if __name__ == '__main__':
         argparser.parse_args().host,
         argparser.parse_args().port)
     )
-    logging.info("Path to configFiles: {}".format(path_additional))
+    logging.info("Path to configFiles: {}".
+                 format(path_additional if path_additional else "'default'"))
 
     uvicorn.run(app,
                 host=argparser.parse_args().host,
