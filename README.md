@@ -223,7 +223,7 @@ in its version v3.1.3
 Run (for testing):
     
     python3 mb_client_reader_v2.py --device <device extention> (default: default) \
-                                   --path <path of config files> (default: .)
+                                   --path <path of config files> (default: "/../ConfigFiles/")
 
 
 ## The WRITER
@@ -235,7 +235,7 @@ changed by utilizing the writer method of MODBUSClient class.
 Run (for testing):
     
     python3 mb_client_writer_v2.py --device <device extention> (default: default) \
-                                   --path <path of config files> (default: .) \
+                                   --path <path of config files> (default: "/../ConfigFiles/") \
                                    --payload "{\"test 32 bit int\": 720.04}"
 
 For the time being it accepts - as input - a JSON with one or multiple
@@ -262,7 +262,9 @@ Run the Rest API with the previously described MODBUS READER and WRITER methods
 of the *MODBUSClient* class. An internal 
 locking mechanism prevents reading and writing to the same device simulaneously.
 
-    python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) --port <port> (default: 5000)
+    python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) \
+                                 --port <port> (default: 5000) \
+                                 --path <path of config files> (default: "/../ConfigFiles/")
 
 Get a list of available endpoints, type in the browser URL
 
