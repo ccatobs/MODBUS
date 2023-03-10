@@ -303,12 +303,10 @@ config file mb_client_config_`<device>`.json to the ConfigFiles directory.
 
 The current repository comprises:
 
-* [class MODBUSClient](
-https://github.com/ccatp/MODBUS/blob/master/modbusClient/src/mb_client_v2.py) 
-module with the following methods:
-  * read_register()
-  * write_register(wr: Dict)
-  * close()
+* [class MODBUSClient](https://github.com/ccatp/MODBUS/blob/master/modbusClient/)
+    * read_register()
+    * write_register(wr: Dict)
+    * close()
 * MODBUS 
 [Reader](https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_reader_v2.py) 
 * MODBUS [Writer](https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_writer_v2.py)
