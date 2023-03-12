@@ -1,7 +1,0 @@
-{
-  "30001/30002": {
-    "parameter": "voltage_V_a_n",
-    "description": "Voltage difference between A and neutrel",
-    "function" : "decode_32bit_float"
-  }
-}

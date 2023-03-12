@@ -64,7 +64,7 @@ if args.export_xlsx is not None:
 
 # export xlsx to files
 if args.import_xlsx is not None:
-    df = pd.read_excel(args.import_xlsx, None, header=1, index_col=0, engine='openpyxl');
+    df = pd.read_excel(args.import_xlsx, None, header=1, index_col=0, engine='openpyxl')
     for json_filename, wb in df.items():
         log.info(f'creating {json_filename}')
         result = wb.to_json(orient="index")

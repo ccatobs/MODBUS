@@ -16,7 +16,6 @@ Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
 Argelander Institute for Astronomy (AIfA), University Bonn.
 """
 
-from __future__ import annotations
 from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 from pymodbus.client import ModbusTcpClient
 import pymodbus.exceptions
@@ -78,6 +77,9 @@ change history
     * new modules created from to long code
     * notify if non-existing parameter
     * docstrings
+    * error handling
+    * replace if by match
+    * from __future__ removed
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -111,14 +113,6 @@ FUNCTION2AVRO = {
     "decode_64bit_float": "double",
     "decode_string": "string"
 }
-
-
-class _MappingKeyError(Exception):
-    pass
-
-
-class _DuplicateParameterError(Exception):
-    pass
 
 
 class _ObjectType(object):
@@ -300,27 +294,28 @@ class _ObjectType(object):
         if function not in FUNCTION2AVRO:
             logging.error("Decoding function not defined.")
             sys.exit(500)
-        if function == 'decode_bits':
-            value = getattr(decoder, function)()
-            return self.__decode_byte(register=register,
-                                      value=value,
-                                      function=function)
-        elif function == "decode_string":
-            encod = getattr(decoder, function)(no_bytes)
-            # ToDo what kind of characters need to be removed?
-            # value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
-            try:
-                value = "".join(
-                    list(s for s in encod.decode() if s.isprintable())
-                    ).rstrip()
-            except UnicodeDecodeError as e:
-                logging.error(str(e))
-                sys.exit(500)
-        else:
-            if no_bytes not in [1, 2, 4, 8]:
-                logging.error("Number of bytes allocated for int or float is wrong!")
-                sys.exit(500)
-            value = getattr(decoder, function)()
+        match function:
+            case 'decode_bits':
+                value = getattr(decoder, function)()
+                return self.__decode_byte(register=register,
+                                          value=value,
+                                          function=function)
+            case "decode_string":
+                encod = getattr(decoder, function)(no_bytes)
+                # ToDo what kind of characters need to be removed?
+                # value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
+                try:
+                    value = "".join(
+                        list(s for s in encod.decode() if s.isprintable())
+                        ).rstrip()
+                except UnicodeDecodeError as e:
+                    logging.error(str(e))
+                    sys.exit(500)
+            case _:
+                if no_bytes not in [1, 2, 4, 8]:
+                    logging.error("Wrong number of bytes allocated for int or float!")
+                    sys.exit(500)
+                value = getattr(decoder, function)()
 
         return self.__decode_prop(register=register,
                                   value=value,
@@ -424,30 +419,31 @@ class _ObjectType(object):
         for key in self.__register_maps.keys():
             reg_info = self.__register_width(key)
             # read appropriate register(s)
-            if self.__entity == '0':
-                result = self.__client.read_coils(
-                    address=reg_info['start'],
-                    count=1,
-                    slave=UNIT
-                )
-            elif self.__entity == '1':
-                result = self.__client.read_discrete_inputs(
-                    address=reg_info['start'],
-                    count=1,
-                    slave=UNIT
-                )
-            elif self.__entity == '3':
-                result = self.__client.read_input_registers(
-                    address=reg_info['start'],
-                    count=reg_info['width'],
-                    slave=UNIT
-                )
-            elif self.__entity == '4':
-                result = self.__client.read_holding_registers(
-                    address=reg_info['start'],
-                    count=reg_info['width'],
-                    slave=UNIT
-                )
+            match self.__entity:
+                case '0':
+                    result = self.__client.read_coils(
+                        address=reg_info['start'],
+                        count=1,
+                        slave=UNIT
+                    )
+                case '1':
+                    result = self.__client.read_discrete_inputs(
+                        address=reg_info['start'],
+                        count=1,
+                        slave=UNIT
+                    )
+                case '3':
+                    result = self.__client.read_input_registers(
+                        address=reg_info['start'],
+                        count=reg_info['width'],
+                        slave=UNIT
+                    )
+                case '4':
+                    result = self.__client.read_holding_registers(
+                        address=reg_info['start'],
+                        count=reg_info['width'],
+                        slave=UNIT
+                    )
             # assert (not result.isError())
             if result.isError():
                 logging.error("Error reading register at address '{0}' and width '{1}' for MODBUS class '{2}'".
@@ -486,21 +482,20 @@ class _ObjectType(object):
         :param wr: dictionary with {parameter: value} pairs
         :return:
         """
-        if self.__entity == '4':
-            self.__holding(wr=wr)
-
-        elif self.__entity == '0':
-            self.__coil(wr=wr)
-
-        # when attempting to writing to a read-only register, issue warning
-        elif self.__entity in ['1', '3']:
-            for parameter, value in wr.items():
-                for address, attributes in self.__register_maps.items():
-                    if attributes['parameter'] == parameter:
-                        logging.warning("Parameter '{0}' of MODBUS register class {1} ignored!".
-                                        format(parameter,
-                                               self.__entity))
-                        break
+        match self.__entity:
+            case '4':
+                self.__holding(wr=wr)
+            case '0':
+                self.__coil(wr=wr)
+            # when attempting to writing to a read-only register, issue warning
+            case '1' | '3':
+                for parameter, value in wr.items():
+                    for address, attributes in self.__register_maps.items():
+                        if attributes['parameter'] == parameter:
+                            logging.warning("Parameter '{0}' of MODBUS register class {1} ignored!".
+                                            format(parameter,
+                                                   self.__entity))
+                            break
 
 
 class MODBUSClient(object):
@@ -598,21 +593,14 @@ class MODBUSClient(object):
         :return:
         """
         rev_dict = dict()
-        key = None
-        parameter = None
-        try:
-            for key, value in mapping.items():
-                if not self.__register_integrity(address=key):
-                    raise _MappingKeyError
-                rev_dict.setdefault(value["parameter"], set()).add(key)
-            parameter = [key for key, values in rev_dict.items()
-                         if len(values) > 1]
-            if parameter:
-                raise _DuplicateParameterError
-        except _MappingKeyError:
-            logging.error("Wrong key in mapping: {0}.".format(key))
-            sys.exit(500)
-        except _DuplicateParameterError:
+        for key, value in mapping.items():
+            if not self.__register_integrity(address=key):
+                logging.error("Wrong key in mapping: {0}.".format(key))
+                sys.exit(500)
+            rev_dict.setdefault(value["parameter"], set()).add(key)
+        parameter = [key for key, values in rev_dict.items()
+                     if len(values) > 1]
+        if parameter:
             logging.error("Duplicate parameter: {0}.".format(parameter))
             sys.exit(500)
 

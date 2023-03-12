@@ -4,19 +4,11 @@
 auxiliary functions
 """
 
-from __future__ import annotations
 from timeit import default_timer
 from functools import wraps
 from threading import Lock
 import logging
 from typing import Callable
-
-
-class _MyException(Exception):
-    def __init__(self, status_code, detail):
-        super(_MyException, self).__init__(status_code, detail)
-        self.status_code = status_code
-        self.detail = detail
 
 
 class LockGroup(object):
