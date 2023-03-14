@@ -413,7 +413,7 @@ class _ObjectType(object):
         list of dictionary/ies is appended to the result
         :return: List
         """
-        result = None
+        f = None
         decoded = list()
 
         for key in self.__register_maps.keys():
@@ -421,29 +421,17 @@ class _ObjectType(object):
             # read appropriate register(s)
             match self.__entity:
                 case '0':
-                    result = self.__client.read_coils(
-                        address=reg_info['start'],
-                        count=1,
-                        slave=UNIT
-                    )
+                    f = "read_coils"
                 case '1':
-                    result = self.__client.read_discrete_inputs(
-                        address=reg_info['start'],
-                        count=1,
-                        slave=UNIT
-                    )
+                    f = "read_discrete_inputs"
                 case '3':
-                    result = self.__client.read_input_registers(
-                        address=reg_info['start'],
-                        count=reg_info['width'],
-                        slave=UNIT
-                    )
+                    f = "read_input_registers"
                 case '4':
-                    result = self.__client.read_holding_registers(
-                        address=reg_info['start'],
-                        count=reg_info['width'],
-                        slave=UNIT
-                    )
+                    f = "read_holding_registers"
+            result = getattr(self.__client, f)(
+                address=reg_info['start'],
+                count=reg_info['width'],
+                slave=UNIT)
             # assert (not result.isError())
             if result.isError():
                 logging.error("Error reading register at address '{0}' and width '{1}' for MODBUS class '{2}'".
