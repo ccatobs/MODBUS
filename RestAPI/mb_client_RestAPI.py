@@ -29,7 +29,7 @@ version history:
 __author__ = "Dr. Ralf Antonius Timmermann"
 __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, University Bonn"
 __credits__ = ""
-__license__ = "BSD"
+__license__ = "BSD 3-Clause"
 __version__ = "1.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"

@@ -6,10 +6,10 @@ MODBUS Client
 For a detailed description, see https://github.com/ccatp/MODBUS
 Running and testing:
 python3 mb_client_reader_v2.py --device <device extention> (default: default) \
-                               --path <path to config files> (default: .)
+                               --path <path to config files> (default: ../configFiles)
 
 python3 mb_client_writer_v2.py --device <device extention> (default: default) \
-                               --path <path to config files> (default: .) \
+                               --path <path to config files> (default: ../configFiles) \
                                --payload "{\"test 32 bit int\": 720.04, ...}"
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
@@ -18,7 +18,6 @@ Argelander Institute for Astronomy (AIfA), University Bonn.
 
 from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 from pymodbus.client import ModbusTcpClient
-import pymodbus.exceptions
 import json
 import re
 import sys
@@ -80,13 +79,17 @@ change history
     * error handling
     * replace if by match
     * from __future__ removed
+2023/03/19 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+-version 2.2.1
+    * Exception handling when connection to ModbusTcpClient
+    * License included
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
 __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, University Bonn"
 __credits__ = ""
-__license__ = "BSD-3"
-__version__ = "2.2"
+__license__ = "BSD 3-Clause"
+__version__ = "2.2.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -278,7 +281,7 @@ class _ObjectType(object):
         return [dict(**di, **optional)]
 
     def __formatter(self,
-                    decoder: pymodbus.payload.BinaryPayloadDecoder,
+                    decoder: BinaryPayloadDecoder,
                     register: str,
                     no_bytes: int) -> List[Dict]:
         """
@@ -525,14 +528,10 @@ class MODBUSClient(object):
         # make integrity checks
         self.__client_mapping_checks(mapping=client_config['mapping'])
 
-        try:
-            client = ModbusTcpClient(host=client_config['server']['listenerAddress'],
-                                     port=client_config['server']['listenerPort'],
-                                     debug=debug)
-            if not client.connect():
-                raise pymodbus.exceptions.ConnectionException
-        #    client.de
-        except pymodbus.exceptions.ConnectionException:
+        client = ModbusTcpClient(host=client_config['server']['listenerAddress'],
+                                 port=client_config['server']['listenerPort'],
+                                 debug=debug)
+        if not client.connect():
             logging.error("Could not connect to server.")
             sys.exit(503)
 
