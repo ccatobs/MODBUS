@@ -327,7 +327,8 @@ mb_client_config_`<device>`.json.
 MODBUS Server Simulator & RestAPI and the RestAPI as stadalone 
 can also be run inside a Docker Container, see [here](https://github.com/ccatp/MODBUS/blob/master/Docker)
 
-For the Conda environment used, see [here](https://github.com/ccatp/MODBUS/blob/master/conda-env.txt)
+For the Conda environment used, 
+see [here](https://github.com/ccatp/MODBUS/blob/master/conda-env.txt)
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de
