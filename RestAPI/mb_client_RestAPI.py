@@ -42,7 +42,8 @@ app = FastAPI()
 clients = dict()
 
 
-def mb_clients(device: str, path_additional: str = '.') -> MODBUSClient:
+def mb_clients(device: str,
+               path_additional: str = '.') -> MODBUSClient:
     """
     Helper to store MODBUSClient instances over the entire time the RestAPI is
     running once it was called the first time

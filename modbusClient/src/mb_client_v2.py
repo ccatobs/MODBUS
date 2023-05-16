@@ -61,17 +61,17 @@ change history
 - version 1.1
     * strings modified
 2023/02/23 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
--version 2.0
+- version 2.0
     * MODBUS client as library for housekeeping purposes
     * merge reader and writer methods
     * pymodbus v3.1.3
 2023/03/07 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
--version 2.1
+- version 2.1
     * config and mapping files merged
     * number of bytes allocated for integers or floats is checked
     * notify when attempting to write to read-only registers
 2023/03/08 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
--version 2.2
+- version 2.2
     * assert replaced by sys.exit
     * new modules created from to long code
     * notify if non-existing parameter
@@ -80,16 +80,20 @@ change history
     * replace if by match
     * from __future__ removed
 2023/03/19 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
--version 2.2.1
+- version 2.2.1
     * Exception handling when connection to ModbusTcpClient
     * License included
+2023/05/16 - - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 2.2.2
+    * PEP8
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
-__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, University Bonn"
+__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, " \
+                "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "2.2.1"
+__version__ = "2.2.2"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "Dev"
@@ -120,7 +124,9 @@ FUNCTION2AVRO = {
 
 class _ObjectType(object):
 
-    def __init__(self, init: Dict, entity: str):
+    def __init__(self,
+                 init: Dict,
+                 entity: str):
         """
         :param init: Dict - client parameter
             init["client"] instance - MODBUS client
@@ -316,7 +322,8 @@ class _ObjectType(object):
                     sys.exit(500)
             case _:
                 if no_bytes not in [1, 2, 4, 8]:
-                    logging.error("Wrong number of bytes allocated for int or float!")
+                    logging.error(
+                        "Wrong number of bytes allocated for int or float!")
                     sys.exit(500)
                 value = getattr(decoder, function)()
 
@@ -324,7 +331,9 @@ class _ObjectType(object):
                                   value=value,
                                   function=function)
 
-    def __formatter_bit(self, decoder: List, register: str) -> List[Dict]:
+    def __formatter_bit(self,
+                        decoder: List,
+                        register: str) -> List[Dict]:
         """
         indexes the result array of bits by the keys found in the mapping
         :param decoder: A deferred response handle from the register readings
@@ -339,7 +348,8 @@ class _ObjectType(object):
             )
         ]
 
-    def __coil(self, wr: Dict) -> None:
+    def __coil(self,
+               wr: Dict) -> None:
         """
         dictionary with "parameter: value" pairs to be changed in coil and
         holding registers
@@ -356,12 +366,14 @@ class _ObjectType(object):
                         slave=UNIT)
                     # assert (not rq.isError())  # test we are not an error
                     if rq.isError():
-                        logging.error("Error writing coil register at address '{0}' with payload '{1}'".
-                                      format(int(address), value))
+                        logging.error(
+                            "Error writing coil register at address '{0}' "
+                            "with payload '{1}'".format(int(address), value))
                         sys.exit(500)
                     break
 
-    def __holding(self, wr: Dict) -> None:
+    def __holding(self,
+                  wr: Dict) -> None:
         """
         dictionary with "parameter: value" pairs to be changed in coil and
         holding registers
@@ -385,7 +397,9 @@ class _ObjectType(object):
                         value = int((value - offset) / multiplier)
                     if "string" in function:
                         if len(value) > reg_info['no_bytes']:
-                            logging.error("'{0}' too long for parameter '{1}'".format(value, parameter))
+                            logging.error(
+                                "'{0}' too long for parameter '{1}'"
+                                .format(value, parameter))
                             sys.exit(500)
                         # fill entire string with spaces
                         s = list(" " * (2*reg_info['width']))
@@ -393,7 +407,9 @@ class _ObjectType(object):
                         value = "".join(s)
                     if "bits" in function:
                         if len(value) / 16 > reg_info['width']:
-                            logging.error("'{0}' too long for parameter '{1}'".format(value, parameter))
+                            logging.error(
+                                "'{0}' too long for parameter '{1}'"
+                                .format(value, parameter))
                             sys.exit(500)
                     getattr(builder, function)(value)
                     payload = builder.to_registers()
@@ -403,8 +419,10 @@ class _ObjectType(object):
                         slave=UNIT)
                     # assert (not rq.isError())  # test we are not an error
                     if rq.isError():
-                        logging.error("Error writing holding register at address '{0}' with payload '{1}'".
-                                      format(reg_info['start'], payload))
+                        logging.error(
+                            "Error writing holding register at address '{0}' "
+                            "with payload '{1}'".format(reg_info['start'],
+                                                        payload))
                         sys.exit(500)
                     builder.reset()  # reset builder
                     break  # if parameter matched
@@ -437,7 +455,8 @@ class _ObjectType(object):
                 slave=UNIT)
             # assert (not result.isError())
             if result.isError():
-                logging.error("Error reading register at address '{0}' and width '{1}' for MODBUS class '{2}'".
+                logging.error("Error reading register at address '{0}' and "
+                              "width '{1}' for MODBUS class '{2}'".
                               format(reg_info['start'],
                                      reg_info['width'],
                                      self.__entity))
@@ -467,7 +486,8 @@ class _ObjectType(object):
 
         return decoded
 
-    def register_write(self, wr: Dict) -> None:
+    def register_write(self,
+                       wr: Dict) -> None:
         """
         call coil or holding register writes
         :param wr: dictionary with {parameter: value} pairs
@@ -483,7 +503,8 @@ class _ObjectType(object):
                 for parameter, value in wr.items():
                     for address, attributes in self.__register_maps.items():
                         if attributes['parameter'] == parameter:
-                            logging.warning("Parameter '{0}' of MODBUS register class {1} ignored!".
+                            logging.warning("Parameter '{0}' of MODBUS register "
+                                            "class {1} ignored!".
                                             format(parameter,
                                                    self.__entity))
                             break
@@ -516,21 +537,26 @@ class MODBUSClient(object):
                        device)
         # verify existance of config file
         if not os.path.isfile(file_config):
-            logging.error("Client config file '{0}' not found".format(file_config))
+            logging.error(
+                "Client config file '{0}' not found".format(file_config))
             sys.exit(404)
         with open(file_config) as config_file:
             client_config = json.load(config_file)
         logging.info("Config File: {0}".format(file_config))
         # logging toggle debug (default INFO)
         debug = client_config.get('debug', False)
-        logging.getLogger().setLevel(getattr(logging, "DEBUG" if debug else "INFO"))
+        logging.getLogger().setLevel(
+            getattr(logging, "DEBUG" if debug else "INFO")
+        )
 
         # make integrity checks
         self.__client_mapping_checks(mapping=client_config['mapping'])
 
-        client = ModbusTcpClient(host=client_config['server']['listenerAddress'],
-                                 port=client_config['server']['listenerPort'],
-                                 debug=debug)
+        client = ModbusTcpClient(
+            host=client_config['server']['listenerAddress'],
+            port=client_config['server']['listenerPort'],
+            debug=debug
+        )
         if not client.connect():
             logging.error("Could not connect to server.")
             sys.exit(503)
@@ -554,7 +580,8 @@ class MODBUSClient(object):
                 )
             )
 
-    def __existance_mapping_checks(self, wr: Dict) -> bool:
+    def __existance_mapping_checks(self,
+                                   wr: Dict) -> bool:
         """
         check if parameter exists in mapping at all
         :param wr: list of dicts {parameter: value}
@@ -568,11 +595,13 @@ class MODBUSClient(object):
             else:
                 rc = False
                 logging.warning(
-                    "Parameter '{}' is not being mapped to registers!".format(parameter))
+                    "Parameter '{}' is not being mapped to registers!"
+                    .format(parameter))
 
         return rc
 
-    def __client_mapping_checks(self, mapping: Dict) -> None:
+    def __client_mapping_checks(self,
+                                mapping: Dict) -> None:
         """
         perform checks on the client mapping
         parameter must not be duplicate
@@ -585,8 +614,7 @@ class MODBUSClient(object):
                 logging.error("Wrong key in mapping: {0}.".format(key))
                 sys.exit(500)
             rev_dict.setdefault(value["parameter"], set()).add(key)
-        parameter = [key for key, values in rev_dict.items()
-                     if len(values) > 1]
+        parameter = [key for key, values in rev_dict.items() if len(values) > 1]
         if parameter:
             logging.error("Duplicate parameter: {0}.".format(parameter))
             sys.exit(500)
@@ -627,7 +655,8 @@ class MODBUSClient(object):
         return [dict(sorted(item.items())) for item in decoded]
 
     @mytimer
-    def write_register(self, wr: Dict) -> Dict:
+    def write_register(self,
+                       wr: Dict) -> Dict:
         """
         invoke the writer to registers, where
         :param wr: list of dicts {parameter: value}
