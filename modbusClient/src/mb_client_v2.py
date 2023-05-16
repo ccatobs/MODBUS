@@ -91,12 +91,12 @@ change history
 __author__ = "Dr. Ralf Antonius Timmermann"
 __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
-__credits__ = ""
+__credits__ = ["Ronan Higgins"]
 __license__ = "BSD 3-Clause"
 __version__ = "2.2.2"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
-__status__ = "Dev"
+__status__ = "QA"
 
 myformat = "%(asctime)s.%(msecs)03d :: %(levelname)s: " \
            "%(filename)s - %(lineno)s - %(funcName)s()\t%(message)s"
