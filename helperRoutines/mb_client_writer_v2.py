@@ -7,7 +7,7 @@ For a detailed description, see https://github.com/ccatp/MODBUS
 
 python3 mb_client_writer_v2.py --device <device extention> (default: default) /
                                --path <path to config files>
-                               --payload \'{\"test 32 bit int\": 720.04}\'
+                               --payload "{\"test 32 bit int\": 720.04}"
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.

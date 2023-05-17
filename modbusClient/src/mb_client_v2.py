@@ -217,8 +217,8 @@ class _ObjectType(object):
         if len(self.__register_maps[register]['map']) == 1:
             # if only one entry in map, add optional parameters, otherwise no
             optional = {
-                key: self.__register_maps[register][key]
-                for key in self.__register_maps[register]
+                key: self.__register_maps[register][key] \
+                for key in self.__register_maps[register] \
                 if key not in {'map',
                                'description',
                                'value',
