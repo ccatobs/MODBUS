@@ -27,7 +27,8 @@ version history:
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
-__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, AIfA, University Bonn"
+__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, " \
+                "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
 __version__ = "1.1"
@@ -47,8 +48,8 @@ def mb_clients(device: str,
     """
     Helper to store MODBUSClient instances over the entire time the RestAPI is
     running once it was called the first time
-    :param device: str
-    :param path_additional: str, path to ConfigFiles, default = '.'
+    :param device
+    :param path_additional: path to ConfigFiles, default = '.'
     :return: MODBUSClient instance for each device
     """
     if device not in clients:
@@ -63,7 +64,10 @@ async def read_register(device: str = Path(title="Device Extention",
                                            description="Device Extention")):
     try:
         lock_mb_client(device).acquire()
-        result = mb_clients(device=device, path_additional=path_additional).read_register()
+        result = mb_clients(
+            device=device,
+            path_additional=path_additional
+        ).read_register()
         return JSONResponse(result)
     except SystemExit as e:
         raise HTTPException(status_code=e.code)
@@ -83,7 +87,10 @@ async def write_register(device: str = Path(title="Device Extention",
                             detail="Empty payload")
     try:
         lock_mb_client(device).acquire()
-        result = mb_clients(device=device, path_additional=path_additional).write_register(wr=payload)
+        result = mb_clients(
+            device=device,
+            path_additional=path_additional
+        ).write_register(wr=payload)
         return JSONResponse(result)
     except SystemExit as e:
         raise HTTPException(status_code=e.code)

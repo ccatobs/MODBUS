@@ -171,7 +171,8 @@ class _ObjectType(object):
             "no_bytes": no_bytes,
             "pos_byte": pos_byte
         }
-        logging.debug("register:{0} -> {1}".format(address, json.dumps(result)))
+        logging.debug("register:{0} -> {1}".format(address,
+                                                   json.dumps(result)))
 
         return result
 
@@ -260,8 +261,8 @@ class _ObjectType(object):
         desc = self.__register_maps[register].get('description')
         datatype = FUNCTION2AVRO[function]
         optional = {
-            key: self.__register_maps[register][key]
-            for key in self.__register_maps[register]
+            key: self.__register_maps[register][key] \
+            for key in self.__register_maps[register] \
             if key not in {'map',
                            'description',
                            'function',
@@ -277,14 +278,19 @@ class _ObjectType(object):
             value = value * multiplier + offset
             if isinstance(value, float):
                 datatype = "float"  # to serve Reinhold's AVRO schema
-        di = {"value": value,
-              "datatype": datatype}
+        di = {
+            "value": value,
+            "datatype": datatype
+        }
         if maps is not None:
             desc = maps.get(str(round(value)))
         if desc is not None:
             di["description"] = desc
 
-        return [dict(**di, **optional)]
+        return [dict(
+            **di,
+            **optional)
+        ]
 
     def __formatter(self,
                     decoder: BinaryPayloadDecoder,
@@ -503,8 +509,8 @@ class _ObjectType(object):
                 for parameter, value in wr.items():
                     for address, attributes in self.__register_maps.items():
                         if attributes['parameter'] == parameter:
-                            logging.warning("Parameter '{0}' of MODBUS register "
-                                            "class {1} ignored!".
+                            logging.warning("Parameter '{0}' of MODBUS "
+                                            "register class {1} ignored!".
                                             format(parameter,
                                                    self.__entity))
                             break
