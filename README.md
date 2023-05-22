@@ -218,9 +218,10 @@ One note aside on bit maps to be read out of a register's 1<sup>st</sup> and/or
 hex value. The bit map
 of a virtual parameter *TEST0* would look like:
 
-             h      lh      l
-    0x89AB = 1000100110101011
              byte/1  byte/2
+    0x89AB = 1000100110101011
+             h      lh      l
+
 
 where l and h are the low and high bit of the byte, respectively. See also below,
 when writing to registers with bit maps.
@@ -275,9 +276,9 @@ it will populate the register starting at the low bit of byte/1, subsequent
 will be set to false.
 
 
+                           byte/1          byte/2
+    --payload "{\"TEST0\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
                             l             h l             h
-    --payload="{\"TEST0\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
-                            byte/1          byte/2
 
 
 ## The MODBUS Web API
