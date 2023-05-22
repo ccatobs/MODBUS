@@ -277,7 +277,7 @@ will be set to false.
 
 
                            byte/1          byte/2
-    --payload "{\"TEST0\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
+    payload "{\"TEST0\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
                             l             h l             h
 
 
