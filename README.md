@@ -279,6 +279,7 @@ will be set to false.
     --payload="{\"TEST0\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
                             byte/1          byte/2
 
+
 ## The MODBUS Web API
 
 Run the Rest API with the previously described MODBUS READER and WRITER methods
