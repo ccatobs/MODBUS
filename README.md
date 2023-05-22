@@ -275,9 +275,9 @@ it will populate the register starting at the low bit of byte/1, subsequent
 will be set to false.
 
 
-                          l             h l             h
-    payload="{\"TEST0\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
-                          byte/1          byte/2
+                            l             h l             h
+    --payload="{\"TEST0\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
+                            byte/1          byte/2
 
 ## The MODBUS Web API
 
