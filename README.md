@@ -1,13 +1,15 @@
 # A Universal MODBUS Client
 
+latest status as of 2023/05/20
+
 ## The READER
 
 A universal MODBUS interface, where the mapping of variables to coil,
 discrete input, input registers, and holding registers is entirely defined
-by a JSON file (see below), 
+by a JSON file, 
 with no modification to the coding required whatsoever. The JSON file
-comprises keys pointing to single or multiple registers. Each dictionary key 
-comprises additional features, such as 
+comprises keys pointing to single or multiple registers or to bytes of it. 
+Each dictionary key comprises additional features, such as 
 
 1) "parameter" (mandatory, variable name unique over all register classes). 
 2) "function" (mandatory, data type for input and holding registers).
@@ -17,19 +19,19 @@ comprises additional features, such as
 6) "offset" (optional, solely for input and holding registers of datatype integer).
 
 The latter two, when provided, will not be passed on to the output, though.
-They are parsed, such that the register's value is multiplied by "multiplier" 
-and "offset" is added. This is in most instances applicable for integer of lengths
-8 and 16 bits. 
+They are parsed, such that the register's value is multiplied by a "multiplier" 
+and adding an "offset". This is solely applicable to int and long data types.
 
 A map is provided in case a value needs to match 
 an entry from a provided list. The corresponding field value is passed on to 
-the output as description superseding the input "description". A map might also 
-contain entries matching bits of the leading or trailing byte.
-If a map is defined, the description is chosen according to round(value). 
+the output as description superseding the input "description". If a map is 
+defined, the description is chosen according to round(value). 
+A map might also 
+contain entries matching bits of the leading or trailing byte of a register.
 
 Furthermore, "value" and "datatype" are
 reserved keywords, since they will be generated in the output dictionary.
-Additional nested dictionary key/value pairs may be provided in the client registry
+Additional dictionary key/value pairs may be provided in the client registry
 mapping, which are merely passed on to the output. To maintain consistancy over
 the various modbus clients, we urge selecting same features for further
 optional keys, such as "defaultvalue", "unit", "min", or "max".
@@ -39,7 +41,8 @@ e.g. "30011" addressing the 12th register
 of the input register class, "30011/1" or "30011/2" for
 the leading and trailing byte of the 16 bit register, respectively.
 Furthermore, "30011/30012" or "30011/30014" address the 32 or 64 bit 
-broad registers starting at the 12th register.
+broad registers starting at the 12th register. Please note that this applies
+if the registers are in zeroMode = True at the server's configuration.
 A function needs to be defined for input and holding registers that translates
 the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
 e.g. "decode_32bit_uint" (see below for a selection):
@@ -210,15 +213,29 @@ The following combinations could be used to write the register
 | Little     |     Big    | 0x5678 | 0x1234 |
 | Little     |    Little  | 0x7856 | 0x3412 |
 
-The result for the housekeeping (Kafka producer) is a list of dictionary objects, 
-where most of its content is passed on from the client-mapping JSON to the 
-output.
+One note aside on bit maps to be read out of a register's 1<sup>st</sup> and/or 
+2<sup>nd</sup> byte. Suppose a server's 16-bit register contains following 
+hex value. The bit map
+of a virtual parameter *TEST0* would look like:
+
+             h      lh      l
+    0x89AB = 1000100110101011
+             byte/1  byte/2
+
+where l and h are the low and high bit of the byte, respectively. See also below,
+when writing to registers with bit maps.
+The byte order endianness on the client site
+will absolutely not change the order of bits, 
+whatsoever, if the *decode_bits* function is applied. What a relief!
 
 Not implemented:
 * decoder.bit_chunks()
 
+The result provided 
+for the housekeeping (Kafka producer) is a list of dictionary objects.
+
 For the time being the MODBUS client deployes the syncronous ModbusTcpClient
-in its version v3.1.3
+in its version v3.2.2 (available as of 2023/05/18: v3.3.0alpha)
 
 Run (for testing):
     
@@ -239,46 +256,51 @@ Run (for testing):
                                    --payload "{\"test 32 bit int\": 720.04}"
 
 For the time being it accepts - as input - a JSON with one or multiple
-{"parameter": "value"} pairs, where parameter needs to match its 
-counterpart in the Reader JSON as already defined above.
+{"parameter": "value"} pairs, where parameter needs to match (required!)
+its counterpart in the Reader JSON as already defined above.
 
-Note: parameters defined for MODBUS classes 1 and 3 will just be ignored.
+Note: parameters defined for MODBUS register classes 1 and 3 will be ignored.
 
 Caveat: 
 
 * Owing to Python's pymodbus module, registers can solely be updated on the
-whole, which particularly applies for strings, bits and 8bit-integers 
-in the leading and trailing bytes. Hence, solely a leading or 
-trailing byte being updated, will result in "0x00" (empty) of the 
-respective other.
-* Endianness of byteorder is sort of a hassle
-* No locking mechanism applied for parallel reading and writing yet that would 
-only make sense if one instance exists utilizing reading and writing 
-methods.
+whole, which particularly applies for strings, bits and 8 bit-integers 
+of the leading and trailing bytes.
+* No locking mechanism is applied for parallel reading and writing 
+(see also MODBUS Web API).
+* When updating bit maps for a 16-bit register, say *TEST0*, 
+note that the 
+payload needs to be formatted as of below. If less than 16 bits are provided, 
+it will populate the register starting at the low bit of byte/1, subsequent
+will be set to false.
 
-## The MODBUS RestAPI
+
+                            l             h l             h
+    --payload "{\"TEST0\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
+                            byte/1          byte/2
+
+## The MODBUS Web API
 
 Run the Rest API with the previously described MODBUS READER and WRITER methods
 of the *MODBUSClient* class. An internal 
 locking mechanism prevents reading and writing to the same device simulaneously.
 
     python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) \
-                                 --port <port> (default: 5000) \
-                                 --path <path of config files> (default: "/../ConfigFiles/")
+                                 --port <port> (default: 5100)
+The config files are sought in modbusClient/configFiles directory.
+Get a list of available read and write endpoints, by typing in the browser URL.
 
-Get a list of available endpoints, type in the browser URL
-
-    <host>:5000/docs#
+    <host>:5100/docs#
 
 ![](pics/API_swagger_MODBUS.png)
 
 Alternatively, invoke cli *curl* for the Reader:
 
-    curl <host>:5000/modbus/read/<device> 
+    curl <host>:5100/modbus/read/<device> 
 
 and for the Writer:
 
-    curl <host>:5000/modbus/write/<device> -X PUT \
+    curl <host>:5100/modbus/write/<device> -X PUT \
             -d 'payload={"test 32 bit int": 720.04, 
             "write int register": 10, 
             "string of register/1": "YZ", 
@@ -288,7 +310,7 @@ and for the Writer:
 
 The JSON comprises one to many 
 {"parameter": "value"} pairs to be updated on the modbus device,
-where `<device>` denotes the extention for each modbus device:
+where `<device>` denotes the extention for each modbus device (to date):
 
 | Extension | MODBUS Device                     |
 |-----------|-----------------------------------|
@@ -298,7 +320,7 @@ where `<device>` denotes the extention for each modbus device:
 | cryo      | Cryocooler                        |
 
 
-In order to enroll a new modbus device, just provide the 
+To enroll a new modbus device, just provide the 
 config file mb_client_config_`<device>`.json to the ConfigFiles directory.
 
 ## Content

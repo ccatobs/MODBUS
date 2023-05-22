@@ -60,7 +60,7 @@ if __name__ == '__main__':
             wr=json.loads(argparser.parse_args().payload))
         mb_client.close()
     except SystemExit as e:
-        exit("Error code {0}".format(e))
+        exit("Error code: {0}".format(e))
     print(json.dumps(to_monitoring,
                      indent=4))
     print("Time consumed to process modbus writer: {0:.1f} ms".format(
