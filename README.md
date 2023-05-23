@@ -218,10 +218,11 @@ One note aside on bit maps to be read out of a register's 1<sup>st</sup> and/or
 hex value. The bit map
 of a virtual parameter *TEST0* would look like:
 
-             byte/1  byte/2
-    0x89AB = 1000100110101011
-             h      lh      l
-
+```
+         byte/1  byte/2
+0x89AB = 1000100110101011
+         h      lh      l
+```
 
 where l and h are the low and high bit of the byte, respectively. See also below,
 when writing to registers with bit maps.

@@ -21,10 +21,11 @@ class LockGroup(object):
     """
 
     def __init__(self):
-        self.__lock_dict = {}
+        self.__lock_dict = dict()
         self.__lock = Lock()
 
-    def __call__(self, param: str = None):
+    def __call__(self,
+                 param: str = None) -> Lock:
         with self.__lock:
             if param not in self.__lock_dict:
                 self.__lock_dict[param] = Lock()
@@ -37,7 +38,7 @@ def mytimer(supersede: Callable | str = None) -> Callable:
     DEBUG mode. Call either via mytimer, mytimer(), or
     mytimer("<supersede function name>").
     Caveat:
-    works for decorated non-staticmethod functions in classes,
+    works for decorated non-static method functions in classes,
     because args[0] = self | cls.
     :param supersede: string (default=None)
     :return: Callable - function wrapped

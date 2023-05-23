@@ -13,10 +13,10 @@ Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
 
+from modbusClient import MODBUSClient
 import json
 from timeit import default_timer as timer
 import argparse
-from modbusClient import MODBUSClient
 
 print(__doc__)
 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
         exit("Error code: {0}".format(e))
     print(json.dumps(to_monitoring,
                      indent=4))
-    print("Time consumed to process modbus writer: {0:.1f} ms".format(
+    print("Time consumed to process the modbus writer: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )
 

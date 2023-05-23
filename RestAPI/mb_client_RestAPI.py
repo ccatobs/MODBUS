@@ -20,6 +20,7 @@ import re
 from enum import Enum
 # internal
 from modbusClient import MODBUSClient, LockGroup
+from modbusClient import __version__
 
 """
 version history:
@@ -30,18 +31,9 @@ version history:
     * lock release in try-finally
 2023/05/20 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 1.2
-    * Predefined enumeration values for devices as fetched from configFiles 
+    * Predefined enumeration values for devices as fetched from configFiles
+henceforth version history of modbusClient adopted
 """
-
-__author__ = "Dr. Ralf Antonius Timmermann"
-__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, " \
-                "AIfA, University Bonn"
-__credits__ = ""
-__license__ = "BSD 3-Clause"
-__version__ = "1.2"
-__maintainer__ = "Dr. Ralf Antonius Timmermann"
-__email__ = "rtimmermann@astro.uni-bonn.de"
-__status__ = "QA"
 
 print(__doc__)
 
