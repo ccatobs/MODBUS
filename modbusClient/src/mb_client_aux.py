@@ -8,7 +8,7 @@ from timeit import default_timer
 from functools import wraps
 from threading import Lock
 import logging
-from typing import Callable
+from typing import Callable, Any
 
 
 class LockGroup(object):
@@ -46,7 +46,7 @@ def mytimer(supersede: Callable | str = None) -> Callable:
 
     def _decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Any:
             start_time = default_timer()
             result = func(*args, **kwargs)
             logging.debug(

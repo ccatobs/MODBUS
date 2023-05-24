@@ -6,6 +6,8 @@ services:
       dockerfile: ./Docker/RestAPI/Dockerfile
     image: 'mb_restapi:0.1'
     container_name: "mb_restapi"
+    env_file:
+      - .env
     restart: unless-stopped # always
 #    ports:
 #      - "5090:5090"

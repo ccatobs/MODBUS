@@ -4,7 +4,7 @@ RUN apt-get update  \
     && apt-get install python3.10 -y \
     && apt-get install python3-pip -y
 
-WORKDIR /code
+WORKDIR MODBUS
 
 COPY modbusClient/ modbusClient/
 COPY modbusServerSimulator/ modbusServerSimulator/
@@ -15,5 +15,7 @@ COPY requirements.txt .
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 RUN ["chmod", "+x", "python_wrapper.sh"]
+
+ENV PYTHONPATH "${PYTHONPATH}:modbusClient"
 
 CMD ./python_wrapper.sh

@@ -1,12 +1,14 @@
 FROM python:3.10
 
-WORKDIR /code
+WORKDIR MODBUS
 
 COPY modbusClient/ modbusClient/
-COPY RestAPI/mb_client_RestAPI.py .
+COPY RestAPI/mb_client_RestAPI.py RestAPI/
 COPY requirements.txt .
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-ENTRYPOINT python -u mb_client_RestAPI.py --host '0.0.0.0' --port 5090
+ENV PYTHONPATH .
+
+ENTRYPOINT python -u RestAPI/mb_client_RestAPI.py --host ${HOST} --port ${PORT}

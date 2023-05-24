@@ -52,7 +52,7 @@ if __name__ == '__main__':
     """
     _start_time = timer()
     print("Device extention: {0}".format(argparser.parse_args().device))
-    print(argparser.parse_args().payload)
+    # print(argparser.parse_args().payload)
     try:
         mb_client = MODBUSClient(device=argparser.parse_args().device,
                                  path_additional=argparser.parse_args().path)
