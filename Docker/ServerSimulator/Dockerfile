@@ -9,13 +9,13 @@ WORKDIR MODBUS
 COPY modbusClient/ modbusClient/
 COPY modbusServerSimulator/ modbusServerSimulator/
 COPY Docker/ServerSimulator/python_wrapper.sh .
-COPY RestAPI/mb_client_RestAPI.py .
+COPY RestAPI/mb_client_RestAPI.py RestAPI/
 COPY requirements.txt .
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 RUN ["chmod", "+x", "python_wrapper.sh"]
 
-ENV PYTHONPATH "${PYTHONPATH}:modbusClient"
+ENV PYTHONPATH .
 
 CMD ./python_wrapper.sh
