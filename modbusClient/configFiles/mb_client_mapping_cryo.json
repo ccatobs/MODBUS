@@ -186,5 +186,10 @@
     "function": "decode_16bit_uint",
     "parameter": "Software Rev",
     "description": "upgrade frequently!"
+  },
+  "40001": {
+   "function": "decode_16bit_uint",
+    "parameter": "Power compressor",
+    "description": "Enable/Disable the compressor (0x01/0xFF)"
   }
 }
