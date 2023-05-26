@@ -11,16 +11,16 @@ with no modification to the coding required whatsoever. The JSON file
 comprises keys pointing to single or multiple registers or to bytes of it. 
 Each dictionary key comprises additional features, such as 
 
-1) "parameter" (mandatory, variable name unique over all register classes). 
-2) "function" (mandatory, data type for input and holding registers).
-3) "description" (optional).
-4) "map" (optional). 
-5) "muliplier" (optional, solely for input and holding registers of datatype integer).
-6) "offset" (optional, solely for input and holding registers of datatype integer).
+1) "parameter" - variable name unique over all register classes (mandatory) 
+2) "function" - data type for input and holding registers (mandatory)
+3) "description" (optional)
+4) "map" - see below (optional)
+5) "muliplier" - for input & holding registers of datatype integer (optional)
+6) "offset" for input & holding registers of datatype integer (optional)
 
-The latter two, when provided, will not be passed on to the output, though.
-They are parsed, such that the register's value is multiplied by a "multiplier" 
-and adding an "offset". This is solely applicable to int and long data types.
+The latter two will not be passed on to the output, though, instead
+they are parsed, such that the register's value is multiplied by a "multiplier" 
+and an "offset" is applied. This is solely applicable to int and long data types.
 
 A map is provided in case a value needs to match 
 an entry from a provided list. The corresponding field value is passed on to 
@@ -33,7 +33,7 @@ Furthermore, "value" and "datatype" are
 reserved keywords, since they will be generated in the output dictionary.
 Additional dictionary key/value pairs may be provided in the client registry
 mapping, which are merely passed on to the output. To maintain consistancy over
-the various modbus clients, we urge selecting same features for further
+the various modbus clients, we urge selecting same feature names for further
 optional keys, such as "defaultvalue", "unit", "min", or "max".
 
 Register keys are in the following formates: 
@@ -198,7 +198,6 @@ adjusted (see
     ">" = Endian.Big 
     "<" = Endian.Little
 
-
 Packing/unpacking depends on your CPU's word/byte order. MODBUS messages
 are always using big endian. BinaryPayloadBuilder will per default use
 what your CPU uses. The wordorder is applicable only for 32 and 64 bit values.
@@ -313,7 +312,7 @@ and for the Writer:
 
 The JSON comprises one to many 
 {"parameter": "value"} pairs to be updated on the modbus device,
-where `<device>` denotes the extention for each modbus device (to date):
+where `<device>` denotes the extention for each modbus device (to be updated):
 
 | Extension | MODBUS Device                     |
 |-----------|-----------------------------------|
@@ -325,6 +324,16 @@ where `<device>` denotes the extention for each modbus device (to date):
 
 To enroll a new modbus device, just provide the 
 config file mb_client_config_`<device>`.json to the ConfigFiles directory.
+
+#### Processing Times
+
+As a note aside, the processing time of the MODBUS reader is quite slow, though. 
+For example, the time to read out all registers from the server simulator, 
+as defined in 
+[test config](https://github.com/ccatp/MODBUS/blob/master/modbusClient/configFiles/mb_client_config_test.json),
+is roughly 100 ms.
+This is to be taken into account when configuring the read-out frequency for 
+the housekeeping module.
 
 ## Content
 

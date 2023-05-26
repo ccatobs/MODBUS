@@ -20,7 +20,8 @@ import argparse
 
 print(__doc__)
 
-if __name__ == '__main__':
+
+def main():
 
     argparser = argparse.ArgumentParser(
         description="Universal MODBUS Writer")
@@ -52,7 +53,7 @@ if __name__ == '__main__':
     """
     _start_time = timer()
     print("Device extention: {0}".format(argparser.parse_args().device))
-    # print(argparser.parse_args().payload)
+    # print("payload: ", argparser.parse_args().payload)
     try:
         mb_client = MODBUSClient(device=argparser.parse_args().device,
                                  path_additional=argparser.parse_args().path)
@@ -68,3 +69,7 @@ if __name__ == '__main__':
     )
 
     exit(0)
+
+
+if __name__ == '__main__':
+    main()

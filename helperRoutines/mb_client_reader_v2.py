@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 MODBUS READER
 version 2.0 - 2023/02/24
@@ -19,7 +20,8 @@ from modbusClient import MODBUSClient
 
 print(__doc__)
 
-if __name__ == '__main__':
+
+def main():
 
     argparser = argparse.ArgumentParser(
         description="Universal MODBUS Client Reader")
@@ -34,7 +36,6 @@ if __name__ == '__main__':
                            )
 
     _start_time = timer()
-    to_housekeeping = dict()
     print("Device extention: {0}".format(argparser.parse_args().device))
     try:
         mb_client = MODBUSClient(device=argparser.parse_args().device,
@@ -45,9 +46,12 @@ if __name__ == '__main__':
         exit("Error code {0}".format(e))
     print(json.dumps(to_housekeeping,
                      indent=4))
-
     print("Time consumed to process modbus interface: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )
 
     exit(0)
+
+
+if __name__ == '__main__':
+    main()
