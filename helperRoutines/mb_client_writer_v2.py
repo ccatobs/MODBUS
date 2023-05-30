@@ -13,10 +13,11 @@ Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
 
-from modbusClient import MODBUSClient
+from modbusClient import MODBUSClient, MyException
 import json
 from timeit import default_timer as timer
 import argparse
+import sys
 
 print(__doc__)
 
@@ -55,20 +56,23 @@ def main():
     print("Device extention: {0}".format(argparser.parse_args().device))
     # print("payload: ", argparser.parse_args().payload)
     try:
-        mb_client = MODBUSClient(device=argparser.parse_args().device,
-                                 path_additional=argparser.parse_args().path)
+        mb_client = MODBUSClient(
+            device=argparser.parse_args().device,
+            path_additional=argparser.parse_args().path
+        )
         to_monitoring = mb_client.write_register(
-            wr=json.loads(argparser.parse_args().payload))
+            json.loads(argparser.parse_args().payload)
+        )
         mb_client.close()
-    except SystemExit as e:
-        exit("Error code: {0}".format(e))
-    print(json.dumps(to_monitoring,
-                     indent=4))
+    except MyException as e:
+        print("Status code: {1}, Detail: {0}", e.detail, e.status_code)
+        sys.exit(1)
+    print(to_monitoring)
     print("Time consumed to process the modbus writer: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )
 
-    exit(0)
+    sys.exit(0)
 
 
 if __name__ == '__main__':

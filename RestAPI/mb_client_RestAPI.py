@@ -19,7 +19,7 @@ import glob
 import re
 from enum import Enum
 # internal
-from modbusClient import MODBUSClient, LockGroup
+from modbusClient import MODBUSClient, LockGroup, MyException
 from modbusClient import __version__
 
 """
@@ -40,9 +40,10 @@ print(__doc__)
 app = FastAPI(
     title="MODBUS API",
     version=__version__,
-    description="Connects with the MODBUS devices. Mappings of MODBUS "
-                "registers are defined in config files as found "
-                "in modbusClient/configFiles."
+    description="Connects with MODBUS devices. Enables to read and write "
+                "from/to "
+                "MODBUS registers. Register mappings to parameters are defined "
+                "in config files found in modbusClient/configFiles."
 )
 lock_mb_client = LockGroup()
 clients = dict()
@@ -87,8 +88,11 @@ async def read_register(
         return JSONResponse(
             mb_clients(device=device.value).read_register()
         )
-    except SystemExit as e:
-        raise HTTPException(status_code=e.code)
+    except MyException as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=e.detail
+        )
     finally:
         lock_mb_client(device).release()
 
@@ -103,15 +107,18 @@ async def write_register(
                                    description="Device Extention")
 ):
     if not payload:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT,
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail="Empty payload")
     try:
         lock_mb_client(device).acquire()
         return JSONResponse(
             mb_clients(device=device.value).write_register(wr=payload)
         )
-    except SystemExit as e:
-        raise HTTPException(status_code=e.code)
+    except MyException as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=e.detail
+        )
     finally:
         lock_mb_client(device).release()
 

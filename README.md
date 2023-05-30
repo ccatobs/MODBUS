@@ -68,8 +68,13 @@ performed as well as validity checks on the JSON keys.
 Not checked is if, e.g. an odd number of registers
 is allocated for float or int, though.
 
-The JSON format for the mapping + config 
-is to be defined in the following formate, e.g.:
+The JSON file for the client configuration and mapping of registers to parameters
+is defined as follows. Note: "listenerPort" is optional 
+(default: 502 for tcp) as well as "endianness" (default: {
+    "byteorder": ">",
+    "wordorder": ">"
+  })
+and "debug" (default: false).
 
 ```JSON
 {

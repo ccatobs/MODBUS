@@ -13,10 +13,12 @@ Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
 
+from modbusClient import MODBUSClient, MyException
 import json
+import sys
 from timeit import default_timer as timer
 import argparse
-from modbusClient import MODBUSClient
+
 
 print(__doc__)
 
@@ -38,19 +40,22 @@ def main():
     _start_time = timer()
     print("Device extention: {0}".format(argparser.parse_args().device))
     try:
-        mb_client = MODBUSClient(device=argparser.parse_args().device,
-                                 path_additional=argparser.parse_args().path)
+        mb_client = MODBUSClient(
+            device=argparser.parse_args().device,
+            path_additional=argparser.parse_args().path
+        )
         to_housekeeping = mb_client.read_register()
         mb_client.close()
-    except SystemExit as e:
-        exit("Error code {0}".format(e))
+    except MyException as e:
+        print(e.detail, e.status_code)
+        sys.exit(1)
     print(json.dumps(to_housekeeping,
                      indent=4))
     print("Time consumed to process modbus interface: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )
 
-    exit(0)
+    sys.exit(0)
 
 
 if __name__ == '__main__':

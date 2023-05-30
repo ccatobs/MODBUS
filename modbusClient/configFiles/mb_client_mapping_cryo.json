@@ -187,9 +187,13 @@
     "parameter": "Software Rev",
     "description": "upgrade frequently!"
   },
-  "40001/2": {
-   "function": "decode_8bit_uint",
+  "40001": {
+    "function": "decode_16bit_uint",
     "parameter": "Power compressor",
-    "description": "Enable/Disable the compressor (0x01=On / 0xFF=Off)"
+    "description": "Enable/Disable the compressor (0x0001=On / 0x00FF=Off)",
+    "map": {
+      "1": "On",
+      "255": "Off"
+    }
   }
 }

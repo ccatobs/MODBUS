@@ -11,6 +11,16 @@ import logging
 from typing import Callable, Any
 
 
+class MyException(Exception):
+    def __init__(self,
+                 status_code,
+                 detail):
+        super().__init__(status_code,
+                         detail)
+        self.status_code = status_code
+        self.detail = detail
+
+
 class LockGroup(object):
     """
     Returns a lock object, unique for each unique value of param.

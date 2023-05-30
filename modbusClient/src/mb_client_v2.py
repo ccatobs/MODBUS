@@ -20,12 +20,11 @@ from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 from pymodbus.client import ModbusTcpClient
 import json
 import re
-import sys
 import logging
 import os
 from typing import Dict, List
 # internal
-from .mb_client_aux import mytimer
+from .mb_client_aux import mytimer, MyException
 
 """
 change history
@@ -83,9 +82,13 @@ change history
 - version 2.2.1
     * Exception handling when connection to ModbusTcpClient
     * License included
-2023/05/16 - - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+2023/05/16 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 2.2.2
     * PEP8
+2023/05/30
+- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 2.3.0
+    * modified from sys.exit to MyException
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -93,7 +96,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ["Ronan Higgins"]
 __license__ = "BSD 3-Clause"
-__version__ = "2.2.2"
+__version__ = "2.3.0"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -188,8 +191,9 @@ class _ObjectType(object):
         if re.match(r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)", binarystring):
             return binarystring.split("0b")[1][::-1].index('1')
         else:
-            logging.error("Error in binary string in mapping.")
-            sys.exit(500)
+            detail = "Error in binary string in mapping."
+            logging.error(detail)
+            raise MyException(status_code=422, detail=detail)
 
     @staticmethod
     def __trailing_byte_check(address: str) -> bool:
@@ -307,8 +311,9 @@ class _ObjectType(object):
         """
         function = self.__register_maps[register]['function']
         if function not in FUNCTION2AVRO:
-            logging.error("Decoding function not defined.")
-            sys.exit(500)
+            detail = "Decoding function not defined."
+            logging.error(detail)
+            raise MyException(status_code=422, detail=detail)
         match function:
             case 'decode_bits':
                 value = getattr(decoder, function)()
@@ -325,12 +330,12 @@ class _ObjectType(object):
                         ).rstrip()
                 except UnicodeDecodeError as e:
                     logging.error(str(e))
-                    sys.exit(500)
+                    raise MyException(status_code=400, detail=str(e))
             case _:
                 if no_bytes not in [1, 2, 4, 8]:
-                    logging.error(
-                        "Wrong number of bytes allocated for int or float!")
-                    sys.exit(500)
+                    detail = "Wrong number of bytes allocated for int or float!"
+                    logging.error(detail)
+                    raise MyException(status_code=422, detail=detail)
                 value = getattr(decoder, function)()
 
         return self.__decode_prop(register=register,
@@ -372,10 +377,11 @@ class _ObjectType(object):
                         slave=UNIT)
                     # assert (not rq.isError())  # test we are not an error
                     if rq.isError():
-                        logging.error(
-                            "Error writing coil register at address '{0}' "
-                            "with payload '{1}'".format(int(address), value))
-                        sys.exit(500)
+                        detail = "Error writing coil register at address " \
+                                 "'{0}' with payload '{1}'".format(int(address),
+                                                                   value)
+                        logging.error(detail)
+                        raise MyException(status_code=422, detail=detail)
                     break
 
     def __holding(self,
@@ -397,26 +403,33 @@ class _ObjectType(object):
                     # holding register updates
                     function = attributes['function'].replace("decode_", "add_")
                     reg_info = self.__register_width(address)
+                    print(reg_info)
                     if "int" in function:
+                        if "8bit" in function and reg_info['pos_byte'] == 2:
+                            detail = "Parameter '{0}': 1 byte updates for "\
+                                     "type int/uint are disabled for the lower"\
+                                     "byte of a register.".format(parameter)
+                            logging.error(detail)
+                            raise MyException(status_code=422, detail=detail)
                         multiplier = attributes.get('multiplier', 1)
                         offset = attributes.get('offset', 0)
                         value = int((value - offset) / multiplier)
                     if "string" in function:
                         if len(value) > reg_info['no_bytes']:
-                            logging.error(
-                                "'{0}' too long for parameter '{1}'"
-                                .format(value, parameter))
-                            sys.exit(500)
+                            detail = "'{0}' too long for parameter '{1}'"\
+                                .format(value, parameter)
+                            logging.error(detail)
+                            raise MyException(status_code=422, detail=detail)
                         # fill entire string with spaces
                         s = list(" " * (2*reg_info['width']))
                         s[reg_info['pos_byte'] - 1] = value
                         value = "".join(s)
                     if "bits" in function:
                         if len(value) / 16 > reg_info['width']:
-                            logging.error(
-                                "'{0}' too long for parameter '{1}'"
-                                .format(value, parameter))
-                            sys.exit(500)
+                            detail = "'{0}' too long for parameter '{1}'"\
+                                .format(value, parameter)
+                            logging.error(detail)
+                            raise MyException(status_code=422, detail=detail)
                     getattr(builder, function)(value)
                     payload = builder.to_registers()
                     rq = self.__client.write_registers(
@@ -425,11 +438,12 @@ class _ObjectType(object):
                         slave=UNIT)
                     # assert (not rq.isError())  # test we are not an error
                     if rq.isError():
-                        logging.error(
-                            "Error writing holding register at address '{0}' "
-                            "with payload '{1}'".format(reg_info['start'],
-                                                        payload))
-                        sys.exit(500)
+                        detail = "Error writing holding register at " \
+                                 "address '{0}' with payload '{1}'".\
+                            format(reg_info['start'],
+                                   payload)
+                        logging.error(detail)
+                        raise MyException(status_code=422, detail=detail)
                     builder.reset()  # reset builder
                     break  # if parameter matched
 
@@ -461,12 +475,13 @@ class _ObjectType(object):
                 slave=UNIT)
             # assert (not result.isError())
             if result.isError():
-                logging.error("Error reading register at address '{0}' and "
-                              "width '{1}' for MODBUS class '{2}'".
-                              format(reg_info['start'],
-                                     reg_info['width'],
-                                     self.__entity))
-                sys.exit(500)
+                detail = "Error reading register at address '{0}' and " \
+                         "width '{1}' for MODBUS class '{2}'". \
+                    format(reg_info['start'],
+                           reg_info['width'],
+                           self.__entity)
+                logging.error(detail)
+                raise MyException(status_code=400, detail=detail)
 
             # decode and append to list
             if self.__entity in ['0', '1']:
@@ -543,9 +558,9 @@ class MODBUSClient(object):
                        device)
         # verify existance of config file
         if not os.path.isfile(file_config):
-            logging.error(
-                "Client config file '{0}' not found".format(file_config))
-            sys.exit(404)
+            detail = "Client config file '{0}' not found".format(file_config)
+            logging.error(detail)
+            raise MyException(status_code=404, detail=detail)
         with open(file_config) as config_file:
             client_config = json.load(config_file)
         logging.info("Config File: {0}".format(file_config))
@@ -558,14 +573,23 @@ class MODBUSClient(object):
         # make integrity checks
         self.__client_mapping_checks(mapping=client_config['mapping'])
 
-        client = ModbusTcpClient(
-            host=client_config['server']['listenerAddress'],
-            port=client_config['server']['listenerPort'],
-            debug=debug
-        )
+        port = client_config['server'].get('listenerPort')
+        if port:
+            client = ModbusTcpClient(
+                host=client_config['server']['listenerAddress'],
+                port=port,
+                debug=debug
+            )
+        else:
+            client = ModbusTcpClient(
+                host=client_config['server']['listenerAddress'],
+                debug=debug
+            )
+
         if not client.connect():
-            logging.error("Could not connect to server.")
-            sys.exit(503)
+            detail = "Could not connect to server."
+            logging.error(detail)
+            raise MyException(status_code=503, detail=detail)
 
         self.__init = {
             "client": client,
@@ -587,24 +611,25 @@ class MODBUSClient(object):
             )
 
     def __existance_mapping_checks(self,
-                                   wr: Dict) -> bool:
+                                   wr: Dict) -> str:
         """
         check if parameter exists in mapping at all
         :param wr: list of dicts {parameter: value}
-        :return: bool = True (NoError)
+        :return: str, empty (no error)
         """
-        rc = True
+        parms = list()
+        text = "Parameter '{0}' not being mapped to registers!"
         for parameter in wr.keys():
             for attributes in self.__init['mapping'].values():
                 if attributes['parameter'] == parameter:
                     break
             else:
-                rc = False
-                logging.warning(
-                    "Parameter '{}' is not being mapped to registers!"
-                    .format(parameter))
+                parms.append(parameter)
+                logging.warning(text.format(parameter))
+        if parms:
+            return text.format(", ".join(parms))
 
-        return rc
+        return ""
 
     def __client_mapping_checks(self,
                                 mapping: Dict) -> None:
@@ -617,13 +642,15 @@ class MODBUSClient(object):
         rev_dict = dict()
         for key, value in mapping.items():
             if not self.__register_integrity(address=key):
-                logging.error("Wrong key in mapping: {0}.".format(key))
-                sys.exit(500)
+                detail = "Wrong key in mapping: {0}.".format(key)
+                logging.error(detail)
+                raise MyException(status_code=422, detail=detail)
             rev_dict.setdefault(value["parameter"], set()).add(key)
         parameter = [key for key, values in rev_dict.items() if len(values) > 1]
         if parameter:
-            logging.error("Duplicate parameter: {0}.".format(parameter))
-            sys.exit(500)
+            detail = "Duplicate parameter: {0}.".format(parameter)
+            logging.error(detail)
+            raise MyException(status_code=422, detail=detail)
 
     @staticmethod
     def __register_integrity(address: str) -> bool:
@@ -652,11 +679,8 @@ class MODBUSClient(object):
         :return: List of Dict (in asc order) for housekeeping
         """
         decoded = list()
-        try:
-            for entity in self.__entity_list:
-                decoded = decoded + entity.register_readout()
-        except SystemExit as e:
-            sys.exit(e.code)
+        for entity in self.__entity_list:
+            decoded = decoded + entity.register_readout()
 
         return [dict(sorted(item.items())) for item in decoded]
 
@@ -668,15 +692,13 @@ class MODBUSClient(object):
         :param wr: list of dicts {parameter: value}
         :return: Dict, returns the input unchanged
         """
-        if not self.__existance_mapping_checks(wr=wr):
-            sys.exit(204)
-        try:
-            for entity in self.__entity_list:
-                entity.register_write(wr)
-        except SystemExit as e:
-            sys.exit(e.code)
+        detail = self.__existance_mapping_checks(wr=wr)
+        if detail != "":
+            raise MyException(status_code=422, detail=detail)
+        for entity in self.__entity_list:
+            entity.register_write(wr)
 
-        return wr
+        return {"status": "success"}
 
     def close(self) -> None:
         client = self.__init.get("client")
