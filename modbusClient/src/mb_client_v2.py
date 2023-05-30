@@ -406,8 +406,8 @@ class _ObjectType(object):
                     print(reg_info)
                     if "int" in function:
                         if "8bit" in function and reg_info['pos_byte'] == 2:
-                            detail = "Parameter '{0}': 1 byte updates for "\
-                                     "type int/uint are disabled for the lower"\
+                            detail = "Parameter '{0}': Updates for type " \
+                                     "8bit (u)int are disabled for the minor" \
                                      "byte of a register.".format(parameter)
                             logging.error(detail)
                             raise MyException(status_code=422, detail=detail)
