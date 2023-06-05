@@ -24,7 +24,7 @@ import logging
 import os
 from typing import Dict, List
 # internal
-from .mb_client_aux import mytimer, MyException
+from .mb_client_aux import mytimer, MyException, MODBUS2AVRO
 
 """
 change history
@@ -89,6 +89,11 @@ change history
 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 2.3.0
     * modified from sys.exit to MyException
+2023/06/05
+- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 2.4.0
+    * register's width and no of byte as defined in Enum
+    * comments need to be cleansed next version
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -96,7 +101,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ["Ronan Higgins"]
 __license__ = "BSD 3-Clause"
-__version__ = "2.3.0"
+__version__ = "2.4.0"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -108,21 +113,6 @@ logging.basicConfig(format=myformat,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 UNIT = 0x1
-FUNCTION2AVRO = {
-    "decode_bits": "boolean",
-    "decode_8bit_int": "int",
-    "decode_8bit_uint": "int",
-    "decode_16bit_int": "int",
-    "decode_16bit_uint": "int",
-    "decode_16bit_float": "float",
-    "decode_32bit_int": "int",
-    "decode_32bit_uint": "int",
-    "decode_32bit_float": "float",
-    "decode_64bit_int": "long",
-    "decode_64bit_uint": "long",
-    "decode_64bit_float": "double",
-    "decode_string": "string"
-}
 
 
 class _ObjectType(object):
@@ -146,8 +136,8 @@ class _ObjectType(object):
             sorted(init["mapping"].items()) if key[0] == self.__entity
         }
 
-    @staticmethod
-    def __register_width(address: str) -> Dict:
+    # @staticmethod
+    def __register_width(self, address: str) -> Dict:
         """
         determine the specs for an address
         :param address: string
@@ -158,7 +148,6 @@ class _ObjectType(object):
             pos_byte - position of byte in register (1: leading, 2: trailing)
         """
         width, no_bytes, pos_byte = 1, 2, 1  # default
-
         comp = address.split("/")
         start = int(comp[0][1:])
         if len(comp) == 2:
@@ -168,6 +157,18 @@ class _ObjectType(object):
             else:
                 width = int(comp[1]) - int(comp[0]) + 1
                 no_bytes = width * 2
+        # experimental state: supersede all but string datatype by Enum
+        function = self.__register_maps[address].get('function')
+        if function:
+            try:
+                if MODBUS2AVRO(function).supersede:
+                    width = MODBUS2AVRO.width(function)
+                    no_bytes = MODBUS2AVRO.no_bytes(function)
+            except ValueError:
+                detail = "Decoding function '{}' not defined.".format(function)
+                logging.error(detail)
+                raise MyException(status_code=422,
+                                  detail=detail)
         result = {
             "start": start,
             "width": width,
@@ -193,17 +194,18 @@ class _ObjectType(object):
         else:
             detail = "Error in binary string in mapping."
             logging.error(detail)
-            raise MyException(status_code=422, detail=detail)
+            raise MyException(status_code=422,
+                              detail=detail)
 
-    @staticmethod
-    def __trailing_byte_check(address: str) -> bool:
-        """
-        :param address: str
-        :return: bool = True (NoError)
-        """
-        if len(address.split("/")) == 2:
-            return address.split("/")[1] == "2"
-        return False
+    # @staticmethod
+    # def __trailing_byte_check(address: str) -> bool:
+    #     """
+    #     :param address: str
+    #     :return: bool = True (NoError)
+    #     """
+    #     if len(address.split("/")) == 2:
+    #         return address.split("/")[1] == "2"
+    #     return False
 
     def __decode_byte(self,
                       register: str,
@@ -218,12 +220,13 @@ class _ObjectType(object):
         :return: List of Dict
         """
         decoded = list()
+        optional = dict()
 
         if len(self.__register_maps[register]['map']) == 1:
             # if only one entry in map, add optional parameters, otherwise no
             optional = {
-                key: self.__register_maps[register][key] \
-                for key in self.__register_maps[register] \
+                key: self.__register_maps[register][key]
+                for key in self.__register_maps[register]
                 if key not in {'map',
                                'description',
                                'value',
@@ -233,18 +236,18 @@ class _ObjectType(object):
                                'offset',
                                'datatype'}
             }
-        else:
-            optional = dict()
         for key, name in self.__register_maps[register]['map'].items():
-            decoded.append(dict(
-                {
-                    "parameter":
-                        self.__register_maps[register]['parameter'],
-                    "value": value[self.__binary_map(binarystring=key)],
-                    "description": name,
-                    "datatype": FUNCTION2AVRO[function]
-                },
-                **optional)
+            decoded.append(
+                dict(
+                    {
+                        "parameter":
+                            self.__register_maps[register]['parameter'],
+                        "value": value[self.__binary_map(binarystring=key)],
+                        "description": name,
+                        # "datatype": FUNCTION2AVRO[function]
+                        "datatype": MODBUS2AVRO(function).datatype
+                    },
+                    **optional)
             )
 
         return decoded
@@ -263,10 +266,11 @@ class _ObjectType(object):
         """
         maps = self.__register_maps[register].get('map')
         desc = self.__register_maps[register].get('description')
-        datatype = FUNCTION2AVRO[function]
+        # datatype = FUNCTION2AVRO[function]
+        datatype = MODBUS2AVRO(function).datatype
         optional = {
-            key: self.__register_maps[register][key] \
-            for key in self.__register_maps[register] \
+            key: self.__register_maps[register][key]
+            for key in self.__register_maps[register]
             if key not in {'map',
                            'description',
                            'function',
@@ -291,9 +295,10 @@ class _ObjectType(object):
         if desc is not None:
             di["description"] = desc
 
-        return [dict(
-            **di,
-            **optional)
+        return [
+            dict(
+                **di,
+                **optional)
         ]
 
     def __formatter(self,
@@ -310,10 +315,13 @@ class _ObjectType(object):
         :return: List of Dict
         """
         function = self.__register_maps[register]['function']
-        if function not in FUNCTION2AVRO:
-            detail = "Decoding function not defined."
-            logging.error(detail)
-            raise MyException(status_code=422, detail=detail)
+        # tested in __register_width()
+        # if function not in FUNCTION2AVRO:
+        #            if function not in MODBUS2AVRO:
+        #                detail = "Decoding function '{}' not defined.".format(function)
+        #                logging.error(detail)
+        #                raise MyException(status_code=422,
+        #                                  detail=detail)
         match function:
             case 'decode_bits':
                 value = getattr(decoder, function)()
@@ -330,12 +338,15 @@ class _ObjectType(object):
                         ).rstrip()
                 except UnicodeDecodeError as e:
                     logging.error(str(e))
-                    raise MyException(status_code=400, detail=str(e))
+                    raise MyException(status_code=400,
+                                      detail=str(e))
             case _:
-                if no_bytes not in [1, 2, 4, 8]:
-                    detail = "Wrong number of bytes allocated for int or float!"
-                    logging.error(detail)
-                    raise MyException(status_code=422, detail=detail)
+                # exception obsolete
+                # if no_bytes not in [1, 2, 4, 8]:
+                #     detail = "Wrong number of bytes allocated for int or float!"
+                #     logging.error(detail)
+                #     raise MyException(status_code=422,
+                #                       detail=detail)
                 value = getattr(decoder, function)()
 
         return self.__decode_prop(register=register,
@@ -354,7 +365,8 @@ class _ObjectType(object):
         return [
             dict(
                 **self.__register_maps[register],
-                **{"datatype": FUNCTION2AVRO["decode_bits"],
+                # **{"datatype": FUNCTION2AVRO["decode_bits"],
+                **{"datatype": MODBUS2AVRO("decode_bits").datatype,
                    "value": decoder[0]}
             )
         ]
@@ -381,7 +393,8 @@ class _ObjectType(object):
                                  "'{0}' with payload '{1}'".format(int(address),
                                                                    value)
                         logging.error(detail)
-                        raise MyException(status_code=422, detail=detail)
+                        raise MyException(status_code=422,
+                                          detail=detail)
                     break
 
     def __holding(self,
@@ -403,14 +416,14 @@ class _ObjectType(object):
                     # holding register updates
                     function = attributes['function'].replace("decode_", "add_")
                     reg_info = self.__register_width(address)
-                    print(reg_info)
                     if "int" in function:
                         if "8bit" in function and reg_info['pos_byte'] == 2:
                             detail = "Parameter '{0}': Updates for type " \
                                      "8bit (u)int are disabled for the minor" \
                                      "byte of a register.".format(parameter)
                             logging.error(detail)
-                            raise MyException(status_code=422, detail=detail)
+                            raise MyException(status_code=422,
+                                              detail=detail)
                         multiplier = attributes.get('multiplier', 1)
                         offset = attributes.get('offset', 0)
                         value = int((value - offset) / multiplier)
@@ -419,7 +432,8 @@ class _ObjectType(object):
                             detail = "'{0}' too long for parameter '{1}'"\
                                 .format(value, parameter)
                             logging.error(detail)
-                            raise MyException(status_code=422, detail=detail)
+                            raise MyException(status_code=422,
+                                              detail=detail)
                         # fill entire string with spaces
                         s = list(" " * (2*reg_info['width']))
                         s[reg_info['pos_byte'] - 1] = value
@@ -429,7 +443,8 @@ class _ObjectType(object):
                             detail = "'{0}' too long for parameter '{1}'"\
                                 .format(value, parameter)
                             logging.error(detail)
-                            raise MyException(status_code=422, detail=detail)
+                            raise MyException(status_code=422,
+                                              detail=detail)
                     getattr(builder, function)(value)
                     payload = builder.to_registers()
                     rq = self.__client.write_registers(
@@ -443,7 +458,8 @@ class _ObjectType(object):
                             format(reg_info['start'],
                                    payload)
                         logging.error(detail)
-                        raise MyException(status_code=422, detail=detail)
+                        raise MyException(status_code=422,
+                                          detail=detail)
                     builder.reset()  # reset builder
                     break  # if parameter matched
 
@@ -481,7 +497,8 @@ class _ObjectType(object):
                            reg_info['width'],
                            self.__entity)
                 logging.error(detail)
-                raise MyException(status_code=400, detail=detail)
+                raise MyException(status_code=400,
+                                  detail=detail)
 
             # decode and append to list
             if self.__entity in ['0', '1']:
@@ -497,7 +514,8 @@ class _ObjectType(object):
                     wordorder=self.__endianness["wordorder"]
                 )
                 # skip leading byte, if key = "xxxxx/2"
-                if self.__trailing_byte_check(key):
+                # if self.__trailing_byte_check(key):
+                if reg_info['pos_byte'] == 2:
                     decoder.skip_bytes(nbytes=1)
                 decoded = decoded + self.__formatter(
                     decoder=decoder,
@@ -520,7 +538,7 @@ class _ObjectType(object):
             case '0':
                 self.__coil(wr=wr)
             # when attempting to writing to a read-only register, issue warning
-            case '1' | '3':
+            case _:
                 for parameter, value in wr.items():
                     for address, attributes in self.__register_maps.items():
                         if attributes['parameter'] == parameter:
@@ -560,7 +578,8 @@ class MODBUSClient(object):
         if not os.path.isfile(file_config):
             detail = "Client config file '{0}' not found".format(file_config)
             logging.error(detail)
-            raise MyException(status_code=404, detail=detail)
+            raise MyException(status_code=404,
+                              detail=detail)
         with open(file_config) as config_file:
             client_config = json.load(config_file)
         logging.info("Config File: {0}".format(file_config))
@@ -589,15 +608,16 @@ class MODBUSClient(object):
         if not client.connect():
             detail = "Could not connect to server."
             logging.error(detail)
-            raise MyException(status_code=503, detail=detail)
+            raise MyException(status_code=503,
+                              detail=detail)
 
         self.__init = {
             "client": client,
             "mapping": client_config['mapping'],
             # if endianness not found, apply default:
-            # "byteorder": Endian.Big, "wordorder": Endian.Big
+            # "byteorder": Endian.Little, "wordorder": Endian.Big
             "endianness": client_config.get("endianness",
-                                            {"byteorder": ">",
+                                            {"byteorder": "<",
                                              "wordorder": ">"})
         }
         # initialize _ObjectType objects for each entity
@@ -644,19 +664,22 @@ class MODBUSClient(object):
             if not self.__register_integrity(address=key):
                 detail = "Wrong key in mapping: {0}.".format(key)
                 logging.error(detail)
-                raise MyException(status_code=422, detail=detail)
+                raise MyException(status_code=422,
+                                  detail=detail)
             rev_dict.setdefault(value["parameter"], set()).add(key)
         parameter = [key for key, values in rev_dict.items() if len(values) > 1]
         if parameter:
             detail = "Duplicate parameter: {0}.".format(parameter)
             logging.error(detail)
-            raise MyException(status_code=422, detail=detail)
+            raise MyException(status_code=422,
+                              detail=detail)
 
     @staticmethod
     def __register_integrity(address: str) -> bool:
         """
         check integrity of dictionary keys in mapping file
-        key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y, where x=0000-9999 and y=1|2
+        key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y,
+        where x=0000-9999 and y=1|2
         :param address: str
         :return: bool = True (NoError)
         """
@@ -665,8 +688,8 @@ class MODBUSClient(object):
         comp = address.split("/")
         if len(comp) == 2:
             if comp[1] not in ["1", "2"] and \
-                    (comp[0][0] != comp[1][0] or
-                     int(comp[1]) - int(comp[0]) < 1):
+                    (comp[0][0] != comp[1][0] or  # test on same register class
+                     int(comp[1]) - int(comp[0]) < 1):  # test equal registers
 
                 return False
 
@@ -694,7 +717,8 @@ class MODBUSClient(object):
         """
         detail = self.__existance_mapping_checks(wr=wr)
         if detail != "":
-            raise MyException(status_code=422, detail=detail)
+            raise MyException(status_code=422,
+                              detail=detail)
         for entity in self.__entity_list:
             entity.register_write(wr)
 

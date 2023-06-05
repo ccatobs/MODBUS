@@ -44,12 +44,12 @@
       "parameter": "decode_16bit_uint",
       "description": 3
     },
-    "30002/30003": {
+    "30002": {
       "function": "decode_32bit_int",
       "parameter": "decode_32bit_int",
       "description": -268308096
     },
-    "30004/30005": {
+    "30004": {
       "function": "decode_32bit_uint",
       "parameter": "decode_32bit_uint",
       "description": 4026659200
@@ -59,22 +59,22 @@
       "parameter": "decode_16bit_float",
       "description": 0.000489
     },
-    "30007/30008": {
+    "30007": {
       "function": "decode_32bit_float",
       "parameter": "decode_32bit_float",
       "description": 3.1415927
     },
-    "30009/30012": {
+    "30009": {
       "function": "decode_64bit_int",
       "parameter": "decode_64bit_int",
       "description": -1150350866482189032
     },
-    "30013/30016": {
+    "30013": {
       "function": "decode_64bit_uint",
       "parameter": "decode_64bit_uint",
       "description": 4614256656552045848
     },
-    "30017/30020": {
+    "30017": {
       "function": "decode_64bit_float",
       "parameter": "decode_64bit_float",
       "description": 3.141592653589793
@@ -219,20 +219,10 @@
       "parameter": "decode_8bit_uint_4",
       "description": 128
     },
-    "40023/1": {
+    "40023/40024": {
       "function": "decode_string",
       "parameter": "decode_string_1_4",
-      "description": "C"
-    },
-    "40023/2": {
-      "function": "decode_string",
-      "parameter": "decode_string_2_4",
-      "description": "H"
-    },
-    "40024": {
-      "function": "decode_string",
-      "parameter": "decode_string_full_4",
-      "description": "gx"
+      "description": "CHgx"
     },
     "40032/2": {
       "function": "decode_8bit_uint",

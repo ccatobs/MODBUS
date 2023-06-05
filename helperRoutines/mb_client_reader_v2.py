@@ -47,7 +47,8 @@ def main():
         to_housekeeping = mb_client.read_register()
         mb_client.close()
     except MyException as e:
-        print(e.detail, e.status_code)
+        print("Code={}, detail={}".format(e.status_code,
+                                          e.detail))
         sys.exit(1)
     print(json.dumps(to_housekeeping,
                      indent=4))

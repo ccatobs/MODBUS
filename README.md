@@ -1,6 +1,6 @@
 # A Universal MODBUS Client
 
-latest status as of 2023/05/20
+status as of 2023/06/05
 
 ## The READER
 
@@ -11,7 +11,7 @@ with no modification to the coding required whatsoever. The JSON file
 comprises keys pointing to single or multiple registers or to bytes of it. 
 Each dictionary key comprises additional features, such as 
 
-1) "parameter" - variable name unique over all register classes (mandatory) 
+1) "parameter" - variable name unique over all registers (mandatory) 
 2) "function" - data type for input and holding registers (mandatory)
 3) "description" (optional)
 4) "map" - see below (optional)
@@ -29,7 +29,7 @@ defined, the description is chosen according to round(value).
 A map might also 
 contain entries matching bits of the leading or trailing byte of a register.
 
-Furthermore, "value" and "datatype" are
+Furthermore, "value" and "datatype" (AVRO conventions) are
 reserved keywords, since they will be generated in the output dictionary.
 Additional dictionary key/value pairs may be provided in the client registry
 mapping, which are merely passed on to the output. To maintain consistancy over
@@ -40,9 +40,12 @@ Register keys are in the following formates:
 e.g. "30011" addressing the 12th register
 of the input register class, "30011/1" or "30011/2" for
 the leading and trailing byte of the 16 bit register, respectively.
-Furthermore, "30011/30012" or "30011/30014" address the 32 or 64 bit 
-broad registers starting at the 12th register. Please note that this applies
+Furthermore, "30011/30012" or "30011/30014" address 32 or 64 bit 
+broad registers starting at the 12th register,
 if the registers are in zeroMode = True at the server's configuration.
+A start/end register may be provided for strings, whereas a start register is
+sufficient for all other data types.
+
 A function needs to be defined for input and holding registers that translates
 the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
 e.g. "decode_32bit_uint" (see below for a selection):
@@ -71,7 +74,7 @@ is allocated for float or int, though.
 The JSON file for the client configuration and mapping of registers to parameters
 is defined as follows. Note: "listenerPort" is optional 
 (default: 502 for tcp) as well as "endianness" (default: {
-    "byteorder": ">",
+    "byteorder": "<",
     "wordorder": ">"
   })
 and "debug" (default: false).
@@ -83,7 +86,7 @@ and "debug" (default: false).
     "listenerPort": 5020
   },
   "endianness": {
-    "byteorder": ">",
+    "byteorder": "<",
     "wordorder": ">"
   },
   "debug": true,
@@ -118,7 +121,7 @@ and "debug" (default: false).
         "1": "On"
       }
     },
-    "30003/30004": {
+    "30003": {
       "function": "decode_32bit_float",
       "parameter": "Warning State",
       "map": {
@@ -142,7 +145,7 @@ and "debug" (default: false).
         "-524288": "Cold head motor Stall"
       }
     },
-    "30011/30012": {
+    "30011": {
       "function": "decode_32bit_float",
       "parameter": "Oil Temp",
       "description": "unit is provided here...",
@@ -234,7 +237,7 @@ The byte order endianness on the client site
 will absolutely not change the order of bits, 
 whatsoever, if the *decode_bits* function is applied. What a relief!
 
-Not implemented:
+Not implemented to date:
 * decoder.bit_chunks()
 
 The result provided 

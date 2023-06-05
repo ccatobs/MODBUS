@@ -9,6 +9,72 @@ from functools import wraps
 from threading import Lock
 import logging
 from typing import Callable, Any
+from enum import Enum, EnumMeta
+
+"""
+FUNCTION2AVRO = {
+    "decode_bits": "boolean",
+    "decode_8bit_int": "int",
+    "decode_8bit_uint": "int",
+    "decode_16bit_int": "int",
+    "decode_16bit_uint": "int",
+    "decode_16bit_float": "float",
+    "decode_32bit_int": "int",
+    "decode_32bit_uint": "int",
+    "decode_32bit_float": "float",
+    "decode_64bit_int": "long",
+    "decode_64bit_uint": "long",
+    "decode_64bit_float": "double",
+    "decode_string": "string"
+}
+"""
+
+
+# experimental status
+class MyMeta(EnumMeta):
+    def __contains__(self, other) -> bool:
+        try:
+            self(other)
+        except ValueError:
+            return False
+        else:
+            return True
+
+
+class MODBUS2AVRO(str,
+                  Enum,
+                  metaclass=MyMeta):
+    A = ("decode_bits", "boolean", 8, True)
+    B = ("decode_8bit_int", "int", 8, True)
+    C = ("decode_8bit_uint", "int", 8, True)
+    D = ("decode_16bit_int", "int", 16, True)
+    E = ("decode_16bit_uint", "int", 16, True)
+    F = ("decode_16bit_float", "float", 16, True)
+    G = ("decode_32bit_int", "int", 32, True)
+    H = ("decode_32bit_uint", "int", 32, True)
+    J = ("decode_32bit_float", "float", 32, True)
+    K = ("decode_64bit_int", "long", 64, True)
+    L = ("decode_64bit_uint", "long", 64, True)
+    M = ("decode_64bit_float", "double", 64, True)
+    N = ("decode_string", "string", 16, False)
+
+    def __new__(cls,
+                key,
+                datatype,
+                no_bit,
+                supersede) -> Enum:
+        obj = str.__new__(cls, [str])
+        obj._value_ = key
+        obj.datatype = datatype
+        obj.no_bit = no_bit
+        obj.supersede = supersede
+        return obj
+
+    @classmethod
+    def no_bytes(cls, key) -> int: return int(cls(key).no_bit/8)
+    @classmethod
+    def width(cls, key) -> int: return max(int(cls(key).no_bit/16), 1)
+# experimental status end
 
 
 class MyException(Exception):
