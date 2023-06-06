@@ -10,7 +10,7 @@
   "debug": true,
   "mapping": {
     "30001": {
-      "function": "decode_16bit_uint",
+      "function": "decode_32bit_uint",
       "parameter": "Operating State",
       "map": {
         "0": "Idling ‐ ready to start",
@@ -25,7 +25,7 @@
       }
     },
     "30002": {
-      "function": "decode_16bit_uint",
+      "function": "decode_32bit_uint",
       "parameter": "Compressor Running",
       "map": {
         "0": "Off",
