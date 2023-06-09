@@ -42,9 +42,9 @@ of the input register class, "30011/1" or "30011/2" for
 the leading and trailing byte of the 16 bit register, respectively.
 Furthermore, "30011/30012" or "30011/30014" address 32 or 64 bit 
 broad registers starting at the 12th register,
-if the registers are in zeroMode = True at the server's configuration.
-A start/end register may be provided for strings, whereas a start register is
-sufficient for all other data types.
+if registers are in zeroMode = True at the server's configuration.
+A start/end register is to be provided for strings only, whereas specification of
+a start register is sufficient for all other data types.
 
 A function needs to be defined for input and holding registers that translates
 the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
