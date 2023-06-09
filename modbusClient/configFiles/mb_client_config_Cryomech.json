@@ -9,7 +9,7 @@
   },
   "debug": true,
   "mapping": {
-    "30001": {
+    "30001/30002": {
       "function": "decode_32bit_uint",
       "parameter": "Operating State",
       "map": {
@@ -24,7 +24,7 @@
         "15": "Recovered from Error"
       }
     },
-    "30002": {
+    "30003/30004": {
       "function": "decode_32bit_uint",
       "parameter": "Compressor Running",
       "map": {
@@ -32,7 +32,7 @@
         "1": "On"
       }
     },
-    "30003/30004": {
+    "30005/30006": {
       "function": "decode_32bit_float",
       "parameter": "Warning State",
       "map": {
@@ -56,7 +56,7 @@
         "-524288": "Cold head motor Stall"
       }
     },
-    "30005/30006": {
+    "30007/30008": {
       "function": "decode_32bit_float",
       "parameter": "Alarm State",
       "description": "This description should not be parsed",
@@ -83,53 +83,53 @@
         "-262144": "Static Pressure Low"
       }
     },
-    "30007/30008": {
+    "30009/30010": {
       "function": "decode_32bit_float",
       "parameter": "Coolant In Temp",
       "description": "additional info on the coolant"
     },
-    "30009/30010": {
+    "30011/30012": {
       "function": "decode_32bit_float",
       "parameter": "Coolant Out Temp"
     },
-    "30011/30012": {
+    "30013/30014": {
       "function": "decode_32bit_float",
       "parameter": "Oil Temp",
       "unit": "Fahrenheit"
     },
-    "30013/30014": {
+    "30015/30016": {
       "function": "decode_32bit_float",
       "parameter": "Helium Temp"
     },
-    "30015/30016": {
+    "30017/30018": {
       "function": "decode_32bit_float",
       "parameter": "Low Pressure"
     },
-    "30017/30018": {
+    "30019/30020": {
       "function": "decode_32bit_float",
       "parameter": "Low Pressure Average"
     },
-    "30019/30020": {
+    "30021/30022": {
       "function": "decode_32bit_float",
       "parameter": "High Pressure"
     },
-    "30021/30022": {
+    "30023/30024": {
       "function": "decode_32bit_float",
       "parameter": "High Pressure Average"
     },
-    "30023/30024": {
+    "30025/30026": {
       "function": "decode_32bit_float",
       "parameter": "Delta Pressure Average"
     },
-    "30025/30026": {
+    "30027/30028": {
       "function": "decode_32bit_float",
       "parameter": "Motor Current"
     },
-    "30027/30028": {
+    "30029/30030": {
       "function": "decode_32bit_float",
       "parameter": "Hours Of Operation"
     },
-    "30029": {
+    "30031": {
       "function": "decode_16bit_uint",
       "parameter": "Pressure Scale",
       "map": {
@@ -138,7 +138,7 @@
         "2": "KPA"
       }
     },
-    "30030": {
+    "30032": {
       "function": "decode_16bit_uint",
       "parameter": "Temperature Scale",
       "map": {
@@ -147,11 +147,11 @@
         "2": "Kelvin"
       }
     },
-    "30031": {
+    "30033": {
       "function": "decode_16bit_uint",
       "parameter": "Panel Serial Number"
     },
-    "30032/1": {
+    "30034/1": {
       "function": "decode_8bit_uint",
       "parameter": "Model Major Number",
       "map": {
@@ -162,7 +162,7 @@
         "5": "2800 Series"
       }
     },
-    "30032/2": {
+    "30034/2": {
       "function": "decode_8bit_uint",
       "parameter": "Model Minor Number",
       "map": {
@@ -192,7 +192,7 @@
         "24": "14"
       }
     },
-    "30033": {
+    "30035": {
       "function": "decode_16bit_uint",
       "parameter": "Software Rev",
       "description": "upgrade frequently!"
