@@ -94,6 +94,10 @@ change history
 - version 2.4.0
     * register's width and no of byte as defined in Enum
     * comments need to be cleansed next version
+2023/06/13
+- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 2.4.1
+    * comments removed
 """
 
 __author__ = "Dr. Ralf Antonius Timmermann"
@@ -101,7 +105,7 @@ __copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ["Ronan Higgins"]
 __license__ = "BSD 3-Clause"
-__version__ = "2.4.0"
+__version__ = "2.4.1"
 __maintainer__ = "Dr. Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -136,7 +140,6 @@ class _ObjectType(object):
             sorted(init["mapping"].items()) if key[0] == self.__entity
         }
 
-    # @staticmethod
     def __register_width(self, address: str) -> Dict:
         """
         determine the specs for an address
@@ -157,7 +160,6 @@ class _ObjectType(object):
             else:
                 width = int(comp[1]) - int(comp[0]) + 1
                 no_bytes = width * 2
-        # experimental state: supersede all but string datatype by Enum
         function = self.__register_maps[address].get('function')
         if function:
             try:
@@ -196,16 +198,6 @@ class _ObjectType(object):
             logging.error(detail)
             raise MyException(status_code=422,
                               detail=detail)
-
-    # @staticmethod
-    # def __trailing_byte_check(address: str) -> bool:
-    #     """
-    #     :param address: str
-    #     :return: bool = True (NoError)
-    #     """
-    #     if len(address.split("/")) == 2:
-    #         return address.split("/")[1] == "2"
-    #     return False
 
     def __decode_byte(self,
                       register: str,
@@ -266,7 +258,6 @@ class _ObjectType(object):
         """
         maps = self.__register_maps[register].get('map')
         desc = self.__register_maps[register].get('description')
-        # datatype = FUNCTION2AVRO[function]
         datatype = MODBUS2AVRO(function).datatype
         optional = {
             key: self.__register_maps[register][key]
@@ -315,13 +306,6 @@ class _ObjectType(object):
         :return: List of Dict
         """
         function = self.__register_maps[register]['function']
-        # tested in __register_width()
-        # if function not in FUNCTION2AVRO:
-        #            if function not in MODBUS2AVRO:
-        #                detail = "Decoding function '{}' not defined.".format(function)
-        #                logging.error(detail)
-        #                raise MyException(status_code=422,
-        #                                  detail=detail)
         match function:
             case 'decode_bits':
                 value = getattr(decoder, function)()
@@ -341,12 +325,6 @@ class _ObjectType(object):
                     raise MyException(status_code=400,
                                       detail=str(e))
             case _:
-                # exception obsolete
-                # if no_bytes not in [1, 2, 4, 8]:
-                #     detail = "Wrong number of bytes allocated for int or float!"
-                #     logging.error(detail)
-                #     raise MyException(status_code=422,
-                #                       detail=detail)
                 value = getattr(decoder, function)()
 
         return self.__decode_prop(register=register,
@@ -387,7 +365,6 @@ class _ObjectType(object):
                         address=int(address),
                         value=value,
                         slave=UNIT)
-                    # assert (not rq.isError())  # test we are not an error
                     if rq.isError():
                         detail = "Error writing coil register at address " \
                                  "'{0}' with payload '{1}'".format(int(address),

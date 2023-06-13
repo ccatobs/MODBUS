@@ -11,26 +11,7 @@ import logging
 from typing import Callable, Any
 from enum import Enum, EnumMeta
 
-"""
-FUNCTION2AVRO = {
-    "decode_bits": "boolean",
-    "decode_8bit_int": "int",
-    "decode_8bit_uint": "int",
-    "decode_16bit_int": "int",
-    "decode_16bit_uint": "int",
-    "decode_16bit_float": "float",
-    "decode_32bit_int": "int",
-    "decode_32bit_uint": "int",
-    "decode_32bit_float": "float",
-    "decode_64bit_int": "long",
-    "decode_64bit_uint": "long",
-    "decode_64bit_float": "double",
-    "decode_string": "string"
-}
-"""
 
-
-# experimental status
 class MyMeta(EnumMeta):
     def __contains__(self, other) -> bool:
         try:
@@ -74,7 +55,6 @@ class MODBUS2AVRO(str,
     def no_bytes(cls, key) -> int: return int(cls(key).no_bit/8)
     @classmethod
     def width(cls, key) -> int: return max(int(cls(key).no_bit/16), 1)
-# experimental status end
 
 
 class MyException(Exception):

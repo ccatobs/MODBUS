@@ -238,7 +238,7 @@ will absolutely not change the order of bits,
 whatsoever, if the *decode_bits* function is applied. What a relief!
 
 Not implemented to date:
-* decoder.bit_chunks()
+* decoder.bit_chunks() - coils
 
 The result provided 
 for the housekeeping (Kafka producer) is a list of dictionary objects.
@@ -275,8 +275,8 @@ Caveat:
 * Owing to Python's pymodbus module, registers can solely be updated on the
 whole, which particularly applies for strings, bits and 8 bit-integers 
 of the leading and trailing bytes.
-* No locking mechanism is applied for parallel reading and writing 
-(see also MODBUS Web API).
+* No locking mechanism is applied for parallel reading and writing, except for 
+the MODBUS Web API.
 * When updating bit maps for a 16-bit register, say *TEST0*, 
 note that the 
 payload needs to be formatted as of below. If less than 16 bits are provided, 
