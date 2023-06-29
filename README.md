@@ -1,6 +1,6 @@
 # A Universal MODBUS Client
 
-status as of 2023/06/05
+status as of 2023/06/05 - as frozen in protected master branch
 
 ## The READER
 
