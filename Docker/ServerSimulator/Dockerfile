@@ -17,5 +17,9 @@ RUN pip3 install -r requirements.txt
 RUN ["chmod", "+x", "python_wrapper.sh"]
 
 ENV PYTHONPATH .
+ENV PORT ${PORT}
+ENV HOST ${HOST}
+ENV ServerPort ${ServerPort}
+ENV Debug ${Debug}
 
-CMD ./python_wrapper.sh
+CMD  ./python_wrapper.sh

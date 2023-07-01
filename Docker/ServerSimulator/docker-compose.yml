@@ -6,6 +6,8 @@ services:
       dockerfile: ./Docker/ServerSimulator/Dockerfile
     image: 'mb_simulator:0.1'
     container_name: "mb_simulator"
+    env_file:
+      - .env
 #    restart: unless-stopped # always
 #    ports:
 #      - "5000:5000"

@@ -1,7 +1,5 @@
 # A Universal MODBUS Client
 
-status as of 2023/06/05 - as frozen in protected master branch
-
 ## The READER
 
 A universal MODBUS interface, where the mapping of variables to coil,
@@ -67,29 +65,17 @@ e.g. "decode_32bit_uint" (see below for a selection):
 | 64 float                                     | decode_64bit_float | double         |
 
 Gaps between registers are permitted. A check on the uniqueness of "parameter" is 
-performed as well as validity checks on the JSON keys. 
-Not checked is if, e.g. an odd number of registers
-is allocated for float or int, though.
+performed as well as validity checks on the JSON keys.
 
 The JSON file for the client configuration and mapping of registers to parameters
-is defined as follows. Note: "listenerPort" is optional 
-(default: 502 for tcp) as well as "endianness" (default: {
-    "byteorder": "<",
-    "wordorder": ">"
-  })
-and "debug" (default: false).
+is defined as follows. 
 
 ```JSON
 {
-  "server": {
-    "listenerAddress": "127.0.0.40",
-    "listenerPort": 5020
-  },
   "endianness": {
     "byteorder": "<",
     "wordorder": ">"
   },
-  "debug": true,
   "mapping": {
     "10000": {
       "parameter": "UnitOn",
@@ -196,6 +182,13 @@ and "debug" (default: false).
   }
 }
 ```
+Note: "endianness" is optional, default is 
+```JSON
+{
+    "byteorder": "<",
+    "wordorder": ">"
+}
+```
 Before decoding the modbus payloads, please consider that there is some 
 confusion about Little-Endian vs. Big-Endian Word Order. The current modbus 
 client allows the endiannesses of the byteorder (the Byte order of each word)
@@ -248,8 +241,9 @@ in its version v3.2.2 (available as of 2023/05/18: v3.3.0alpha)
 
 Run (for testing):
     
-    python3 mb_client_reader_v2.py --device <device extention> (default: default) \
-                                   --path <path of config files> (default: "/../ConfigFiles/")
+    python3 mb_client_reader_v2.py --ip <device ip address> \
+                                   --port <device port (default: 502) \
+                                   --debug True/False (default: False)
 
 
 ## The WRITER
@@ -260,11 +254,12 @@ changed by utilizing the writer method of MODBUSClient class.
 
 Run (for testing):
     
-    python3 mb_client_writer_v2.py --device <device extention> (default: default) \
-                                   --path <path of config files> (default: "/../ConfigFiles/") \
-                                   --payload "{\"test 32 bit int\": 720.04}"
+    python3 mb_client_writer_v2.py --ip <device ip address> \
+                                   --port <device port (default: 502) \
+                                   --debug True/False (default: False) \
+                                   --payload "{\"test 32 bit int\": 720.04, ...}"
 
-For the time being it accepts - as input - a JSON with one or multiple
+It accepts - as input - a JSON with one or multiple
 {"parameter": "value"} pairs, where parameter needs to match (required!)
 its counterpart in the Reader JSON as already defined above.
 
@@ -297,7 +292,8 @@ locking mechanism prevents reading and writing to the same device simulaneously.
 
     python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) \
                                  --port <port> (default: 5100)
-The config files are sought in modbusClient/configFiles directory.
+The appropriate config file for the device class 
+is sought in modbusClient/configFiles directory.
 Get a list of available read and write endpoints, by typing in the browser URL.
 
     <host>:5100/docs#
@@ -327,11 +323,12 @@ where `<device>` denotes the extention for each modbus device (to be updated):
 | default   | simulator                         |
 | test      | testing reader & writer integrity |
 | lhx       | Rack                              |
-| cryo      | Cryocooler                        |
+| Cryomech  | Cryocooler                        |
 
 
-To enroll a new modbus device, just provide the 
-config file mb_client_config_`<device>`.json to the ConfigFiles directory.
+To enroll a new modbus device class, just provide the 
+config file mb_client_config_`<device>`.json to the DeviceClassConfigs 
+directory.
 
 #### Processing Times
 

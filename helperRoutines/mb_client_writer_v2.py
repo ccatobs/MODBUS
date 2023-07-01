@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
+
 """
 MODBUS WRITER
-version 2.0 - 2023/02/24
+version 2.1 - 2023/06/30
 
 For a detailed description, see https://github.com/ccatp/MODBUS
-
-python3 mb_client_writer_v2.py --device <device extention> (default: default) /
-                               --path <path to config files>
-                               --payload "{\"test 32 bit int\": 720.04}"
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
@@ -26,21 +23,25 @@ def main():
 
     argparser = argparse.ArgumentParser(
         description="Universal MODBUS Writer")
-    argparser.add_argument('--device',
-                           required=False,
-                           help='Device extention (default: default)',
-                           default='default'
+    argparser.add_argument('--ip',
+                           required=True,
+                           help='Server Device IP'
                            )
-    argparser.add_argument('--path',
+    argparser.add_argument('--port',
                            required=False,
-                           help='Path to config files (default: .)'
+                           help='Server Port (default: 502)'
+                           )
+    argparser.add_argument('--debug',
+                           required=False,
+                           default=False,
+                           help='Debug Mode (default: False)'
                            )
     argparser.add_argument('--payload',
                            required=True,
-                           help="Payload ('{parameter: value}')"
+                           help="Payload ('{parameter1: value1, parameter2: value2, ...}')"
                            )
     """
-    test = {"test 32 bit int": 720.04,
+    test = {"decode_16bit_int_4": 720.04,
             "write int register": 10,
             "string of register/1": "YZ",
             "Write bits/1": [
@@ -53,12 +54,12 @@ def main():
             }
     """
     _start_time = timer()
-    print("Device extention: {0}".format(argparser.parse_args().device))
-    # print("payload: ", argparser.parse_args().payload)
+    print("Device IP: {0}".format(argparser.parse_args().ip))
     try:
         mb_client = MODBUSClient(
-            device=argparser.parse_args().device,
-            path_additional=argparser.parse_args().path
+            ip=argparser.parse_args().ip,
+            port=argparser.parse_args().port,
+            debug=argparser.parse_args().debug
         )
         to_monitoring = mb_client.write_register(
             json.loads(argparser.parse_args().payload)
