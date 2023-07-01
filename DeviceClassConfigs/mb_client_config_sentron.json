@@ -1,13 +1,8 @@
 {
-  "server": {
-    "listenerAddress": "192.168.1.10",
-    "listenerPort": 502
-  },
   "endianness": {
     "byteorder": ">",
     "wordorder": ">"
   },
-  "debug": false,
   "mapping": {
     "30001/30002": {
       "parameter": "voltage_V_a_n",

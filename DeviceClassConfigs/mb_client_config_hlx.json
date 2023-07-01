@@ -1,13 +1,8 @@
 {
-  "server": {
-    "listenerAddress": "10.10.1.30",
-    "listenerPort": 502
-  },
   "endianness": {
     "byteorder": ">",
     "wordorder": ">"
   },
-  "debug": false,
   "mapping": {
     "10000": {
       "parameter": "UnitOn",

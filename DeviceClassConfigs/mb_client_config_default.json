@@ -1,13 +1,8 @@
 {
-  "server": {
-    "listenerAddress": "127.0.0.40",
-    "listenerPort": 5020
-  },
   "endianness": {
     "byteorder": ">",
     "wordorder": ">"
   },
-  "debug": true,
   "mapping": {
     "00000": {
       "parameter": "Write Coil 0"
