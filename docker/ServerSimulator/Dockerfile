@@ -8,7 +8,7 @@ WORKDIR MODBUS
 
 COPY modbusClient/ modbusClient/
 COPY modbusServerSimulator/ modbusServerSimulator/
-COPY Docker/ServerSimulator/python_wrapper.sh .
+COPY docker/ServerSimulator/python_wrapper.sh .
 COPY RestAPI/mb_client_RestAPI.py RestAPI/
 COPY requirements.txt .
 

@@ -1,6 +1,6 @@
 # A Universal MODBUS Client
 
-## The READER
+## READER
 
 A universal MODBUS interface, where the mapping of variables to coil,
 discrete input, input registers, and holding registers is entirely defined
@@ -194,7 +194,7 @@ confusion about Little-Endian vs. Big-Endian Word Order. The current modbus
 client allows the endiannesses of the byteorder (the Byte order of each word)
 and the wordorder (the endianess of the word, when wordcount is >= 2) to be 
 adjusted (see
-[Parameters](https://github.com/ccatp/MODBUS/blob/master/configFiles/mb_client_config_default.json)):
+[Parameters](https://github.com/ccatp/MODBUS/blob/dev/DeviceClassConfigs/mb_client_config_default.json)):
 
     ">" = Endian.Big 
     "<" = Endian.Little
@@ -246,7 +246,7 @@ Run (for testing):
                                    --debug True/False (default: False)
 
 
-## The WRITER
+## WRITER
 
 Only the register classes coil (class 0) and holding registers (class 4)
 are eligible for reading and writing. Values in those register classes may be 
@@ -284,7 +284,7 @@ will be set to false.
                         l             h l             h
 ```
 
-## The MODBUS Web API
+## MODBUS Web API
 
 Run the Rest API with the previously described MODBUS READER and WRITER methods
 of the *MODBUSClient* class. An internal 
@@ -302,11 +302,11 @@ Get a list of available read and write endpoints, by typing in the browser URL.
 
 Alternatively, invoke cli *curl* for the Reader:
 
-    curl <host>:5100/modbus/read/<device> 
+    curl <host>:5100/modbus/read/<device_ip> 
 
 and for the Writer:
 
-    curl <host>:5100/modbus/write/<device> -X PUT \
+    curl <host>:5100/modbus/write/<device_ip> -X PUT \
             -d 'payload={"test 32 bit int": 720.04, 
             "write int register": 10, 
             "string of register/1": "YZ", 
@@ -316,9 +316,10 @@ and for the Writer:
 
 The JSON comprises one to many 
 {"parameter": "value"} pairs to be updated on the modbus device,
-where `<device>` denotes the extention for each modbus device (to be updated):
+where `<device>` denotes the extention for each modbus device class 
+(to be updated):
 
-| Extension | MODBUS Device                     |
+| Extension | MODBUS Device Class               |
 |-----------|-----------------------------------|
 | default   | simulator                         |
 | test      | testing reader & writer integrity |
@@ -337,8 +338,6 @@ For example, the time to read out all registers from the server simulator,
 as defined in 
 [test config](https://github.com/ccatp/MODBUS/blob/master/modbusClient/configFiles/mb_client_config_test.json),
 is roughly 100 ms.
-This is to be taken into account when configuring the read-out frequency for 
-the housekeeping module.
 
 ## Content
 
@@ -351,20 +350,21 @@ The current repository comprises:
 * MODBUS 
 [Reader](https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_reader_v2.py) 
 * MODBUS [Writer](https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_writer_v2.py)
-* MODBUS [server simulator](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.py) 
-(coding from 
+* MODBUS [Server Simulator](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.py) 
+(cloned from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
 [config](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.json) 
 file.
 * MODBUS 
 [REST API](https://github.com/ccatp/MODBUS/blob/master/RestAPI/mb_client_RestAPI.py)
+* Docker 
+[RestAPI](https://github.com/ccatp/MODBUS/tree/dev/docker/RestAPI) &
+[ServerSimulator](https://github.com/ccatp/MODBUS/tree/dev/docker/ServerSimulator) (runs with additional Server 
+  Simulator)
 
 For Reader and Writer the MODBUS 
 server connection and register mapping details are defined in
 mb_client_config_`<device>`.json.
-
-MODBUS Server Simulator & RestAPI and the RestAPI as stadalone 
-can also be run inside a Docker Container, see [here](https://github.com/ccatp/MODBUS/blob/master/Docker)
 
 For the Conda environment used, 
 see [here](https://github.com/ccatp/MODBUS/blob/master/conda-env.txt)
