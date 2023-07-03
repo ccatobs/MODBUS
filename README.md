@@ -367,7 +367,7 @@ server connection and register mapping details are defined in
 mb_client_config_`<device>`.json.
 
 For the Conda environment used, 
-see [here](conda-env.txt)
+see [here](https://github.com/ccatp/MODBUS/blob/451ef17b0a7fc0eba00bc9a258781f206362849a/conda-env.yml)
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: 
 rtimmermann@astro.uni-bonn.de
