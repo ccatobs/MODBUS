@@ -194,7 +194,7 @@ confusion about Little-Endian vs. Big-Endian Word Order. The current modbus
 client allows the endiannesses of the byteorder (the Byte order of each word)
 and the wordorder (the endianess of the word, when wordcount is >= 2) to be 
 adjusted (see
-[Parameters](https://github.com/ccatp/MODBUS/blob/dev/DeviceClassConfigs/mb_client_config_default.json)):
+[Parameters](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/DeviceClassConfigs/mb_client_config_default.json)):
 
     ">" = Endian.Big 
     "<" = Endian.Little
@@ -336,31 +336,30 @@ directory.
 As a note aside, the processing time of the MODBUS reader is quite slow, though. 
 For example, the time to read out all registers from the server simulator, 
 as defined in 
-[test config](https://github.com/ccatp/MODBUS/blob/master/modbusClient/configFiles/mb_client_config_test.json),
+[test config](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/DeviceClassConfigs/mb_client_config_test.json),
 is roughly 100 ms.
 
 ## Content
 
 The current repository comprises:
 
-* [class MODBUSClient](https://github.com/ccatp/MODBUS/blob/master/modbusClient/)
+* [class MODBUSClient](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/modbusClient)
     * read_register()
     * write_register(wr: Dict)
     * close()
 * MODBUS 
-[Reader](https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_reader_v2.py) 
-* MODBUS [Writer](https://github.com/ccatp/MODBUS/blob/master/helperRoutines/mb_client_writer_v2.py)
-* MODBUS [Server Simulator](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.py) 
+[Reader](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/helperRoutines/mb_client_reader_v2.py) 
+* MODBUS [Writer](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/helperRoutines/mb_client_writer_v2.py)
+* MODBUS [Server Simulator](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/modbusServerSimulator/src/modbus_server.py) 
 (cloned from 
 https://hub.docker.com/r/oitc/modbus-server) with its 
-[config](https://github.com/ccatp/MODBUS/blob/master/modbusServerSimulator/src/modbus_server.json) 
-file.
+[config file](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/modbusServerSimulator/src/modbus_server.json).
 * MODBUS 
-[REST API](https://github.com/ccatp/MODBUS/blob/master/RestAPI/mb_client_RestAPI.py)
+[REST API](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/RestAPI/mb_client_RestAPI.py)
 * Docker 
-[RestAPI](https://github.com/ccatp/MODBUS/tree/dev/docker/RestAPI) &
-[ServerSimulator](https://github.com/ccatp/MODBUS/tree/dev/docker/ServerSimulator) (runs with additional Server 
-  Simulator)
+[RestAPI](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/docker/RestAPI) &
+[ServerSimulator](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/docker/ServerSimulator) 
+(runs with additional Server Simulator)
 
 For Reader and Writer the MODBUS 
 server connection and register mapping details are defined in
