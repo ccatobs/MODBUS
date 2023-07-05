@@ -7,9 +7,30 @@ auxiliary functions
 from timeit import default_timer
 from functools import wraps
 from threading import Lock
+import os
+import glob
 import logging
 from typing import Callable, Any
 from enum import Enum, EnumMeta
+
+
+def file_config() -> str:
+    path_config = "{0}{1}".format(
+        os.path.dirname(os.path.realpath(__file__)),
+        "/../configFiles/"
+    )
+    dir_content = glob.glob1(path_config,
+                             "mb_client_config_*.json")
+    if len(dir_content) != 1:
+        detail = "Client config file not found or multiple config files found."
+        logging.error(detail)
+        raise MyException(status_code=404,
+                          detail=detail)
+
+    return "{0}{1}".format(
+        path_config,
+        dir_content[0]
+    )
 
 
 class MyMeta(EnumMeta):
@@ -22,9 +43,11 @@ class MyMeta(EnumMeta):
             return True
 
 
-class MODBUS2AVRO(str,
-                  Enum,
-                  metaclass=MyMeta):
+class MODBUS2AVRO(
+    str,
+    Enum,
+    metaclass=MyMeta
+):
     A = ("decode_bits", "boolean", 8, True)
     B = ("decode_8bit_int", "int", 8, True)
     C = ("decode_8bit_uint", "int", 8, True)
@@ -39,11 +62,13 @@ class MODBUS2AVRO(str,
     M = ("decode_64bit_float", "double", 64, True)
     N = ("decode_string", "string", 16, False)
 
-    def __new__(cls,
-                key,
-                datatype,
-                no_bit,
-                supersede) -> Enum:
+    def __new__(
+            cls,
+            key,
+            datatype,
+            no_bit,
+            supersede
+    ) -> Enum:
         obj = str.__new__(cls, [str])
         obj._value_ = key
         obj.datatype = datatype

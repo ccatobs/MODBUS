@@ -2,7 +2,7 @@
 
 """
 MODBUS WRITER
-version 2.1 - 2023/06/30
+version {0}
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 
@@ -10,13 +10,15 @@ Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
 
-from modbusClient import MODBUSClient, MyException
 import json
 from timeit import default_timer as timer
 import argparse
 import sys
+# internal
+from modbusClient import MODBUSClient, MyException
+from modbusClient import __version__
 
-print(__doc__)
+print(__doc__.format(__version__))
 
 
 def main():
@@ -25,11 +27,11 @@ def main():
         description="Universal MODBUS Writer")
     argparser.add_argument('--ip',
                            required=True,
-                           help='Server Device IP'
+                           help='MODBUS Server Device IP'
                            )
     argparser.add_argument('--port',
                            required=False,
-                           help='Server Port (default: 502)'
+                           help='MODBUS Server Port (default: 502)'
                            )
     argparser.add_argument('--debug',
                            required=False,
@@ -38,7 +40,8 @@ def main():
                            )
     argparser.add_argument('--payload',
                            required=True,
-                           help="Payload ('{parameter1: value1, parameter2: value2, ...}')"
+                           help="Payload ('{parameter1: value1, "
+                                "parameter2: value2, ...}')"
                            )
     """
     test = {"decode_16bit_int_4": 720.04,

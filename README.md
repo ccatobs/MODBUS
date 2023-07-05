@@ -41,8 +41,8 @@ the leading and trailing byte of the 16 bit register, respectively.
 Furthermore, "30011/30012" or "30011/30014" address 32 or 64 bit 
 broad registers starting at the 12th register,
 if registers are in zeroMode = True at the server's configuration.
-A start/end register is to be provided for strings only, whereas specification of
-a start register is sufficient for all other data types.
+A start/end register is to be provided for strings only, whereas the 
+specification of an end register is not required for other data types.
 
 A function needs to be defined for input and holding registers that translates
 the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
@@ -249,7 +249,7 @@ Run (for testing):
 ## WRITER
 
 Only the register classes coil (class 0) and holding registers (class 4)
-are eligible for reading and writing. Values in those register classes may be 
+are eligible for writing. Values in those register classes may be 
 changed by utilizing the writer method of MODBUSClient class.
 
 Run (for testing):
@@ -286,15 +286,42 @@ will be set to false.
 
 ## MODBUS Web API
 
-Run the Rest API with the previously described MODBUS READER and WRITER methods
+Run the Rest API comprising 
+the previously described MODBUS READER and WRITER methods
 of the *MODBUSClient* class. An internal 
 locking mechanism prevents reading and writing to the same device simulaneously.
 
-    python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) \
-                                 --port <port> (default: 5100)
+The JSON config file comprises 
+{"parameter": "value"} pairs that can be read and updated on the modbus device,
+where &lt;device&gt; denotes the extention for each modbus device class 
+(to be updated):
+
+| Extension | MODBUS Device Class               |
+|-----------|-----------------------------------|
+| default   | simulator                         |
+| test      | testing reader & writer integrity |
+| lhx       | Rack                              |
+| Cryomech  | Cryocooler                        |
+
 The appropriate config file for the device class 
 is sought in modbusClient/configFiles directory.
-Get a list of available read and write endpoints, by typing in the browser URL.
+
+To enroll a new modbus device class, just provide the 
+config file mb_client_config_&lt;device&gt;.json to the DeviceClassConfigs 
+directory. It will be copied appropriately with the Docker container setup.
+
+Run the RestAPI for testing:
+
+    python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) \
+                                 --port <port> (default: 5100)
+Caveat: 
+
+Whilst the environmental parameters
+*ServerPort=&lt;MODBUS Server Port&gt;* and *Debug=True/False*
+are set in the Docker container, they have 
+to be defined in the environment, where *mb_client_RestAPI.py* will run.
+
+Get the read and write endpoints, by typing in the browser URL:
 
     <host>:5100/docs#
 
@@ -314,23 +341,6 @@ and for the Writer:
             "Coil 1": true, 
             "Coil 10": true}'
 
-The JSON comprises one to many 
-{"parameter": "value"} pairs to be updated on the modbus device,
-where `<device>` denotes the extention for each modbus device class 
-(to be updated):
-
-| Extension | MODBUS Device Class               |
-|-----------|-----------------------------------|
-| default   | simulator                         |
-| test      | testing reader & writer integrity |
-| lhx       | Rack                              |
-| Cryomech  | Cryocooler                        |
-
-
-To enroll a new modbus device class, just provide the 
-config file mb_client_config_`<device>`.json to the DeviceClassConfigs 
-directory.
-
 #### Processing Times
 
 As a note aside, the processing time of the MODBUS reader is quite slow, though. 
@@ -344,8 +354,8 @@ is roughly 100 ms.
 The current repository comprises:
 
 * [class MODBUSClient](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/modbusClient)
-    * read_register()
-    * write_register(wr: Dict)
+    * read_register(...)
+    * write_register(...)
     * close()
 * MODBUS 
 [Reader](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/helperRoutines/mb_client_reader_v2.py) 
@@ -363,7 +373,7 @@ https://hub.docker.com/r/oitc/modbus-server) with its
 
 For Reader and Writer the MODBUS 
 server connection and register mapping details are defined in
-mb_client_config_`<device>`.json.
+mb_client_config_&lt;device&gt;.json.
 
 For the Conda environment used, 
 see [here](https://github.com/ccatp/MODBUS/blob/451ef17b0a7fc0eba00bc9a258781f206362849a/conda-env.yml)

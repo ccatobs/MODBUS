@@ -5,11 +5,13 @@ MODBUS Client
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 Running and testing:
-python3 mb_client_reader_v2.py --device <device extention> (default: default) \
-                               --path <path to config files> (default: ../configFiles)
+python3 mb_client_reader_v2.py --ip <device ip address> \
+                               --port <device port (default: 502) \
+                               --debug True/False (default: False)
 
-python3 mb_client_writer_v2.py --device <device extention> (default: default) \
-                               --path <path to config files> (default: ../configFiles) \
+python3 mb_client_writer_v2.py --ip <device ip address> \
+                               --port <device port (default: 502) \
+                               --debug True/False (default: False) \
                                --payload "{\"test 32 bit int\": 720.04, ...}"
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
@@ -21,10 +23,9 @@ from pymodbus.client import ModbusTcpClient
 import json
 import re
 import logging
-import os
 from typing import Dict, List
 # internal
-from .mb_client_aux import mytimer, MyException, MODBUS2AVRO
+from .mb_client_aux import mytimer, MyException, MODBUS2AVRO, file_config
 
 """
 change history
@@ -98,15 +99,19 @@ change history
 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 2.4.1
     * comments removed
+2023/06/30
+- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 3.0.1
+    * client input parameter: ip, port, debug
 """
 
-__author__ = "Dr. Ralf Antonius Timmermann"
-__copyright__ = "Copyright (C) Dr. Ralf Antonius Timmermann, " \
+__author__ = "Ralf Antonius Timmermann"
+__copyright__ = "Copyright (C) Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
-__credits__ = ["Ronan Higgins"]
+__credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "2.4.1"
-__maintainer__ = "Dr. Ralf Antonius Timmermann"
+__version__ = "3.0.1"
+__maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
 
@@ -343,7 +348,6 @@ class _ObjectType(object):
         return [
             dict(
                 **self.__register_maps[register],
-                # **{"datatype": FUNCTION2AVRO["decode_bits"],
                 **{"datatype": MODBUS2AVRO("decode_bits").datatype,
                    "value": decoder[0]}
             )
@@ -528,40 +532,28 @@ class _ObjectType(object):
 
 class MODBUSClient(object):
 
-    def __init__(self,
-                 device: str = "default",
-                 path_additional: str = None):
+    def __init__(
+            self,
+            ip: str,
+            *,
+            port: int = None,
+            debug: bool = False
+    ):
         """
         initializing the modbus client and perform checks on
-        mb_client_mapping_<device>.json:
+        mb_client_config_<device>.json:
         1) format of register key
         2) existance and uniqueness of "parameter"
         3) connection to modbus server via synchronous TCP
-        :return:
-        object - modbus client
-        dictionary - mapping
+        :param ip: str - device ip
+        :param port: int - device port
+        :param debug: bool - debug mode True/False
         """
-        self.__device = device  # used for wrapper
-        if path_additional:
-            file_config = "{0}/mb_client_config_{1}.json".\
-                format(path_additional.rstrip('/'),
-                       device)
-        else:
-            file_config = "{0}{1}/mb_client_config_{2}.json".\
-                format(os.path.dirname(os.path.realpath(__file__)),
-                       "/../configFiles",
-                       device)
-        # verify existance of config file
-        if not os.path.isfile(file_config):
-            detail = "Client config file '{0}' not found".format(file_config)
-            logging.error(detail)
-            raise MyException(status_code=404,
-                              detail=detail)
-        with open(file_config) as config_file:
+        self.__device = ip  # used for wrapper
+        config_device_class = file_config()
+        with open(config_device_class) as config_file:
             client_config = json.load(config_file)
-        logging.info("Config File: {0}".format(file_config))
-        # logging toggle debug (default INFO)
-        debug = client_config.get('debug', False)
+        logging.info("Config File: {0}".format(config_device_class))
         logging.getLogger().setLevel(
             getattr(logging, "DEBUG" if debug else "INFO")
         )
@@ -569,21 +561,20 @@ class MODBUSClient(object):
         # make integrity checks
         self.__client_mapping_checks(mapping=client_config['mapping'])
 
-        port = client_config['server'].get('listenerPort')
         if port:
             client = ModbusTcpClient(
-                host=client_config['server']['listenerAddress'],
+                host=ip,
                 port=port,
                 debug=debug
             )
         else:
             client = ModbusTcpClient(
-                host=client_config['server']['listenerAddress'],
+                host=ip,
                 debug=debug
             )
 
         if not client.connect():
-            detail = "Could not connect to server."
+            detail = "Could not connect to MODBUS server."
             logging.error(detail)
             raise MyException(status_code=503,
                               detail=detail)

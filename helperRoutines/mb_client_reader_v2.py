@@ -2,47 +2,50 @@
 
 """
 MODBUS READER
-version 2.0 - 2023/02/24
+version {0}
 
 For a detailed description, see https://github.com/ccatp/MODBUS
-
-python3 mb_client_reader_v2.py --device <device extention> (default: default) \
-                               --path <path to config files>
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann, Argelander Institute for
 Astronomy (AIfA), University Bonn.
 """
 
-from modbusClient import MODBUSClient, MyException
 import json
 import sys
 from timeit import default_timer as timer
 import argparse
+# internal
+from modbusClient import MODBUSClient, MyException
+from modbusClient import __version__
 
-
-print(__doc__)
+print(__doc__.format(__version__))
 
 
 def main():
 
     argparser = argparse.ArgumentParser(
         description="Universal MODBUS Client Reader")
-    argparser.add_argument('--device',
-                           required=False,
-                           help='Device extentions (default: default)',
-                           default='default'
+    argparser.add_argument('--ip',
+                           required=True,
+                           help='MODBUS Server Device IP'
                            )
-    argparser.add_argument('--path',
+    argparser.add_argument('--port',
                            required=False,
-                           help='Path to config files (default: .)'
+                           help='MODBUS Server Port (default: 502)'
+                           )
+    argparser.add_argument('--debug',
+                           required=False,
+                           default=False,
+                           help='Debug Mode (default: False)'
                            )
 
     _start_time = timer()
-    print("Device extention: {0}".format(argparser.parse_args().device))
+    print("Device IP: {0}".format(argparser.parse_args().ip))
     try:
         mb_client = MODBUSClient(
-            device=argparser.parse_args().device,
-            path_additional=argparser.parse_args().path
+            ip=argparser.parse_args().ip,
+            port=argparser.parse_args().port,
+            debug=argparser.parse_args().debug
         )
         to_housekeeping = mb_client.read_register()
         mb_client.close()
