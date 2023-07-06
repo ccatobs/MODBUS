@@ -2,6 +2,7 @@
 
 """
 mb_client_RestAPI.py
+version {0}
 
 Web API to serve the read and write methods of the MODBUSClient class.
 Implements a locking mechanism for each
@@ -15,9 +16,6 @@ import argparse
 import os
 import uvicorn
 from typing import Dict
-import glob
-import re
-from enum import Enum
 # internal
 from modbusClient import MODBUSClient, LockGroup, MyException
 from modbusClient import __version__
@@ -33,60 +31,58 @@ version history:
 - version 1.2
     * Predefined enumeration values for devices as fetched from configFiles
 henceforth version history of modbusClient adopted
+2023/06/30 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 3.0.1
+    * Device IP is path variable, PORT provided via environment variable 
 """
 
-print(__doc__)
+print(__doc__.format(__version__))
+
+# ToDo we might re-think if PORT is fetched through env variables
+port = os.environ.get('ServerPort')
+debug = os.environ.get('Debug')
 
 app = FastAPI(
     title="MODBUS API",
     version=__version__,
-    description="Connects with MODBUS devices. Enables to read and write "
-                "from/to "
+    description="Connects with MODBUS devices. Enables to read/write from/to "
                 "MODBUS registers. Register mappings to parameters are defined "
-                "in config files found in modbusClient/configFiles."
+                "in config files available in modbusClient/configFiles."
 )
 lock_mb_client = LockGroup()
 clients = dict()
 devices = dict()
 
-path_additional = "{0}{1}".format(
-    os.path.dirname(os.path.realpath(__file__)),
-    "/../modbusClient/configFiles"
-)
-for txt in glob.glob1(path_additional,
-                      "mb_client_config_*.json"):
-    d = re.findall(r'mb_client_config_(.+?).json', txt)[0]
-    devices[d] = d
-DevicesEnum = Enum("DevicesEnum", devices)
 
-
-def mb_clients(device: str) -> MODBUSClient:
+def mb_clients(ip: str) -> MODBUSClient:
     """
     Helper to store MODBUSClient instances over the entire time the RestAPI is
     running once it was called the first time
-    :param device
-    :return: MODBUSClient instance for each device
+    :param ip: device ip
+    :return: MODBUSClient instance each device
     """
-    if device not in clients:
-        clients[device] = MODBUSClient(
-            device=device,
-            path_additional=path_additional
+    if ip not in clients:
+        clients[ip] = MODBUSClient(
+            ip=ip,
+            port=port,  # from environment variable
+            debug=debug  # from environment variable
         )
 
-    return clients[device]
+    return clients[ip]
 
 
-@app.get("/modbus/read/{device}",
-         summary="List values of all registers for MODBUS "
-                 "device <device_extention>")
+@app.get("/modbus/read/{device_ip}",
+         summary="List values of all registers for MODBUS Device IP")
 async def read_register(
-        device: DevicesEnum = Path(title="Device Extention",
-                                   description="Device Extention")
+        device_ip: str = Path(title="Device IP",
+                              description="Device IP")
 ):
     try:
-        lock_mb_client(device).acquire()
+        lock_mb_client(device_ip).acquire()
         return JSONResponse(
-            mb_clients(device=device.value).read_register()
+            mb_clients(
+                ip=device_ip
+            ).read_register()
         )
     except MyException as e:
         raise HTTPException(
@@ -94,25 +90,26 @@ async def read_register(
             detail=e.detail
         )
     finally:
-        lock_mb_client(device).release()
+        lock_mb_client(device_ip).release()
 
 
-@app.post("/modbus/write/{device}",
-          summary="Write values to one or multiple register(s) for "
-                  "MODBUS device <device_extention>")
+@app.put("/modbus/write/{device_ip}",
+         summary="Write values to register(s) for MODBUS Device IP")
 async def write_register(
         payload: Dict = Body(title="Payload",
                              description="Data to be written into registers"),
-        device: DevicesEnum = Path(title="Device Extention",
-                                   description="Device Extention")
+        device_ip: str = Path(title="Device IP",
+                              description="Device IP")
 ):
     if not payload:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail="Empty payload")
     try:
-        lock_mb_client(device).acquire()
+        lock_mb_client(device_ip).acquire()
         return JSONResponse(
-            mb_clients(device=device.value).write_register(wr=payload)
+            mb_clients(
+                ip=device_ip
+            ).write_register(wr=payload)
         )
     except MyException as e:
         raise HTTPException(
@@ -120,7 +117,7 @@ async def write_register(
             detail=e.detail
         )
     finally:
-        lock_mb_client(device).release()
+        lock_mb_client(device_ip).release()
 
 
 @app.on_event("shutdown")
@@ -146,21 +143,12 @@ def main():
         help='Port (default: 5100)',
         default=5100
     )
-    # for the time being we fetch all configurations from a predefined directory
-    #    argparser.add_argument(
-    #        '--path',
-    #        required=False,
-    #        type=str,
-    #        help='Path to config files (default: /../configFiles)'
-    #    )
-    #    path_additional = argparser.parse_args().path
 
     logging.info("PID: {0}".format(os.getpid()))
     logging.info("Host: {0}, Port: {1}".format(
         argparser.parse_args().host,
         argparser.parse_args().port)
     )
-    logging.info("Path to configFiles: {}".format(path_additional))
 
     uvicorn.run(app,
                 host=argparser.parse_args().host,

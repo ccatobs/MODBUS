@@ -11,6 +11,8 @@ COPY modbusServerSimulator/ modbusServerSimulator/
 COPY docker/ServerSimulator/python_wrapper.sh .
 COPY RestAPI/mb_client_RestAPI.py RestAPI/
 COPY requirements.txt .
+# needs to be adapted according to the device class
+COPY DeviceClassConfigs/mb_client_config_test.json modbusClient/configFiles/
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
