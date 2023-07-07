@@ -27,20 +27,22 @@ def main():
         description="Universal MODBUS Client Reader")
     argparser.add_argument('--ip',
                            required=True,
-                           help='MODBUS Server Device IP'
+                           help='MODBUS Server Device IP',
+                           type=str
                            )
     argparser.add_argument('--port',
                            required=False,
-                           help='MODBUS Server Port (default: 502)'
+                           help='MODBUS Server Port (default: 502)',
+                           type=int
                            )
     argparser.add_argument('--debug',
                            required=False,
                            default=False,
-                           help='Debug Mode (default: False)'
+                           help='Debug Mode (default: False)',
+                           action="store_true"
                            )
 
     _start_time = timer()
-    print("Device IP: {0}".format(argparser.parse_args().ip))
     try:
         mb_client = MODBUSClient(
             ip=argparser.parse_args().ip,

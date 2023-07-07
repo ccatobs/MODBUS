@@ -16,6 +16,8 @@ import argparse
 import os
 import uvicorn
 from typing import Dict
+from distutils.util import strtobool
+
 # internal
 from modbusClient import MODBUSClient, LockGroup, MyException
 from modbusClient import __version__
@@ -40,7 +42,7 @@ print(__doc__.format(__version__))
 
 # ToDo we might re-think if PORT is fetched through env variables
 port = os.environ.get('ServerPort')
-debug = os.environ.get('Debug')
+debug = strtobool(os.environ.get('Debug'))
 
 app = FastAPI(
     title="MODBUS API",

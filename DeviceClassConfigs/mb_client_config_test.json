@@ -32,7 +32,8 @@
       "function": "decode_16bit_int",
       "multiplier": 0.1,
       "parameter": "decode_16bit_int",
-      "description": -408.1
+      "description": -408.1,
+      "isTag": true
     },
     "30001": {
       "function": "decode_16bit_uint",

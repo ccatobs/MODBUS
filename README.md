@@ -15,6 +15,7 @@ Each dictionary key comprises additional features, such as
 4) "map" - see below (optional)
 5) "muliplier" - for input & holding registers of datatype integer (optional)
 6) "offset" for input & holding registers of datatype integer (optional)
+7) "isTag" - true or false (optional)  
 
 The latter two will not be passed on to the output, though, instead
 they are parsed, such that the register's value is multiplied by a "multiplier" 
@@ -27,7 +28,7 @@ defined, the description is chosen according to round(value).
 A map might also 
 contain entries matching bits of the leading or trailing byte of a register.
 
-Furthermore, "value" and "datatype" (AVRO conventions) are
+Furthermore, "value" and "datatype" (AVRO conventions) and isTag are
 reserved keywords, since they will be generated in the output dictionary.
 Additional dictionary key/value pairs may be provided in the client registry
 mapping, which are merely passed on to the output. To maintain consistancy over
@@ -97,7 +98,8 @@ is defined as follows.
         "8": "Helium Cool Down",
         "9": "Power related Error",
         "15": "Recovered from Error"
-      }
+      },
+      "isTag": true
     },
     "30002": {
       "function": "decode_16bit_uint",
@@ -135,7 +137,8 @@ is defined as follows.
       "function": "decode_32bit_float",
       "parameter": "Oil Temp",
       "description": "unit is provided here...",
-      "unit": "e.g. Fahrenheit"
+      "unit": "e.g. Fahrenheit",
+      "isTag": true
     },
     "30031": {
       "function": "decode_16bit_uint",

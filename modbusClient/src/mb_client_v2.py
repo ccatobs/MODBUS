@@ -6,12 +6,12 @@ MODBUS Client
 For a detailed description, see https://github.com/ccatp/MODBUS
 Running and testing:
 python3 mb_client_reader_v2.py --ip <device ip address> \
-                               --port <device port (default: 502) \
-                               --debug True/False (default: False)
+                               [--port <device port (default: 502)] \
+                               [--debug]
 
 python3 mb_client_writer_v2.py --ip <device ip address> \
-                               --port <device port (default: 502) \
-                               --debug True/False (default: False) \
+                               [--port <device port (default: 502)] \
+                               [--debug] \
                                --payload "{\"test 32 bit int\": 720.04, ...}"
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
@@ -24,6 +24,7 @@ import json
 import re
 import logging
 from typing import Dict, List
+import datetime
 # internal
 from .mb_client_aux import mytimer, MyException, MODBUS2AVRO, file_config
 
@@ -103,6 +104,10 @@ change history
 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 3.0.1
     * client input parameter: ip, port, debug
+2023/07/07
+- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 3.1.1
+    * output dict with additional timestamp, ip, and isTag info
 """
 
 __author__ = "Ralf Antonius Timmermann"
@@ -110,7 +115,7 @@ __copyright__ = "Copyright (C) Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "3.0.1"
+__version__ = "3.1.1"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -231,7 +236,8 @@ class _ObjectType(object):
                                'parameter',
                                'multiplier',
                                'offset',
-                               'datatype'}
+                               'datatype',
+                               'isTag'}
             }
         for key, name in self.__register_maps[register]['map'].items():
             decoded.append(
@@ -241,8 +247,9 @@ class _ObjectType(object):
                             self.__register_maps[register]['parameter'],
                         "value": value[self.__binary_map(binarystring=key)],
                         "description": name,
-                        # "datatype": FUNCTION2AVRO[function]
-                        "datatype": MODBUS2AVRO(function).datatype
+                        "datatype": MODBUS2AVRO(function).datatype,
+                        "isTag": self.__register_maps[register].get('isTag', False)
+
                     },
                     **optional)
             )
@@ -272,7 +279,8 @@ class _ObjectType(object):
                            'function',
                            'datatype',
                            'multiplier',
-                           'offset'}
+                           'offset',
+                           'isTag'}
         }
         if datatype in ['int', 'long'] and not maps:
             # multiplier and/or offset make sense for int datatypes and when
@@ -284,7 +292,8 @@ class _ObjectType(object):
                 datatype = "float"  # to serve Reinhold's AVRO schema
         di = {
             "value": value,
-            "datatype": datatype
+            "datatype": datatype,
+            "isTag": self.__register_maps[register].get('isTag', False)
         }
         if maps is not None:
             desc = maps.get(str(round(value)))
@@ -349,7 +358,9 @@ class _ObjectType(object):
             dict(
                 **self.__register_maps[register],
                 **{"datatype": MODBUS2AVRO("decode_bits").datatype,
-                   "value": decoder[0]}
+                   "value": decoder[0],
+                   "isTag": self.__register_maps[register].get('isTag', False)
+                   }
             )
         ]
 
@@ -553,11 +564,11 @@ class MODBUSClient(object):
         config_device_class = file_config()
         with open(config_device_class) as config_file:
             client_config = json.load(config_file)
-        logging.info("Config File: {0}".format(config_device_class))
+        logging.basicConfig()
         logging.getLogger().setLevel(
             getattr(logging, "DEBUG" if debug else "INFO")
         )
-
+        logging.info("Config File: {0}".format(config_device_class))
         # make integrity checks
         self.__client_mapping_checks(mapping=client_config['mapping'])
 
@@ -673,7 +684,13 @@ class MODBUSClient(object):
         for entity in self.__entity_list:
             decoded = decoded + entity.register_readout()
 
-        return [dict(sorted(item.items())) for item in decoded]
+        return {
+            "timestamp": datetime.datetime.now(
+                tz=datetime.timezone.utc
+            ).strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "ip": self.__device,
+            "data": decoded
+        }
 
     @mytimer
     def write_register(self,
