@@ -245,8 +245,8 @@ in its version v3.2.2 (available as of 2023/05/18: v3.3.0alpha)
 Run (for testing):
     
     python3 mb_client_reader_v2.py --ip <device ip address> \
-                                   --port <device port (default: 502) \
-                                   --debug True/False (default: False)
+                                   [--port <device port (default: 502)] \
+                                   [--debug]
 
 
 ## WRITER
@@ -258,8 +258,8 @@ changed by utilizing the writer method of MODBUSClient class.
 Run (for testing):
     
     python3 mb_client_writer_v2.py --ip <device ip address> \
-                                   --port <device port (default: 502) \
-                                   --debug True/False (default: False) \
+                                   [--port <device port (default: 502)] \
+                                   [--debug] \
                                    --payload "{\"test 32 bit int\": 720.04, ...}"
 
 It accepts - as input - a JSON with one or multiple
