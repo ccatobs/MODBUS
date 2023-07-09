@@ -6,20 +6,21 @@ A universal MODBUS interface, where the mapping of variables to coil,
 discrete input, input registers, and holding registers is entirely defined
 by a JSON file, 
 with no modification to the coding required whatsoever. The JSON file
-comprises keys pointing to single or multiple registers or to bytes of it. 
-Each dictionary key comprises additional features, such as 
+comprises dictionaries representing single or multiple MODBUS registers or 
+to bytes of it. Each dictionary comprises additional features, such as 
 
-1) "parameter" - variable name unique over all registers (mandatory) 
+1) "parameter" - variable name unique over all registers (mandatory)
 2) "function" - data type for input and holding registers (mandatory)
 3) "description" (optional)
 4) "map" - see below (optional)
-5) "muliplier" - for input & holding registers of datatype integer (optional)
-6) "offset" for input & holding registers of datatype integer (optional)
-7) "isTag" - true or false (optional)  
+5) "isTag" - true (optional), otherwise false in output
+6) "muliplier" - for input & holding registers of datatype integer (optional)
+7) "offset" for input & holding registers of datatype integer (optional)
 
-The latter two will not be passed on to the output, though, instead
-they are parsed, such that the register's value is multiplied by a "multiplier" 
-and an "offset" is applied. This is solely applicable to int and long data types.
+The latter two will not be passed on to the output, though. They are parsed, 
+such that the register's value is multiplied by the value of "multiplier" 
+and an added to the value of "offset" (applies reversely for the writer). 
+This is applicable to int and long data types.
 
 A map is provided in case a value needs to match 
 an entry from a provided list. The corresponding field value is passed on to 
@@ -28,7 +29,7 @@ defined, the description is chosen according to round(value).
 A map might also 
 contain entries matching bits of the leading or trailing byte of a register.
 
-Furthermore, "value" and "datatype" (AVRO conventions) and isTag are
+Furthermore, "value" and "datatype" (AVRO conventions) are
 reserved keywords, since they will be generated in the output dictionary.
 Additional dictionary key/value pairs may be provided in the client registry
 mapping, which are merely passed on to the output. To maintain consistancy over
@@ -245,7 +246,7 @@ in its version v3.2.2 (available as of 2023/05/18: v3.3.0alpha)
 Run (for testing):
     
     python3 mb_client_reader_v2.py --ip <device ip address> \
-                                   [--port <device port (default: 502)] \
+                                   [--port <device port> (default: 502)] \
                                    [--debug]
 
 
@@ -258,7 +259,7 @@ changed by utilizing the writer method of MODBUSClient class.
 Run (for testing):
     
     python3 mb_client_writer_v2.py --ip <device ip address> \
-                                   [--port <device port (default: 502)] \
+                                   [--port <device port> (default: 502)] \
                                    [--debug] \
                                    --payload "{\"test 32 bit int\": 720.04, ...}"
 

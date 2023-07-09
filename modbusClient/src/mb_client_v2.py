@@ -687,7 +687,7 @@ class MODBUSClient(object):
         return {
             "timestamp": datetime.datetime.now(
                 tz=datetime.timezone.utc
-            ).strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            ).isoformat(),
             "ip": self.__device,
             "data": decoded
         }
