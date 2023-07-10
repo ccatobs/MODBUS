@@ -240,8 +240,8 @@ Not implemented to date:
 The result provided 
 for the housekeeping (Kafka producer) is a list of dictionary objects.
 
-For the time being the MODBUS client deployes the syncronous ModbusTcpClient
-in its version v3.2.2 (available as of 2023/05/18: v3.3.0alpha)
+Current MODBUS client version deployes the syncronous ModbusTcpClient 
+version v3.3.2 (as of 2023/07/09)
 
 Run (for testing):
     

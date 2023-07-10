@@ -108,6 +108,10 @@ change history
 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 3.1.1
     * output dict with additional timestamp, ip, and isTag info
+2023/07/09
+- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 3.1.2
+    * deploys pymodbus 3.3.2
 """
 
 __author__ = "Ralf Antonius Timmermann"
@@ -115,7 +119,7 @@ __copyright__ = "Copyright (C) Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "3.1.1"
+__version__ = "3.1.2"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
