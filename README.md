@@ -318,18 +318,6 @@ Run the RestAPI for testing:
 
     python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) \
                                  --port <port> (default: 5100)
-Caveat: 
-
-Whilst the environmental parameters
-  
-*ServerPort=&lt;MODBUS Server Port&gt;*,
-
-*ServerIPS=&lt;MODBUS Server IP[, ...]&gt;*, and
-
-*Debug=True/False*
-
-are set in the Docker container, they have to be defined separately in the 
-OS environment, in which *mb_client_RestAPI.py* runs.
 
 Get the read and write endpoints, by typing in the browser URL:
 
@@ -350,6 +338,17 @@ and for the Writer:
             "Coil 0": true, 
             "Coil 1": true, 
             "Coil 10": true}'
+
+Caveat: 
+
+Whilst the environmental parameters are set in the Docker container, they have to be defined separately in the 
+OS environment, in which *mb_client_RestAPI.py* runs:
+  
+*ServerPort=&lt;MODBUS Server Port&gt;*,
+
+*ServerIPS=&lt;MODBUS Server IP[, ...]&gt;*, and
+
+*Debug=True/False*
 
 #### Processing Times
 
