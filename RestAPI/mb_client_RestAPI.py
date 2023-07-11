@@ -17,7 +17,7 @@ import os
 import uvicorn
 from typing import Dict
 from distutils.util import strtobool
-
+from enum import Enum
 # internal
 from modbusClient import MODBUSClient, LockGroup, MyException
 from modbusClient import __version__
@@ -43,6 +43,21 @@ print(__doc__.format(__version__))
 # ToDo we might re-think if PORT is fetched through env variables
 port = os.environ.get('ServerPort')
 debug = strtobool(os.environ.get('Debug'))
+ips = os.getenv("ServerIPS")
+
+lock_mb_client = LockGroup()
+clients = dict()
+
+
+def get_ips() -> Enum:
+    devices = dict()
+    for ip in ips.split(","):
+        devices[ip] = ip.strip()
+    return Enum("DevicesEnum", devices)
+
+
+DeviceEnum = get_ips()
+
 
 app = FastAPI(
     title="MODBUS API",
@@ -51,9 +66,6 @@ app = FastAPI(
                 "MODBUS registers. Register mappings to parameters are defined "
                 "in config files available in modbusClient/configFiles."
 )
-lock_mb_client = LockGroup()
-clients = dict()
-devices = dict()
 
 
 def mb_clients(ip: str) -> MODBUSClient:
@@ -76,14 +88,14 @@ def mb_clients(ip: str) -> MODBUSClient:
 @app.get("/modbus/read/{device_ip}",
          summary="List values of all registers for MODBUS Device IP")
 async def read_register(
-        device_ip: str = Path(title="Device IP",
-                              description="Device IP")
+        device_ip: DeviceEnum = Path(title="Device IP",
+                                     description="Device IP")
 ):
     try:
-        lock_mb_client(device_ip).acquire()
+        lock_mb_client(device_ip.value).acquire()
         return JSONResponse(
             mb_clients(
-                ip=device_ip
+                ip=device_ip.value
             ).read_register()
         )
     except MyException as e:
@@ -92,7 +104,7 @@ async def read_register(
             detail=e.detail
         )
     finally:
-        lock_mb_client(device_ip).release()
+        lock_mb_client(device_ip.value).release()
 
 
 @app.put("/modbus/write/{device_ip}",
@@ -100,17 +112,17 @@ async def read_register(
 async def write_register(
         payload: Dict = Body(title="Payload",
                              description="Data to be written into registers"),
-        device_ip: str = Path(title="Device IP",
-                              description="Device IP")
+        device_ip: DeviceEnum = Path(title="Device IP",
+                                     description="Device IP")
 ):
     if not payload:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail="Empty payload")
     try:
-        lock_mb_client(device_ip).acquire()
+        lock_mb_client(device_ip.value).acquire()
         return JSONResponse(
             mb_clients(
-                ip=device_ip
+                ip=device_ip.value
             ).write_register(wr=payload)
         )
     except MyException as e:
@@ -119,7 +131,7 @@ async def write_register(
             detail=e.detail
         )
     finally:
-        lock_mb_client(device_ip).release()
+        lock_mb_client(device_ip.value).release()
 
 
 @app.on_event("shutdown")

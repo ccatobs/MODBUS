@@ -112,6 +112,10 @@ change history
 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 3.1.2
     * deploys pymodbus 3.3.2
+2023/07/11
+- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 3.1.3
+    * device ip dropdown list in RestAPI serves as validator
 """
 
 __author__ = "Ralf Antonius Timmermann"
@@ -119,7 +123,7 @@ __copyright__ = "Copyright (C) Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "3.1.2"
+__version__ = "3.1.3"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -679,7 +683,7 @@ class MODBUSClient(object):
         return True
 
     @mytimer
-    def read_register(self) -> List[Dict]:
+    def read_register(self) -> Dict:
         """
         invoke the read all mapped registers for monitoring
         :return: List of Dict (in asc order) for housekeeping
