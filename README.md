@@ -323,7 +323,7 @@ Get the read and write endpoints, by typing in the browser URL:
 
     <host>:5100/docs#
 
-![](pics/API_swagger_MODBUS.png)
+![](https://github.com/ccatp/MODBUS/blob/a3cb28bf0e3df9b4a7fdd6e8e113a9134b3acd47/pics/API_swagger_MODBUS.png)
 
 Alternatively, invoke cli *curl* for the Reader:
 
