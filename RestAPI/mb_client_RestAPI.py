@@ -33,17 +33,14 @@ version history:
 - version 1.2
     * Predefined enumeration values for devices as fetched from configFiles
 henceforth version history of modbusClient adopted
-2023/06/30 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
-- version 3.0.1
-    * Device IP is path variable, PORT provided via environment variable 
 """
 
 print(__doc__.format(__version__))
 
 # ToDo we might re-think if PORT is fetched through env variables
+ips = os.getenv("ServerIPS")
 port = os.environ.get('ServerPort')
 debug = strtobool(os.environ.get('Debug'))
-ips = os.getenv("ServerIPS")
 
 lock_mb_client = LockGroup()
 clients = dict()

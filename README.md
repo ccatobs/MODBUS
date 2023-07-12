@@ -321,17 +321,17 @@ Run the RestAPI for testing:
 
 Get the read and write endpoints, by typing in the browser URL:
 
-    <host>:5100/docs#
+    <host>:<port>/docs#
 
 ![](https://github.com/ccatp/MODBUS/blob/a3cb28bf0e3df9b4a7fdd6e8e113a9134b3acd47/pics/API_swagger_MODBUS.png)
 
 Alternatively, invoke cli *curl* for the Reader:
 
-    curl <host>:5100/modbus/read/<device_ip> 
+    curl <host><port>:/modbus/read/<device_ip> 
 
 and for the Writer:
 
-    curl <host>:5100/modbus/write/<device_ip> -X PUT \
+    curl <host>:<port>/modbus/write/<device_ip> -X PUT \
             -d 'payload={"test 32 bit int": 720.04, 
             "write int register": 10, 
             "string of register/1": "YZ", 
@@ -341,9 +341,10 @@ and for the Writer:
 
 Caveat: 
 
-Whilst the environmental parameters are set in the Docker container, they have to be defined separately in the 
-OS environment, in which *mb_client_RestAPI.py* runs:
-  
+Whilst environmental parameters are set in the Docker container, they have 
+to be defined separately in the 
+OS environment, in which *mb_client_RestAPI.py* runs, ita est:
+
 *ServerPort=&lt;MODBUS Server Port&gt;*,
 
 *ServerIPS=&lt;MODBUS Server IP[, ...]&gt;*, and
