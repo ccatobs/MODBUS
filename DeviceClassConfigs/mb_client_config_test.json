@@ -220,6 +220,21 @@
       "parameter": "decode_string_1_4",
       "description": "CHgx"
     },
+    "40025/1": {
+      "function": "decode_string",
+      "parameter": "decode_string_1h",
+      "description": ""
+    },
+    "40025/2": {
+      "function": "decode_string",
+      "parameter": "decode_string_2h",
+      "description": ""
+    },
+    "40026": {
+      "function": "decode_string",
+      "parameter": "decode_string_fullh",
+      "description": ""
+    },
     "40032/2": {
       "function": "decode_8bit_uint",
       "parameter": "Model Minor Number_4",

@@ -22,7 +22,15 @@ print(__doc__.format(__version__))
 
 
 def main():
-
+    """
+test with, e.g.
+python3 mb_client_writer_v2.py
+--ip 127.0.0.40
+--port 5020
+--payload "{\"decode_16bit_int_4\": 720.04, \"decode_8bit_int_4\": 7,
+\"decode_string_1_4\": \"abd \", \"decode_string_1h\": \"Cd\",
+\"decode_string_fullh\": \"xy\", \"Dummy_4\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
+    """
     argparser = argparse.ArgumentParser(
         description="Universal MODBUS Writer")
     argparser.add_argument('--ip',
@@ -46,19 +54,7 @@ def main():
                            help="Payload ('{parameter1: value1, "
                                 "parameter2: value2, ...}')"
                            )
-    """
-    test = {"decode_16bit_int_4": 720.04,
-            "write int register": 10,
-            "string of register/1": "YZ",
-            "Write bits/1": [
-                True, True, True, False, True, False, True, False,
-                True, False, True, False, True, False, False, False
-            ],
-            "Coil 0": True,
-            "Coil 1": True,
-            "Coil 10": True
-            }
-    """
+
     _start_time = timer()
     try:
         mb_client = MODBUSClient(
@@ -71,7 +67,8 @@ def main():
         )
         mb_client.close()
     except MyException as e:
-        print("Status code: {1}, Detail: {0}", e.detail, e.status_code)
+        print("Code={0}, detail={1}".format(e.status_code,
+                                            e.detail))
         sys.exit(1)
     print(to_monitoring)
     print("Time consumed to process the modbus writer: {0:.1f} ms".format(

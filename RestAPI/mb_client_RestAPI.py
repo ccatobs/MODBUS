@@ -37,23 +37,22 @@ henceforth version history of modbusClient adopted
 
 print(__doc__.format(__version__))
 
-# ToDo we might re-think if PORT is fetched through env variables
 ips = os.getenv("ServerIPS")
-port = os.environ.get('ServerPort')
+port = int(os.environ.get('ServerPort'))
 debug = strtobool(os.environ.get('Debug'))
 
 lock_mb_client = LockGroup()
 clients = dict()
 
 
-def get_ips() -> Enum:
+def _get_ips() -> Enum:
     devices = dict()
     for ip in ips.split(","):
         devices[ip] = ip.strip()
-    return Enum("DevicesEnum", devices)
+    return Enum("DeviceEnum", devices)
 
 
-DeviceEnum = get_ips()
+DeviceEnum = _get_ips()
 
 
 app = FastAPI(

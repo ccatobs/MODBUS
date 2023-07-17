@@ -9,12 +9,36 @@ from functools import wraps
 from threading import Lock
 import os
 import glob
+import json
 import logging
-from typing import Callable, Any
+from typing import Callable, Any, Dict
 from enum import Enum, EnumMeta
 
 
-def file_config() -> str:
+class MyException(Exception):
+    def __init__(self,
+                 status_code,
+                 detail):
+        super().__init__(status_code,
+                         detail)
+        self.status_code = status_code
+        self.detail = detail
+
+
+def _throw_error(detail: str,
+                 status_code: int = 400) -> None:
+    """
+    internal: throws a logging error plus raises an exception
+    :param detail: error message
+    :param status_code: http status code (default: 400)
+    :return:
+    """
+    logging.error(detail)
+    raise MyException(status_code=status_code,
+                      detail=detail)
+
+
+def _client_config() -> Dict:
     path_config = "{0}{1}".format(
         os.path.dirname(os.path.realpath(__file__)),
         "/../configFiles/"
@@ -23,17 +47,18 @@ def file_config() -> str:
                              "mb_client_config_*.json")
     if len(dir_content) != 1:
         detail = "Client config file not found or multiple config files found."
-        logging.error(detail)
-        raise MyException(status_code=404,
-                          detail=detail)
+        _throw_error(detail, 404)
+    else:
+        config_device_class = "{0}{1}".format(
+            path_config,
+            dir_content[0]
+        )
+        logging.info("Config File: {0}".format(config_device_class))
+        with open(config_device_class) as config_file:
+            return json.load(config_file)
 
-    return "{0}{1}".format(
-        path_config,
-        dir_content[0]
-    )
 
-
-class MyMeta(EnumMeta):
+class _MyMeta(EnumMeta):
     def __contains__(self, other) -> bool:
         try:
             self(other)
@@ -46,7 +71,7 @@ class MyMeta(EnumMeta):
 class MODBUS2AVRO(
     str,
     Enum,
-    metaclass=MyMeta
+    metaclass=_MyMeta
 ):
     A = ("decode_bits", "boolean", 8, True)
     B = ("decode_8bit_int", "int", 8, True)
@@ -80,16 +105,6 @@ class MODBUS2AVRO(
     def no_bytes(cls, key) -> int: return int(cls(key).no_bit/8)
     @classmethod
     def width(cls, key) -> int: return max(int(cls(key).no_bit/16), 1)
-
-
-class MyException(Exception):
-    def __init__(self,
-                 status_code,
-                 detail):
-        super().__init__(status_code,
-                         detail)
-        self.status_code = status_code
-        self.detail = detail
 
 
 class LockGroup(object):

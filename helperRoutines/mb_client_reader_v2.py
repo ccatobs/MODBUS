@@ -52,11 +52,11 @@ def main():
         to_housekeeping = mb_client.read_register()
         mb_client.close()
     except MyException as e:
-        print("Code={}, detail={}".format(e.status_code,
-                                          e.detail))
+        print("Code={0}, detail={1}".format(e.status_code,
+                                            e.detail))
         sys.exit(1)
     print(json.dumps(to_housekeeping,
-                     indent=4))
+                     indent=2))
     print("Time consumed to process modbus interface: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )
