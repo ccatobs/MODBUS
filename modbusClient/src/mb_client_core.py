@@ -29,14 +29,19 @@ class _ObjectType(object):
             init["endianness"] endianness's of byte and word
         :param entity: str - register prefix
         """
+        self._entity = entity
         self.__client = init["client"]
         self.__endianness = init["endianness"]
-        self.__entity = entity
         # select mapping for each entity and sort by key
         self.__register_maps = {
             key: value for key, value in
-            sorted(init["mapping"].items()) if key[0] == self.__entity
+            sorted(init["mapping"].items()) if key[0] == self._entity
         }
+        # parameter updated in registers after write to date, needs reset
+        self.updated_items = dict()
+
+    @property
+    def entity(self): return self._entity
 
     def __register_width(
             self,
@@ -294,6 +299,7 @@ class _ObjectType(object):
                                  "'{0}' with payload '{1}'".format(int(address),
                                                                    value)
                         _throw_error(detail, 422)
+                    self.updated_items[parameter] = value
                     break
 
     def __holding(
@@ -315,32 +321,30 @@ class _ObjectType(object):
             for address, attributes in self.__register_maps.items():
                 if attributes['parameter'] == parameter:
                     # if match parameter - start
-                    function = attributes['function'].replace("decode_",
-                                                              "add_")
+                    function = attributes['function'].replace("decode_", "add_")
                     reg_info = self.__register_width(address)
 
                     # disable updates of the minor byte of a register as a
                     # register can only be updated as a whole
                     if reg_info['pos_byte'] == 2:
-                        detail = "Parameter '{0}': updates are disabled for " \
+                        detail = "Parameter '{0}': updates disabled for " \
                                  "the minor byte of a register" \
                             .format(parameter)
                         _throw_error(detail, 422)
-                    match function.split("_"):
-                        case [*_, "int" | "uint"]:
-                            multiplier = attributes.get('multiplier', 1)
-                            offset = attributes.get('offset', 0)
-                            value = int((value - offset) / multiplier)
-                        case [_, "string"] \
-                                if len(value.rstrip()) > (2*reg_info['width']):
-                            detail = "'{0}' too long for parameter '{1}'" \
-                                .format(value.rstrip(), parameter)
-                            _throw_error(detail, 422)
-                        case [_, "bits"] \
-                                if (len(value)/16) > reg_info['width']:
-                            detail = "'{0}' too long for parameter '{1}'" \
-                                .format(value, parameter)
-                            _throw_error(detail, 422)
+                    if "_int" in function or "_uint" in function:
+                        multiplier = attributes.get('multiplier', 1)
+                        offset = attributes.get('offset', 0)
+                        value = int((value - offset) / multiplier)
+                    elif "_string" in function \
+                            and len(value) > (2 * reg_info['width']):
+                        detail = "'{0}' too long for parameter '{1}'" \
+                            .format(value, parameter)
+                        _throw_error(detail, 422)
+                    elif "_bits" in function \
+                            and (len(value) / 16) > reg_info['width']:
+                        detail = "'{0}' too long for parameter '{1}'" \
+                            .format(value, parameter)
+                        _throw_error(detail, 422)
 
                     getattr(builder, function)(value)
                     payload = builder.to_registers()
@@ -355,7 +359,7 @@ class _ObjectType(object):
                             .format(reg_info['start'],
                                     payload)
                         _throw_error(detail, 422)
-
+                    self.updated_items[parameter] = value
                     builder.reset()  # reset builder
                     break
                     # if match parameter - end
@@ -373,7 +377,7 @@ class _ObjectType(object):
         for key in self.__register_maps.keys():
             reg_info = self.__register_width(key)
             # read appropriate register(s)
-            match self.__entity:
+            match self._entity:
                 case '0':
                     f = "read_coils"
                 case '1':
@@ -393,16 +397,16 @@ class _ObjectType(object):
                          "width '{1}' for MODBUS class '{2}'". \
                     format(reg_info['start'],
                            reg_info['width'],
-                           self.__entity)
+                           self._entity)
                 _throw_error(detail)
 
             # decode and append to list
-            if self.__entity in ['0', '1']:
+            if self._entity in ['0', '1']:
                 decoded = decoded + self.__formatter_bit(
                     decoder=result.bits,
                     register=key
                 )
-            elif self.__entity in ['3', '4']:
+            elif self._entity in ['3', '4']:
                 decoder = BinaryPayloadDecoder.fromRegisters(
                     registers=result.registers,
                     byteorder=self.__endianness["byteorder"],
@@ -428,12 +432,14 @@ class _ObjectType(object):
         :param wr: dictionary with {parameter: value} pairs
         :return:
         """
-        match self.__entity:
+        self.updated_items.clear()  # reset
+
+        match self._entity:
             case '4':
                 self.__holding(wr=wr)
             case '0':
                 self.__coil(wr=wr)
-            # when attempting to writing to a read-only register, issue warning
+            # when attempting to writing to a read-only register, issue error
             case _:
                 for parameter, value in wr.items():
                     for address, attributes in self.__register_maps.items():
@@ -441,5 +447,5 @@ class _ObjectType(object):
                             detail = "Parameter '{0}' of MODBUS register " \
                                      "class '{1}' is not appropriate!" \
                                 .format(parameter,
-                                        self.__entity)
-                            _throw_error(detail, 422)
+                                        self._entity)
+                            _throw_error(detail, 202)

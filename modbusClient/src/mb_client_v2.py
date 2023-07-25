@@ -28,7 +28,7 @@ from ipaddress import IPv4Address
 from pydantic import BaseModel, ValidationError
 # internal
 from .mb_client_core import _ObjectType
-from .mb_client_aux import mytimer, _client_config, _throw_error
+from .mb_client_aux import mytimer, _client_config, _throw_error, MyException
 
 """
 change history
@@ -128,6 +128,11 @@ change history
 - Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
 - version 3.1.5
     * split code, make a separate core function
+2023/07/23
+- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 3.2.0
+    * holding register - string not right-stripped anymore
+    * report updated registers for write in result and exception
 """
 
 __author__ = "Ralf Antonius Timmermann"
@@ -135,7 +140,7 @@ __copyright__ = "Copyright (C) Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "3.1.5"
+__version__ = "3.2.0"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -291,23 +296,47 @@ class MODBUSClient(object):
                      entity.register_readout()]
         }
 
+    def __updated_registers(self) -> Dict[str, Any]:
+        """
+        updated registers for coil and holding after write end or failure
+        :return: values of register content
+        """
+        tmp = dict()
+        for entity in self.__entity_list:
+            if entity.entity in ['0', '4']:
+                tmp.update(entity.updated_items)
+        return tmp
+
     @mytimer
     def write_register(
             self,
             wr: Dict
-    ) -> Dict[str, str]:
+    ) -> Dict[str, str | Dict]:
         """
         invoke the writer to registers, where
         :param wr: list of dicts {parameter: value}
-        :return: Dict, returns the input unchanged
+        :return: status
         """
         detail = self.__existance_mapping_checks(wr=wr)
         if detail:
             _throw_error(detail, 422)
-        for entity in self.__entity_list:
-            entity.register_write(wr)
 
-        return {"status": "success"}
+        try:
+            for entity in self.__entity_list:
+                entity.register_write(wr)
+        except MyException as e:
+            raise MyException(
+                status_code=e.status_code,
+                detail="{0}\nUpdated register content: {1}".format(
+                    e.detail,
+                    self.__updated_registers()
+                )
+            )
+
+        return {
+            "status": "write success",
+            "updated register content": self.__updated_registers()
+        }
 
     def close(self) -> None:
         client = self.__init.get("client")

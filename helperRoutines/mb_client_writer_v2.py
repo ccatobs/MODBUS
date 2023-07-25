@@ -70,7 +70,7 @@ python3 mb_client_writer_v2.py
         print("Code={0}, detail={1}".format(e.status_code,
                                             e.detail))
         sys.exit(1)
-    print(to_monitoring)
+    print(json.dumps(to_monitoring, indent=2))
     print("Time consumed to process the modbus writer: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )

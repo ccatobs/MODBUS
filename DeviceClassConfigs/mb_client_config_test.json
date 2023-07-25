@@ -170,12 +170,12 @@
       "parameter": "decode_16bit_uint_4",
       "description": 3
     },
-    "40002/40003": {
+    "40002": {
       "function": "decode_32bit_int",
       "parameter": "decode_32bit_int_4",
       "description": -268308096
     },
-    "40004/40005": {
+    "40004": {
       "function": "decode_32bit_uint",
       "parameter": "decode_32bit_uint_4",
       "description": 4026659200
@@ -185,22 +185,22 @@
       "parameter": "decode_16bit_float_4",
       "description": 0.000489
     },
-    "40007/40008": {
+    "40007": {
       "function": "decode_32bit_float",
       "parameter": "decode_32bit_float_4",
       "description": 3.1415927
     },
-    "40009/40012": {
+    "40009": {
       "function": "decode_64bit_int",
       "parameter": "decode_64bit_int_4",
       "description": -1150350866482189032
     },
-    "40013/40016": {
+    "40013": {
       "function": "decode_64bit_uint",
       "parameter": "decode_64bit_uint_4",
       "description": 4614256656552045848
     },
-    "40017/40020": {
+    "40017": {
       "function": "decode_64bit_float",
       "parameter": "decode_64bit_float_4",
       "description": 3.141592653589793
@@ -215,7 +215,7 @@
       "parameter": "decode_8bit_uint_4",
       "description": 128
     },
-    "40023/40024": {
+    "40023": {
       "function": "decode_string",
       "parameter": "decode_string_1_4",
       "description": "CHgx"
