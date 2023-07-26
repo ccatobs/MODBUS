@@ -241,7 +241,7 @@ The result provided
 for the housekeeping (Kafka producer) is a list of dictionary objects.
 
 Current MODBUS client version deployes the syncronous ModbusTcpClient 
-version v3.3.2 (as of 2023/07/09)
+version v3.4.0 (as of 2023/07/25). Consider it as beta version to be tested
 
 Run (for testing):
     
@@ -253,7 +253,7 @@ Run (for testing):
 ## WRITER
 
 Only the register classes coil (class 0) and holding registers (class 4)
-are eligible for writing. Values in those register classes may be 
+are eligible for writing. Registers in those classes may be 
 changed by utilizing the writer method of MODBUSClient class.
 
 Run (for testing):

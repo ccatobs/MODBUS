@@ -412,7 +412,7 @@ class _ObjectType(object):
                     byteorder=self.__endianness["byteorder"],
                     wordorder=self.__endianness["wordorder"]
                 )
-                # skip leading byte, if key = "xxxxx/2"
+                # skip major byte, if key = "xxxxx/2"
                 if reg_info['pos_byte'] == 2:
                     decoder.skip_bytes(nbytes=1)
                 decoded = decoded + self.__formatter(

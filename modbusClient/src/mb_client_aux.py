@@ -160,3 +160,7 @@ def mytimer(supersede: Callable | str = None) -> Callable:
         return wrapper
 
     return _decorator(supersede) if callable(supersede) else _decorator
+
+
+def defined_kwargs(**kwargs) -> Dict:
+    return {k: v for k, v in kwargs.items() if v is not None}

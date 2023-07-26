@@ -19,7 +19,6 @@ Argelander Institute for Astronomy (AIfA), University Bonn.
 """
 
 from pymodbus.client import ModbusTcpClient
-from pymodbus.constants import Defaults
 import re
 import logging
 from typing import Dict, Any
@@ -28,7 +27,8 @@ from ipaddress import IPv4Address
 from pydantic import BaseModel, ValidationError
 # internal
 from .mb_client_core import _ObjectType
-from .mb_client_aux import mytimer, _client_config, _throw_error, MyException
+from .mb_client_aux import mytimer, _client_config, _throw_error, MyException,\
+    defined_kwargs
 
 """
 change history
@@ -133,6 +133,10 @@ change history
 - version 3.2.0
     * holding register - string not right-stripped anymore
     * report updated registers for write in result and exception
+2023/07/25
+- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
+- version 3.3.0
+    * deploys pymodbus v3.4.0
 """
 
 __author__ = "Ralf Antonius Timmermann"
@@ -140,7 +144,7 @@ __copyright__ = "Copyright (C) Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "3.2.0"
+__version__ = "3.3.0"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -180,8 +184,7 @@ class MODBUSClient(object):
                     "DEBUG" if debug else "INFO")
         )
         try:
-            # used for wrapper & output dict
-            self.__device = str(_IpModel(ip=ip).ip)
+            self._ip = str(_IpModel(ip=ip).ip)
         except ValidationError:
             detail = "IP value '{0}' is not a valid IPv4 address".format(ip)
             _throw_error(detail)
@@ -191,14 +194,16 @@ class MODBUSClient(object):
         self.__client_mapping_checks(mapping=client_config['mapping'])
 
         client = ModbusTcpClient(
-            host=ip,
-            port=port if port else Defaults.TcpPort,
-            debug=debug
+            host=self._ip,
+            debug=debug,
+            **defined_kwargs(port=port),
         )
         if not client.connect():
             detail = "Could not connect to MODBUS server."
             _throw_error(detail, 503)
 
+        # used for wrapper & output dict
+        self.__device = client.comm_params.host
         self.__init = {
             "client": client,
             "mapping": client_config['mapping'],

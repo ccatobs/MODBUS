@@ -215,7 +215,7 @@
       "parameter": "decode_8bit_uint_4",
       "description": 128
     },
-    "40023": {
+    "40023/40024": {
       "function": "decode_string",
       "parameter": "decode_string_1_4",
       "description": "CHgx"

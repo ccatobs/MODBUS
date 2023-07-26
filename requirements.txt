@@ -1,4 +1,4 @@
-pymodbus==3.3.2
+pymodbus==3.4.0
 fastapi>=0.92.0
 uvicorn>=0.20.0
 pandas>=1.5.3
