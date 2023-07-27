@@ -19,7 +19,8 @@
 
 ## 3.2.0 (2023-07-23)
 ### Added
-- report updated registers for write in result and exception
+- updated registers after calling "write" method in either result JSON or 
+exception message
 
 ### Changed
 
