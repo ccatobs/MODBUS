@@ -346,18 +346,23 @@ class _ObjectType(object):
                             .format(value, parameter)
                         _throw_error(detail, 422)
 
-                    getattr(builder, function)(value)
+                    err = ""
+                    try:
+                        getattr(builder, function)(value)
+                    except Exception as e:
+                        err = e
+                        pass
                     payload = builder.to_registers()
-
                     if self.__client.write_registers(
                         address=reg_info['start'],
                         values=payload,
                         slave=UNIT
                     ).isError():
-                        detail = "Error writing holding register at " \
+                        detail = "Error: {2} writing holding register at " \
                                  "address '{0}' with payload '{1}'" \
                             .format(reg_info['start'],
-                                    payload)
+                                    payload,
+                                    err)
                         _throw_error(detail, 422)
                     self.updated_items[parameter] = value
                     builder.reset()  # reset builder

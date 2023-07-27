@@ -133,7 +133,7 @@ async def write_register(
 @app.on_event("shutdown")
 def shutdown_event():
     for items, value in clients.items():
-        logging.info("Closing client for device extenstion: {}".format(items))
+        logging.info("Closing client for device extention: {}".format(items))
         value.close()
 
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 """
 MODBUS Client
@@ -124,19 +125,8 @@ change history
     * check on availability of decode function for classes 3 & 4
     * improved writer for holding registers
     * ip validator
-2023/07/17
-- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
-- version 3.1.5
-    * split code, make a separate core function
-2023/07/23
-- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
-- version 3.2.0
-    * holding register - string not right-stripped anymore
-    * report updated registers for write in result and exception
-2023/07/25
-- Ralf A. Timmermann <rtimmermann@astro.uni-bonn.de>
-- version 3.3.0
-    * deploys pymodbus v3.4.0
+
+henceforth version history continued in CHANGELOG.md 
 """
 
 __author__ = "Ralf Antonius Timmermann"
@@ -144,7 +134,7 @@ __copyright__ = "Copyright (C) Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "3.3.0"
+__version__ = "3.3.1"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -324,7 +314,13 @@ class MODBUSClient(object):
         """
         detail = self.__existance_mapping_checks(wr=wr)
         if detail:
-            _throw_error(detail, 422)
+            raise MyException(
+                status_code=422,
+                detail="{0}, Updated register content: {1}".format(
+                    detail,
+                    {}
+                )
+            )
 
         try:
             for entity in self.__entity_list:
@@ -332,7 +328,7 @@ class MODBUSClient(object):
         except MyException as e:
             raise MyException(
                 status_code=e.status_code,
-                detail="{0}\nUpdated register content: {1}".format(
+                detail="{0}, Updated register content: {1}".format(
                     e.detail,
                     self.__updated_registers()
                 )
@@ -344,7 +340,7 @@ class MODBUSClient(object):
         }
 
     def close(self) -> None:
-        client = self.__init.get("client")
-        if client:
+        client = self.__init["client"]
+        if client.connect():
             logging.debug("Closing {}".format(client))
             client.close()

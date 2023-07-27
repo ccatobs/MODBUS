@@ -1,12 +1,16 @@
 # Changelog 
 
 ## unreleased (2023-mm-dd)
+
+## 3.3.1 (2023-07-27)
 ### Added
 - changelog.md 
 
 ## Changed
 
 ## Fixed
+- catch exception when trying to write inappropriate value to holding 
+register and address in output message 
 
 ## 3.3.0 (2023-07-25)
 ### Added
