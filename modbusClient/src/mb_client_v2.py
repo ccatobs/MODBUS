@@ -189,7 +189,8 @@ class MODBUSClient(object):
             **defined_kwargs(port=port),
         )
         if not client.connect():
-            detail = "Could not connect to MODBUS server."
+            detail = ("Could not connect to MODBUS server: IP={}"
+                      .format(self._ip))
             _throw_error(detail, 503)
 
         # used for wrapper & output dict

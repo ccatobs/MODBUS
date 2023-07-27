@@ -456,12 +456,12 @@
       "parameter": "FAN_ACT_RPM_ui[4]",
       "description": "Fan Actual Speed"
     },
-    "30016/30017": {
+    "30016": {
       "function": "decode_32bit_int",
       "multiplier": 0.1,
       "parameter": "Q_ACTUAL_r"
     },
-    "30018/30019": {
+    "30018": {
       "function": "decode_32bit_int",
       "multiplier": 0.1,
       "parameter": "Q_TOTAL_r",
@@ -472,7 +472,7 @@
       "parameter": "FAN_ACT_PWR_ui",
       "description": "Sum of actual Fan Power Consumption"
     },
-    "30022/30023": {
+    "30022": {
       "function": "decode_32bit_uint",
       "parameter": "HourCount_System_udi",
       "description": "Operating hour counter  (x 1000)",
@@ -481,28 +481,28 @@
       "max": "999999",
       "unit": "Hours"
     },
-    "30024/30025": {
+    "30024": {
       "function": "decode_32bit_int",
       "parameter": "FAN_HOURS_CNT_di[1]"
     },
-    "30026/30027": {
+    "30026": {
       "function": "decode_32bit_int",
       "parameter": "FAN_HOURS_CNT_di[2]"
     },
-    "30028/30029": {
+    "30028": {
       "function": "decode_32bit_int",
       "parameter": "FAN_HOURS_CNT_di[3]"
     },
-    "30030/30031": {
+    "30030": {
       "function": "decode_32bit_int",
       "parameter": "FAN_HOURS_CNT_di[4]"
     },
-    "30032/30033": {
+    "30032": {
       "function": "decode_32bit_int",
       "multiplier": 0.1,
       "parameter": "POU_Water_Control.oPOSITION_r"
     },
-    "30034/30035": {
+    "30034": {
       "function": "decode_32bit_uint",
       "parameter": "OEM_Version.Main_udi"
     },

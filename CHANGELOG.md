@@ -18,11 +18,11 @@ register and issue in output message
 ### Fixed
 ## 3.2.0 (2023-07-23)
 ### Added
-- updated registers after calling "write" method in either result JSON or 
-exception message
+- updated registers after calling "write" method issued
+in either result JSON or exception message
 ### Changed
 ### Fixed     
 - holding register - string not right-stripped anymore
 
 
-#### for earlier releases see docstrings inside [mb_client_v2.py](https://github.com/ccatp/MODBUS/blob/05c387611b738852c8d53d44a64b80398edb9cda/modbusClient/src/mb_client_v2.py)
+#### for earlier releases see docstring inside [mb_client_v2.py](https://github.com/ccatp/MODBUS/blob/05c387611b738852c8d53d44a64b80398edb9cda/modbusClient/src/mb_client_v2.py)
