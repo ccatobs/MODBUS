@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 """
 MODBUS WRITER
@@ -33,9 +34,9 @@ python3 mb_client_writer_v2.py
     """
     argparser = argparse.ArgumentParser(
         description="Universal MODBUS Writer")
-    argparser.add_argument('--ip',
+    argparser.add_argument('--host',
                            required=True,
-                           help='MODBUS Server Device IP',
+                           help='MODBUS Server Device IP/Name',
                            type=str
                            )
     argparser.add_argument('--port',
@@ -58,7 +59,7 @@ python3 mb_client_writer_v2.py
     _start_time = timer()
     try:
         mb_client = MODBUSClient(
-            ip=argparser.parse_args().ip,
+            host=argparser.parse_args().host,
             port=argparser.parse_args().port,
             debug=argparser.parse_args().debug
         )

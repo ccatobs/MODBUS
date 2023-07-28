@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 """
 mb_client_RestAPI.py
@@ -19,8 +20,7 @@ from typing import Dict
 from distutils.util import strtobool
 from enum import Enum
 # internal
-from modbusClient import MODBUSClient, LockGroup, MyException
-from modbusClient import __version__
+from modbusClient import MODBUSClient, LockGroup, MyException, __version__
 
 """
 version history:
@@ -37,24 +37,17 @@ henceforth version history of modbusClient adopted
 
 print(__doc__.format(__version__))
 
-ips = os.getenv("ServerIPS")
+hosts = os.getenv("ServerHost")
 port = int(os.environ.get('ServerPort'))
 debug = strtobool(os.environ.get('Debug'))
 
 lock_mb_client = LockGroup()
 clients = dict()
 
-
-def _get_ips() -> Enum:
-    devices = dict()
-    for ip in ips.split(","):
-        devices[ip] = ip.strip()
-    return Enum("DeviceEnum", devices)
-
-
-DeviceEnum = _get_ips()
-
-
+DeviceEnum = Enum(
+    "DeviceEnum",
+    {host.strip(): host.strip() for host in hosts.split(",")}
+)
 app = FastAPI(
     title="MODBUS API",
     version=__version__,
@@ -64,34 +57,40 @@ app = FastAPI(
 )
 
 
-def mb_clients(ip: str) -> MODBUSClient:
+def mb_clients(host: str) -> MODBUSClient:
     """
     Helper to store MODBUSClient instances over the entire time the RestAPI is
     running once it was called the first time
-    :param ip: device ip
+    :param host: device ip or name
     :return: MODBUSClient instance each device
     """
-    if ip not in clients:
-        clients[ip] = MODBUSClient(
-            ip=ip,
+    if host not in clients:
+        clients[host] = MODBUSClient(
+            host=host,
             port=port,  # from environment variable
             debug=debug  # from environment variable
         )
 
-    return clients[ip]
+    return clients[host]
 
 
-@app.get("/modbus/read/{device_ip}",
-         summary="List values of all registers for MODBUS Device IP")
+@app.get("/modbus/hosts",
+         summary="List all host names for present device class")
+async def read_hosts():
+    return JSONResponse([e.value for e in DeviceEnum])
+
+
+@app.get("/modbus/read/{host}",
+         summary="List values of all registers for MODBUS Device IP/Name")
 async def read_register(
-        device_ip: DeviceEnum = Path(title="Device IP",
-                                     description="Device IP")
+        host: DeviceEnum = Path(title="Device IP",
+                                description="Device IP")
 ):
     try:
-        lock_mb_client(device_ip.value).acquire()
+        lock_mb_client(host.value).acquire()
         return JSONResponse(
             mb_clients(
-                ip=device_ip.value
+                host=host.value
             ).read_register()
         )
     except MyException as e:
@@ -100,25 +99,25 @@ async def read_register(
             detail=e.detail
         )
     finally:
-        lock_mb_client(device_ip.value).release()
+        lock_mb_client(host.value).release()
 
 
-@app.put("/modbus/write/{device_ip}",
-         summary="Write values to register(s) for MODBUS Device IP")
+@app.put("/modbus/write/{host}",
+         summary="Write values to register(s) for MODBUS Device IP/Name")
 async def write_register(
         payload: Dict = Body(title="Payload",
                              description="Data to be written into registers"),
-        device_ip: DeviceEnum = Path(title="Device IP",
-                                     description="Device IP")
+        host: DeviceEnum = Path(title="Device IP",
+                                description="Device IP")
 ):
     if not payload:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail="Empty payload")
+                            detail="Empty request body, nothing to show!")
     try:
-        lock_mb_client(device_ip.value).acquire()
+        lock_mb_client(host.value).acquire()
         return JSONResponse(
             mb_clients(
-                ip=device_ip.value
+                host=host.value
             ).write_register(wr=payload)
         )
     except MyException as e:
@@ -127,7 +126,7 @@ async def write_register(
             detail=e.detail
         )
     finally:
-        lock_mb_client(device_ip.value).release()
+        lock_mb_client(host.value).release()
 
 
 @app.on_event("shutdown")

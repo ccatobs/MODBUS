@@ -24,8 +24,6 @@ import re
 import logging
 from typing import Dict, Any
 import datetime
-from ipaddress import IPv4Address
-from pydantic import BaseModel, ValidationError
 # internal
 from .mb_client_core import _ObjectType
 from .mb_client_aux import mytimer, _client_config, _throw_error, MyException,\
@@ -134,7 +132,7 @@ __copyright__ = "Copyright (C) Ralf Antonius Timmermann, " \
                 "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "3.3.1"
+__version__ = "3.4.0"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -146,15 +144,11 @@ logging.basicConfig(format=myformat,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class _IpModel(BaseModel):
-    ip: IPv4Address
-
-
 class MODBUSClient(object):
 
     def __init__(
             self,
-            ip: IPv4Address,
+            host: str,
             *,
             port: int = None,
             debug: bool = False
@@ -165,7 +159,7 @@ class MODBUSClient(object):
         1) format of register key
         2) existance and uniqueness of "parameter"
         3) connection to modbus server via synchronous TCP
-        :param ip: str - device ip
+        :param host: str - device ip or name
         :param port: int - device port
         :param debug: bool - debug mode True/False
         """
@@ -173,11 +167,7 @@ class MODBUSClient(object):
             getattr(logging,
                     "DEBUG" if debug else "INFO")
         )
-        try:
-            self._ip = str(_IpModel(ip=ip).ip)
-        except ValidationError:
-            detail = "IP value '{0}' is not a valid IPv4 address".format(ip)
-            _throw_error(detail)
+        self._ip = host
         client_config = _client_config()
 
         # integrity checks
@@ -317,7 +307,7 @@ class MODBUSClient(object):
         if detail:
             raise MyException(
                 status_code=422,
-                detail="{0}, Updated register content: {1}".format(
+                detail="{0}, updated register content: {1}".format(
                     detail,
                     {}
                 )
@@ -329,7 +319,7 @@ class MODBUSClient(object):
         except MyException as e:
             raise MyException(
                 status_code=e.status_code,
-                detail="{0}, Updated register content: {1}".format(
+                detail="{0}, updated register content: {1}".format(
                     e.detail,
                     self.__updated_registers()
                 )

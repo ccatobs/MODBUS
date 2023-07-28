@@ -1,9 +1,22 @@
 # Changelog 
+#### for the documentation of earlier releases see docstring inside [mb_client_v2.py](https://github.com/ccatp/MODBUS/blob/05c387611b738852c8d53d44a64b80398edb9cda/modbusClient/src/mb_client_v2.py)
 
 ## unreleased (2023-mm-dd)
 ### Added
 ### Changed
 ### Fixed
+### Deprecated
+### Removed
+### Security
+## 3.4.0 (2023-07-28)
+### Added
+- Rest API: method to list all host names of present device class 
+### Changed
+- IP address is host now. 
+- pymodbus v3.4.1
+### Fixed
+### Deprecated
+- no checks on IP or host name
 ## 3.3.1 (2023-07-27)
 ### Added
 - changelog.md
@@ -23,6 +36,3 @@ in either result JSON or exception message
 ### Changed
 ### Fixed     
 - holding register - string not right-stripped anymore
-
-
-#### for earlier releases see docstring inside [mb_client_v2.py](https://github.com/ccatp/MODBUS/blob/05c387611b738852c8d53d44a64b80398edb9cda/modbusClient/src/mb_client_v2.py)
