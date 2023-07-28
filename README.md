@@ -241,7 +241,7 @@ The result provided
 for the housekeeping (Kafka producer) is a list of dictionary objects.
 
 The present MODBUS client version deployes the syncronous ModbusTcpClient at its
-version v3.4.0 (as of 2023/07/25). Consider it as beta version to be tested.
+version v3.4.1 (as of 2023/07/28).
 
 Run (for testing):
     
