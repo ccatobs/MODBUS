@@ -2,39 +2,39 @@
 
 ## READER
 
-A universal MODBUS interface, where the mapping of variables to coil,
-discrete input, input registers, and holding registers is entirely defined
-by a JSON file, 
-with no modification to the coding required whatsoever. The JSON file
-comprises dictionaries representing single or multiple MODBUS registers or 
-to bytes of it. Each dictionary comprises additional features, such as 
+A universal MODBUS interface, where the mapping of the parameters to coil,
+discrete input, input and holding registers is entirely defined
+by a JSON file, with no modification to the coding required whatsoever. 
+The device class config file comprises a dictionary with key/value pairs, where the key 
+represents a single MODBUS register, multiple of it or 
+a single byte - major or minor - of it. 
+Its value comprises a subdictionary of various features, such as 
 
-1) "parameter" - variable name unique over all registers (mandatory)
-2) "function" - data type for input and holding registers (mandatory)
-3) "description" (optional)
-4) "map" - see below (optional)
-5) "isTag" - true (optional), otherwise false in output
-6) "muliplier" - for input & holding registers of datatype integer (optional)
-7) "offset" for input & holding registers of datatype integer (optional)
-
-The latter two will not be passed on to the output, though. They are parsed, 
-such that the register's value is multiplied by the value of "multiplier" 
-and an added to the value of "offset" (applies reversely for the writer). 
-This is applicable to int and long data types.
+| Feature     | Description                                      | Mandatory/Optional | Output JSON                  |
+|-------------|--------------------------------------------------|--------------------|------------------------------|
+| parameter   | parameter name - unique over all registers       | mandatory          | yes                          |
+| function    | data type, naming convention: "decode_\<xxx>"    | mandatory          | as AVRO datatype             | 
+| description | parameter description                            | optional           | yes, superseded by map value |
+| map         | see below                                        | optional           | no                           |
+| isTag       | provide as true, false otherwise                 | optional           | yes                          |
+| min         | input & holding register, datatype integer/float | optional           | yes, write error if exceeded |
+| max         | input & holding register, datatype integer/float | optional           | yes, write error if exceeded |
+| multiplier  | input & holding register, datatype integer       | optional           | no, to re-calculate value    |
+| offset      | input & holding register, datatype integer       | optional           | no, to re-calculate value    |
 
 A map is provided in case a value needs to match 
-an entry from a provided list. The corresponding field value is passed on to 
+an entry of a given list. The corresponding field value is passed on to 
 the output as description superseding the input "description". If a map is 
 defined, the description is chosen according to round(value). 
 A map might also 
 contain entries matching bits of the leading or trailing byte of a register.
 
 Furthermore, "value" and "datatype" (AVRO conventions) are
-reserved keywords, since they will be generated in the output dictionary.
-Additional dictionary key/value pairs may be provided in the client registry
+reserved features, since they will be generated in the output dictionary.
+Additional features may be provided in the client registry
 mapping, which are merely passed on to the output. To maintain consistancy over
-the various modbus clients, we urge selecting same feature names for further
-optional keys, such as "defaultvalue", "unit", "min", or "max".
+the various modbus clients, we urge selecting same feature names, 
+such as "defaultValue" or "unit", over all config files.
 
 Register keys are in the following formates: 
 e.g. "30011" addressing the 12th register
@@ -179,8 +179,8 @@ is defined as follows.
       "offset": -273,
       "description": "Setpoint Water",
       "unit": "DegreesCelsius",
-      "max": "Water_Setpoint.max_r",
-      "min": "Water_Setpoint.min_r",
+      "max": 50,
+      "min": 10,
       "defaultvalue": 24.0
     }
   }
@@ -332,12 +332,14 @@ Alternatively, invoke cli *curl* for the Reader:
 and for the Writer:
 
     curl <host>:<port>/modbus/write/<device_ip> -X PUT \
-            -d 'payload={"test 32 bit int": 720.04, 
+            -d 'payload={
+            "test 32 bit int": 720.04, 
             "write int register": 10, 
             "string of register/1": "YZ", 
             "Coil 0": true, 
             "Coil 1": true, 
-            "Coil 10": true}'
+            "Coil 10": true
+            }'
 
 Caveat: 
 

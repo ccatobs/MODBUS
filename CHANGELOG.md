@@ -2,14 +2,19 @@
 #### for the documentation of earlier releases see docstring inside [mb_client_v2.py](https://github.com/ccatp/MODBUS/blob/05c387611b738852c8d53d44a64b80398edb9cda/modbusClient/src/mb_client_v2.py)
 ## unreleased (2023-mm-dd)
 ### Added
-- when writing int or float parameters to holding register 
-check if their value exceed values of attributes "min" or "max" 
-if provided and throw exception. 
 ### Changed
 ### Fixed
 ### Deprecated
 ### Removed
 ### Security
+## 3.5.0 (2023-07-31)
+### Added
+- "min" and "max" features are passed on to the output for input and holding 
+registers applicable to int and float parameters. Furthermore, when writing 
+a parameter to a holding register throws exception if its value exceeds 
+one of the limits.
+### Changed
+### Fixed
 ## 3.4.0 (2023-07-28)
 ### Added
 - Rest API: method to list all host names of present device class 

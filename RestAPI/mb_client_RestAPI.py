@@ -75,13 +75,15 @@ def mb_clients(host: str) -> MODBUSClient:
 
 
 @app.get("/modbus/hosts",
-         summary="List all host names for present device class")
+         summary="List all host names for present device class",
+         tags=["monitor"])
 async def read_hosts():
     return JSONResponse([e.value for e in DeviceEnum])
 
 
 @app.get("/modbus/read/{host}",
-         summary="List values of all registers for MODBUS Device IP/Name")
+         summary="List values of all registers for MODBUS Device IP/Name",
+         tags=["monitor", "operations"])
 async def read_register(
         host: DeviceEnum = Path(title="Device IP",
                                 description="Device IP")
@@ -103,7 +105,8 @@ async def read_register(
 
 
 @app.put("/modbus/write/{host}",
-         summary="Write values to register(s) for MODBUS Device IP/Name")
+         summary="Write values to register(s) for MODBUS Device IP/Name",
+         tags=["monitor", "operations"])
 async def write_register(
         payload: Dict = Body(title="Payload",
                              description="Data to be written into registers"),

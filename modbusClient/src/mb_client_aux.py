@@ -140,7 +140,6 @@ def mytimer(supersede: Callable | str = None) -> Callable:
     :param supersede: string (default=None)
     :return: Callable - function wrapped
     """
-
     def _decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:

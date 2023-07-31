@@ -75,9 +75,9 @@ class _ObjectType(object):
                     width = MODBUS2AVRO.width(function)
                     no_bytes = MODBUS2AVRO.no_bytes(function)
             except ValueError:
-                detail = "Decoding function '{0}' not defined for " \
-                         "parameter '{1}'".format(function,
-                                                  parameter)
+                detail = ("Decoding function '{0}' not defined for parameter"
+                          " '{1}'").format(function,
+                                           parameter)
                 _throw_error(detail, 422)
         result = {
             "start": start,
@@ -135,7 +135,9 @@ class _ObjectType(object):
                                'multiplier',
                                'offset',
                                'datatype',
-                               'isTag'}
+                               'isTag',
+                               'min',
+                               'max'}
             }
         for key, name in self.__register_maps[register]['map'].items():
             decoded.append(
@@ -180,26 +182,34 @@ class _ObjectType(object):
                            'datatype',
                            'multiplier',
                            'offset',
-                           'isTag'}
+                           'isTag',
+                           'min',
+                           'max'}
         }
         if datatype in ['int', 'long'] and not maps:
             # multiplier and/or offset make sense for int datatypes and when
             # no map is defined
-            multiplier = self.__register_maps[register].get('multiplier', 1)
-            offset = self.__register_maps[register].get('offset', 0)
-            value = value * multiplier + offset
+            value = (value
+                     * self.__register_maps[register].get('multiplier', 1)
+                     + self.__register_maps[register].get('offset', 0))
             if isinstance(value, float):
-                datatype = "float"  # to serve Reinhold's AVRO schema
+                datatype = "float"  # to serve AVRO schema
         di = {
             "value": value,
             "datatype": datatype,
             "isTag": self.__register_maps[register].get('isTag', False)
         }
-        # add description if applicable
+        # add description if applicable and other optional features
         if maps is not None:
             desc = maps.get(str(round(value)))
         if desc is not None:
             di["description"] = desc
+        # pass on min & max to output for int & float
+        if re.match(".+_(int|uint|float)$", function):
+            if self.__register_maps[register].get('min'):
+                di['min'] = self.__register_maps[register].get('min')
+            if self.__register_maps[register].get('max'):
+                di['max'] = self.__register_maps[register].get('max')
 
         return [
             dict(
@@ -229,15 +239,15 @@ class _ObjectType(object):
 
         match function:
             case None:
-                detail = "Decoding function missing for " \
-                         "parameter '{0}'".format(parameter)
+                detail = ("Decoding function missing for "
+                          "parameter '{0}'").format(parameter)
                 _throw_error(detail, 422)
             case 'decode_bits':
                 return self.__decode_byte(register=register,
                                           value=getattr(decoder, function)(),
                                           function=function)
             case "decode_string":
-                # Pending: what kind of characters need to be removed?
+                # Pending: characters to be removed?
                 # value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
                 try:
                     value = "".join(
@@ -292,13 +302,14 @@ class _ObjectType(object):
                 if attributes['parameter'] == parameter:
                     # coil register updates one-by-one
                     if self.__client.write_coil(
-                        address=int(address),
-                        value=value,
-                        slave=UNIT
+                            address=int(address),
+                            value=value,
+                            slave=UNIT
                     ).isError():
-                        detail = "Error writing coil register at address " \
-                                 "'{0}' with payload '{1}'".format(int(address),
-                                                                   value)
+                        detail = (("Error writing coil register at address "
+                                   "'{0}' with payload '{1}'")
+                                  .format(int(address),
+                                          value))
                         _throw_error(detail, 422)
                     self.updated_items[parameter] = value
                     break
@@ -310,9 +321,24 @@ class _ObjectType(object):
         """
         dictionary with "parameter: value" pairs to be changed in coil and
         holding registers
-        :param wr: dictionary with {parameter: value} pairs
+        :param wr: dictionary with {parameter: value, ...} pair(s) to be updated
         :return:
         """
+
+        def test_min_max():
+            minimum = attributes.get('min', None)
+            maximum = attributes.get('max', None)
+            if minimum:
+                if value < minimum:
+                    detail = ("value: {0} < min of {1} for '{2}'"
+                              .format(value, minimum, parameter))
+                    _throw_error(detail, 422)
+            if maximum:
+                if value > maximum:
+                    detail = ("value: {0} > max of {1} for '{2}'"
+                              .format(value, maximum, parameter))
+                    _throw_error(detail, 422)
+
         builder = BinaryPayloadBuilder(
             byteorder=self.__endianness['byteorder'],
             wordorder=self.__endianness['wordorder']
@@ -325,26 +351,38 @@ class _ObjectType(object):
                     function = attributes['function'].replace("decode_", "add_")
                     reg_info = self.__register_width(address)
 
-                    # disable updates of the minor byte of a register as a
-                    # register can only be updated as a whole
+                    # disable update of solely a register's minor byte
                     if reg_info['pos_byte'] == 2:
-                        detail = "Parameter '{0}': updates disabled for " \
-                                 "the minor byte of a register" \
-                            .format(parameter)
+                        detail = (("Parameter '{0}': updates disabled for "
+                                  "the minor byte of a register")
+                                  .format(parameter))
                         _throw_error(detail, 422)
-                    if "_int" in function or "_uint" in function:
-                        multiplier = attributes.get('multiplier', 1)
-                        offset = attributes.get('offset', 0)
-                        value = int((value - offset) / multiplier)
-                    elif "_string" in function \
-                            and len(value) > (2 * reg_info['width']):
-                        detail = "'{0}' too long for parameter '{1}'" \
-                            .format(value, parameter)
+
+                    # test min or max exceeded
+                    if re.match(".+_(int|uint|float)$", function):
+                        test_min_max()
+
+                    # apply multiplier and/or offset
+                    if re.match(".+_(int|uint)$", function):
+                        value = int(
+                            (value - attributes.get('offset', 0))
+                            / attributes.get('multiplier', 1)
+                        )
+
+                    # test max length of string
+                    elif ("_string" in function
+                          and len(value) > (2 * reg_info['width'])):
+                        detail = ("'{0}' too long for parameter '{1}'"
+                                  .format(value,
+                                          parameter))
                         _throw_error(detail, 422)
-                    elif "_bits" in function \
-                            and (len(value) / 16) > reg_info['width']:
-                        detail = "'{0}' too long for parameter '{1}'" \
-                            .format(value, parameter)
+
+                    # test max length of bit list
+                    elif ("_bits" in function
+                          and (len(value) / 16) > reg_info['width']):
+                        detail = ("'{0}' too long for parameter '{1}'"
+                                  .format(value,
+                                          parameter))
                         _throw_error(detail, 422)
 
                     err = ""
@@ -355,15 +393,15 @@ class _ObjectType(object):
                         pass
                     payload = builder.to_registers()
                     if self.__client.write_registers(
-                        address=reg_info['start'],
-                        values=payload,
-                        slave=UNIT
+                            address=reg_info['start'],
+                            values=payload,
+                            slave=UNIT
                     ).isError():
-                        detail = "Error: {2} writing holding register at " \
-                                 "address '{0}' with payload '{1}'" \
-                            .format(reg_info['start'],
-                                    payload,
-                                    err)
+                        detail = (("Error: {2} writing to holding "
+                                  "register address '{0}' with payload '{1}'")
+                                  .format(reg_info['start'],
+                                          payload,
+                                          err))
                         _throw_error(detail, 422)
                     self.updated_items[parameter] = value
                     builder.reset()  # reset builder
@@ -399,11 +437,11 @@ class _ObjectType(object):
                 slave=UNIT
             )
             if result.isError():
-                detail = "Error reading register at address '{0}' and " \
-                         "width '{1}' for MODBUS class '{2}'". \
-                    format(reg_info['start'],
-                           reg_info['width'],
-                           self._entity)
+                detail = (("Error reading register at address '{0}' and width "
+                          "'{1}' for MODBUS class '{2}'")
+                          .format(reg_info['start'],
+                                  reg_info['width'],
+                                  self._entity))
                 _throw_error(detail)
 
             # decode and append to list
@@ -450,8 +488,8 @@ class _ObjectType(object):
                 for parameter, value in wr.items():
                     for address, attributes in self.__register_maps.items():
                         if attributes['parameter'] == parameter:
-                            detail = "Parameter '{0}' of MODBUS register " \
-                                     "class '{1}' is not appropriate!" \
-                                .format(parameter,
-                                        self._entity)
+                            detail = (("Parameter '{0}' of MODBUS register "
+                                       "class '{1}' is not appropriate!")
+                                      .format(parameter,
+                                              self._entity))
                             _throw_error(detail, 202)

@@ -26,8 +26,8 @@ from typing import Dict, Any
 import datetime
 # internal
 from .mb_client_core import _ObjectType
-from .mb_client_aux import mytimer, _client_config, _throw_error, MyException,\
-    defined_kwargs
+from .mb_client_aux import (mytimer, _client_config, _throw_error, MyException,
+                            defined_kwargs)
 
 """
 change history
@@ -128,17 +128,17 @@ henceforth version history continued in CHANGELOG.md
 """
 
 __author__ = "Ralf Antonius Timmermann"
-__copyright__ = "Copyright (C) Ralf Antonius Timmermann, " \
-                "AIfA, University Bonn"
+__copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
+                 "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "3.4.0"
+__version__ = "3.5.0"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
 
-myformat = "%(asctime)s.%(msecs)03d :: %(levelname)s: " \
-           "%(filename)s - %(lineno)s - %(funcName)s()\t%(message)s"
+myformat = ("%(asctime)s.%(msecs)03d :: %(levelname)s: %(filename)s - "
+            "%(lineno)s - %(funcName)s()\t%(message)s")
 logging.basicConfig(format=myformat,
                     level=logging.INFO,
                     datefmt="%Y-%m-%d %H:%M:%S")
@@ -259,9 +259,9 @@ class MODBUSClient(object):
             return False
         comp = address.split("/")
         if len(comp) == 2:
-            if comp[1] not in ["1", "2"] and \
-                    (comp[0][0] != comp[1][0] or  # test on same register class
-                     int(comp[1]) - int(comp[0]) < 1):  # test equal registers
+            if (comp[1] not in ["1", "2"]
+                and (comp[0][0] != comp[1][0]  # same register class
+                     or int(comp[1]) - int(comp[0]) < 1)):  # ascendant register
 
                 return False
 

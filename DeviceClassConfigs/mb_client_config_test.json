@@ -163,7 +163,9 @@
       "function": "decode_16bit_int",
       "multiplier": 0.1,
       "parameter": "decode_16bit_int_4",
-      "description": -408.1
+      "description": -408.1,
+      "min": 10,
+      "max": 1000
     },
     "40001": {
       "function": "decode_16bit_uint",
@@ -183,7 +185,9 @@
     "40006": {
       "function": "decode_16bit_float",
       "parameter": "decode_16bit_float_4",
-      "description": 0.000489
+      "description": 0.000489,
+      "min": -10,
+      "max": 10
     },
     "40007": {
       "function": "decode_32bit_float",
@@ -218,7 +222,9 @@
     "40023/40024": {
       "function": "decode_string",
       "parameter": "decode_string_1_4",
-      "description": "CHgx"
+      "description": "CHgx",
+      "min": "false",
+      "max": "true"
     },
     "40025/1": {
       "function": "decode_string",
@@ -292,7 +298,9 @@
         "0b00100000": "test5",
         "0b01000000": "test6",
         "0b10000000": "test7"
-      }
+      },
+      "min": false,
+      "max": true
     }
   }
 }
