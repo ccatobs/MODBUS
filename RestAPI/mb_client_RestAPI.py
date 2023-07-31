@@ -106,7 +106,7 @@ async def read_register(
 
 @app.put("/modbus/write/{host}",
          summary="Write values to register(s) for MODBUS Device IP/Name",
-         tags=["monitor", "operations"])
+         tags=["operations"])
 async def write_register(
         payload: Dict = Body(title="Payload",
                              description="Data to be written into registers"),

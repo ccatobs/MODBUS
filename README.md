@@ -10,17 +10,17 @@ represents a single MODBUS register, multiple of it or
 a single byte - major or minor - of it. 
 Its value comprises a subdictionary of various features, such as 
 
-| Feature     | Description                                      | Mandatory/Optional | Output JSON                  |
-|-------------|--------------------------------------------------|--------------------|------------------------------|
-| parameter   | parameter name - unique over all registers       | mandatory          | yes                          |
-| function    | data type, naming convention: "decode_\<xxx>"    | mandatory          | as AVRO datatype             | 
-| description | parameter description                            | optional           | yes, superseded by map value |
-| map         | see below                                        | optional           | no                           |
-| isTag       | provide as true, false otherwise                 | optional           | yes                          |
-| min         | input & holding register, datatype integer/float | optional           | yes, write error if exceeded |
-| max         | input & holding register, datatype integer/float | optional           | yes, write error if exceeded |
-| multiplier  | input & holding register, datatype integer       | optional           | no, to re-calculate value    |
-| offset      | input & holding register, datatype integer       | optional           | no, to re-calculate value    |
+| Feature     | Description                                   | Mandatory/Optional | Output JSON                  |
+|-------------|-----------------------------------------------|--------------------|------------------------------|
+| parameter   | parameter name - unique over all registers    | mandatory          | yes                          |
+| function    | data type, naming convention: "decode_\<xxx>" | mandatory          | as AVRO data type            | 
+| description | parameter description                         | optional           | yes, superseded by map value |
+| map         | see below                                     | optional           | no                           |
+| isTag       | provide as true, false otherwise              | optional           | yes                          |
+| min         | input & holding register, data type int/float | optional           | yes, write error if exceeded |
+| max         | input & holding register, data type int/float | optional           | yes, write error if exceeded |
+| multiplier  | input & holding register, data type int       | optional           | no, to re-calculate value    |
+| offset      | input & holding register, data type int       | optional           | no, to re-calculate value    |
 
 A map is provided in case a value needs to match 
 an entry of a given list. The corresponding field value is passed on to 

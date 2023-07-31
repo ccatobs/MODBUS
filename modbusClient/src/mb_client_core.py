@@ -187,7 +187,7 @@ class _ObjectType(object):
                            'max'}
         }
         if datatype in ['int', 'long'] and not maps:
-            # multiplier and/or offset make sense for int datatypes and when
+            # multiplier and/or offset make sense for int data types and when
             # no map is defined
             value = (value
                      * self.__register_maps[register].get('multiplier', 1)
