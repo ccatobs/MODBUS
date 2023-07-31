@@ -277,7 +277,7 @@ class MODBUSClient(object):
             "timestamp": datetime.datetime.now(
                 tz=datetime.timezone.utc
             ).isoformat(),
-            "ip": self.__device,
+            "host": self.__device,
             "data": [item for entity in self.__entity_list for item in
                      entity.register_readout()]
         }
