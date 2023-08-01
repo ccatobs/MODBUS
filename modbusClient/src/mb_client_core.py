@@ -40,6 +40,7 @@ class _ObjectType(object):
         }
         # parameter updated in registers after write to date, needs reset
         self.updated_items = dict()
+
     @property
     def entity(self): return self._entity
 
@@ -324,14 +325,18 @@ class _ObjectType(object):
             maximum = attributes.get('max', None)
             if minimum:
                 if value < minimum:
-                    detail = ("value: {0} < min of {1} for '{2}'"
-                              .format(value, minimum, parameter))
-                    _throw_error(detail, 422)
+                    _throw_error(
+                        ("value: {0} < min of {1} for '{2}'"
+                         .format(value, minimum, parameter)),
+                        422
+                    )
             if maximum:
                 if value > maximum:
-                    detail = ("value: {0} > max of {1} for '{2}'"
-                              .format(value, maximum, parameter))
-                    _throw_error(detail, 422)
+                    _throw_error(
+                        ("value: {0} > max of {1} for '{2}'"
+                         .format(value, maximum, parameter)),
+                        422
+                    )
 
         builder = BinaryPayloadBuilder(
             byteorder=self.__endianness['byteorder'],
@@ -348,7 +353,7 @@ class _ObjectType(object):
                     # disable update of solely a register's minor byte
                     if reg_info['pos_byte'] == 2:
                         detail = (("Parameter '{0}': updates disabled for "
-                                  "the minor byte of a register")
+                                   "the minor byte of a register")
                                   .format(parameter))
                         _throw_error(detail, 422)
 
@@ -392,7 +397,7 @@ class _ObjectType(object):
                             slave=UNIT
                     ).isError():
                         detail = (("Error: {2} writing to holding "
-                                  "register address '{0}' with payload '{1}'")
+                                   "register address '{0}' with payload '{1}'")
                                   .format(reg_info['start'],
                                           payload,
                                           err))
