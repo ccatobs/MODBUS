@@ -10,17 +10,17 @@ represents a single MODBUS register, multiple of it or
 a single byte - major or minor - of it. 
 Its value comprises a subdictionary of various features, such as 
 
-| Feature     | Description                                   | Mandatory/Optional | Output JSON                  |
-|-------------|-----------------------------------------------|--------------------|------------------------------|
-| parameter   | parameter name - unique over all registers    | mandatory          | yes                          |
-| function    | data type, naming convention: "decode_\<xxx>" | mandatory          | as AVRO data type            | 
-| description | parameter description                         | optional           | yes, superseded by map value |
-| map         | see below                                     | optional           | no                           |
-| isTag       | provide as true, false otherwise              | optional           | yes                          |
-| min         | input & holding register, data type int/float | optional           | yes, write error if exceeded |
-| max         | input & holding register, data type int/float | optional           | yes, write error if exceeded |
-| multiplier  | input & holding register, data type int       | optional           | no, to re-calculate value    |
-| offset      | input & holding register, data type int       | optional           | no, to re-calculate value    |
+| Feature     | Description                                   | Applies To                            | Mandatory/Optional                              | Output JSON                      |
+|-------------|-----------------------------------------------|---------------------------------------|-------------------------------------------------|----------------------------------|
+| parameter   | parameter name (unique over registers)        |                                       | mandatory                                       | yes                              |
+| function    | data type, see table below                    |                                       | mandatory                                       | AVRO data type                   | 
+| description | parameter description                         |                                       | optional                                        | yes, superseded by map value, if provided |
+| map         | see below                                     |                                       | optional                                        | no                               |
+| isTag       | tag a parameter for influxDB (boolean)        |                                       | optional                                        | yes                              |
+| min         | minimum of parameter, write error if exceeded | input & holding register, int/float   | optional                                        | yes                              |
+| max         | maximum of parameter, write error if exceeded | input & holding register, int/float   | optional                                        | yes                              |
+| multiplier  | multiplied with value                         | input & holding register, int         | optional                                        | no                               |
+| offset      | value offset                                  | input & holding register, int         | optional                                        | no                               |
 
 A map is provided in case a value needs to match 
 an entry of a given list. The corresponding field value is passed on to 

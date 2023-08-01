@@ -6,7 +6,8 @@
   "mapping": {
     "00000": {
       "parameter": "Write Coil 0",
-      "description": true
+      "description": true,
+      "isTag": true
     },
     "00001": {
       "parameter": "Write Coil 1",

@@ -7,6 +7,11 @@
 ### Deprecated
 ### Removed
 ### Security
+## 3.5.1 (2023-08-01)
+### Added
+### Changed
+### Fixed
+- feature "isTag" is passed to output JSON only if provided in configFile. 
 ## 3.5.0 (2023-07-31)
 ### Added
 - "min" and "max" features are passed on to the output for input and holding 

@@ -40,7 +40,6 @@ class _ObjectType(object):
         }
         # parameter updated in registers after write to date, needs reset
         self.updated_items = dict()
-
     @property
     def entity(self): return self._entity
 
@@ -67,6 +66,7 @@ class _ObjectType(object):
             else:
                 width = int(comp[1]) - int(comp[0]) + 1
                 no_bytes = width * 2
+
         parameter = self.__register_maps[address]['parameter']
         function = self.__register_maps[address].get('function')
         if function:
@@ -135,7 +135,6 @@ class _ObjectType(object):
                                'multiplier',
                                'offset',
                                'datatype',
-                               'isTag',
                                'min',
                                'max'}
             }
@@ -147,9 +146,7 @@ class _ObjectType(object):
                             self.__register_maps[register]['parameter'],
                         "value": value[self.__binary_map(binarystring=key)],
                         "description": name,
-                        "datatype": MODBUS2AVRO(function).datatype,
-                        "isTag": self.__register_maps[register].get('isTag',
-                                                                    False)
+                        "datatype": MODBUS2AVRO(function).datatype
                     },
                     **optional)
             )
@@ -182,7 +179,6 @@ class _ObjectType(object):
                            'datatype',
                            'multiplier',
                            'offset',
-                           'isTag',
                            'min',
                            'max'}
         }
@@ -196,8 +192,7 @@ class _ObjectType(object):
                 datatype = "float"  # to serve AVRO schema
         di = {
             "value": value,
-            "datatype": datatype,
-            "isTag": self.__register_maps[register].get('isTag', False)
+            "datatype": datatype
         }
         # add description if applicable and other optional features
         if maps is not None:
@@ -279,11 +274,10 @@ class _ObjectType(object):
         return [
             dict(
                 **self.__register_maps[register],
-                **{"datatype": MODBUS2AVRO("decode_bits").datatype,
-                   "value": decoder[0],
-                   "isTag": self.__register_maps[register].get('isTag',
-                                                               False)
-                   }
+                **{
+                    "datatype": MODBUS2AVRO("decode_bits").datatype,
+                    "value": decoder[0]
+                }
             )
         ]
 
