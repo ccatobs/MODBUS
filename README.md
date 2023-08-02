@@ -10,23 +10,23 @@ represents a single MODBUS register, multiple of it or
 a single byte - major or minor - of it. 
 Its value comprises a subdictionary of various features, such as 
 
-| Feature       | Description                                                                              | Applied                             | Mandatory/<br/>Optional | Output JSON    |
-|---------------|------------------------------------------------------------------------------------------|-------------------------------------|-------------------------|----------------|
-| parameter     | parameter name (unique over registers)                                                   | all                                 | mandatory               | yes            |
-| value         | register value                                                                           | all                                 | reserved                | yes            |   
-| parameter_alt | alternative parameter name                                                               | bits                                | reserved                | yes, if map    |   
-| value_alt     | alternative value                                                                        | int/float                           | reserved                | yes, if map    |
-| function      | data type, see table below                                                               | all                                 | mandatory               | AVRO data type | 
-| description   | parameter description                                                                    | all                                 | optional                | yes            |
-| alias         | alternative identifier                                                                   | all                                 | optional                | yes            |
-| unit          | units                                                                                    | all                                 | optional                | yes            |
-| defaultValue  | default value                                                                            | all                                 | optional                | yes            |
-| map           | see below                                                                                | all                                 | optional                | no             |
-| isTag         | tag a parameter, for influxDB (boolean)                                                  | all                                 | optional                | yes            |
-| min           | minimum of parameter value, write error if exceeded                                      | input & holding register, int/float | optional                | yes            |
-| max           | maximum of parameter value, write error if exceeded                                      | input & holding register, int/float | optional                | yes            |
-| multiplier    | multiply by register value: <br/>**<em>value = multiplier * register [+ offset] </em>**  | input & holding register, int       | optional                | no             |
-| offset        | add offset to register value: <br/>**<em>value = [multiplier *] register + offset</em>** | input & holding register, int       | optional                | no             |
+| Feature       | Description                                                                               | Applied                             | Mandatory/<br/>Optional | Output JSON    |
+|---------------|-------------------------------------------------------------------------------------------|-------------------------------------|-------------------------|----------------|
+| parameter     | parameter name (unique over registers)                                                    | all                                 | mandatory               | yes            |
+| value         | register value                                                                            | all                                 | reserved                | yes            |   
+| parameter_alt | alternative parameter name                                                                | multiple bits                       | reserved                | yes, if map    |   
+| value_alt     | alternative value                                                                         | int/float/bit                       | reserved                | yes, if map    |
+| function      | data type, see table below                                                                | all                                 | mandatory               | AVRO data type | 
+| description   | parameter description                                                                     | all                                 | optional                | yes            |
+| alias         | alternative identifier                                                                    | all                                 | optional                | yes            |
+| unit          | units                                                                                     | all                                 | optional                | yes            |
+| defaultValue  | default value                                                                             | all                                 | optional                | yes            |
+| map           | see below                                                                                 | all                                 | optional                | no             |
+| isTag         | tag a parameter, for influxDB (boolean)                                                   | all                                 | optional                | yes            |
+| min           | minimum of parameter value, write error if exceeded                                       | input & holding register, int/float | optional                | yes            |
+| max           | maximum of parameter value, write error if exceeded                                       | input & holding register, int/float | optional                | yes            |
+| multiplier    | multiply by register value: <br/> **<em>value = multiplier * register [+ offset] </em>**  | input & holding register, int       | optional                | no             |
+| offset        | add offset to register value: <br/>**<em>value = [multiplier *] register + offset </em>** | input & holding register, int       | optional                | no             |
 
 A map is provided in case a value needs to match an entry of a given list. 
 The corresponding field value is passed on to the output as feature "value_alt". 

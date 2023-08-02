@@ -39,7 +39,9 @@
     "30001": {
       "function": "decode_16bit_uint",
       "parameter": "decode_16bit_uint",
-      "description": 3
+      "description": 19.9,
+      "multiplier": 3.3,
+      "offset": 10
     },
     "30002": {
       "function": "decode_32bit_int",
