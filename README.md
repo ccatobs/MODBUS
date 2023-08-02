@@ -25,8 +25,8 @@ Its value comprises a subdictionary of various features, such as
 | isTag         | tag a parameter, for influxDB (boolean)                                                   | all                                 | optional                | yes            |
 | min           | minimum of parameter value, write error if exceeded                                       | input & holding register, int/float | optional                | yes            |
 | max           | maximum of parameter value, write error if exceeded                                       | input & holding register, int/float | optional                | yes            |
-| multiplier    | multiply by register value: <br/> **<em>value = multiplier * register [+ offset] </em>**  | input & holding register, int       | optional                | no             |
-| offset        | add offset to register value: <br/>**<em>value = [multiplier *] register + offset </em>** | input & holding register, int       | optional                | no             |
+| multiplier    | multiply by register value: <br/> **<em>value = multiplier x register [+ offset] </em>**  | input & holding register, int       | optional                | no             |
+| offset        | add offset to register value: <br/>**<em>value = [multiplier x] register + offset </em>** | input & holding register, int       | optional                | no             |
 
 A map is provided in case a value needs to match an entry of a given list. 
 The corresponding field value is passed on to the output as feature "value_alt". 
