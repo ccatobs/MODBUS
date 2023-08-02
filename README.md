@@ -10,17 +10,17 @@ represents a single MODBUS register, multiple of it or
 a single byte - major or minor - of it. 
 Its value comprises a subdictionary of various features, such as 
 
-| Feature     | Description                                         | Applies To                          | Mandatory/Optional                              | Output JSON                      |
-|-------------|-----------------------------------------------------|-------------------------------------|-------------------------------------------------|----------------------------------|
-| parameter   | parameter name (unique over registers)              | all                                 | mandatory                                       | yes                              |
-| function    | data type, see table below                          | all                                 | mandatory                                       | AVRO data type                   | 
-| description | parameter description                               | all                                 | optional                                        | yes, superseded by map value, if provided |
-| map         | see below                                           | all                                 | optional                                        | no                               |
-| isTag       | tag a parameter for influxDB (boolean)              | all                                 | optional                                        | yes                              |
-| min         | minimum of parameter value, write error if exceeded | input & holding register, int/float | optional                                        | yes                              |
-| max         | maximum of parameter value, write error if exceeded | input & holding register, int/float | optional                                        | yes                              |
-| multiplier  | multiplied with value                               | input & holding register, int       | optional                                        | no                               |
-| offset      | offset added to value                               | input & holding register, int       | optional                                        | no                               |
+| Feature     | Description                                         | Applied                             | Mandatory/<br/>Optional | Output JSON                               |
+|-------------|-----------------------------------------------------|-------------------------------------|-------------------------|-------------------------------------------|
+| parameter   | parameter name (unique over registers)              | all                                 | mandatory               | yes                                       |
+| function    | data type, see table below                          | all                                 | mandatory               | AVRO data type                            | 
+| description | parameter description                               | all                                 | optional                | yes, superseded by map value, if provided |
+| map         | see below                                           | all                                 | optional                | no                                        |
+| isTag       | tag a parameter, for influxDB (boolean)             | all                                 | optional                | yes                                       |
+| min         | minimum of parameter value, write error if exceeded | input & holding register, int/float | optional                | yes                                       |
+| max         | maximum of parameter value, write error if exceeded | input & holding register, int/float | optional                | yes                                       |
+| multiplier  | multiply by value                                   | input & holding register, int       | optional                | no                                        |
+| offset      | add offset to value                                 | input & holding register, int       | optional                | no                                        |
 
 A map is provided in case a value needs to match 
 an entry of a given list. The corresponding field value is passed on to 

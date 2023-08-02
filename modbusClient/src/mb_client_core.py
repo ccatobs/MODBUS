@@ -141,7 +141,7 @@ class _ObjectType(object):
             }
         for key, name in self.__register_maps[register]['map'].items():
             decoded.append(
-                dict(
+                dict(  # note: two dicts must not contain same key
                     {
                         "parameter":
                             self.__register_maps[register]['parameter'],
@@ -208,7 +208,7 @@ class _ObjectType(object):
                 di['max'] = self.__register_maps[register].get('max')
 
         return [
-            dict(
+            dict(  # note: di and optional must not contain same key
                 **di,
                 **optional
             )
@@ -273,7 +273,7 @@ class _ObjectType(object):
         :return: List of Dict
         """
         return [
-            dict(
+            dict(  # note: two dicts must not contain same key
                 **self.__register_maps[register],
                 **{
                     "datatype": MODBUS2AVRO("decode_bits").datatype,
