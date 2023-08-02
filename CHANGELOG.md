@@ -7,6 +7,13 @@
 ### Deprecated
 ### Removed
 ### Security
+## 4.0.0 (2023-08-02)
+### Added
+### Changed
+- description not superseded by map any longer. 
+- if map provided for int/float or one bit: provide new feature "value_alt" in output with the mapped value
+- if map provided for many bits: provide new feature "parameter_alt" in output
+### Fixed
 ## 3.5.1 (2023-08-01)
 ### Added
 ### Changed

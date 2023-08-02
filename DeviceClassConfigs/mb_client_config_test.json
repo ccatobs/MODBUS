@@ -289,7 +289,8 @@
     "40034/2": {
       "function": "decode_bits",
       "parameter": "TEST_4",
-      "default value": "this is not parsed!",
+      "description": "this is not parsed!",
+      "alias": "jy",
       "map": {
         "0b00000001": "test0",
         "0b00000010": "test1",

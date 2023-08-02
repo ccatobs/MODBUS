@@ -11,9 +11,16 @@ import re
 import logging
 from typing import Dict, List
 # internal
-from .mb_client_aux import MODBUS2AVRO, _throw_error
+from .mb_client_aux import MODBUS2AVRO, _throw_error, defined_kwargs
 
 UNIT = 0x1
+FEATURE_SET = {'map',
+               'function',
+               'datatype',
+               'multiplier',
+               'offset',
+               'min',
+               'max'}
 
 
 class _ObjectType(object):
@@ -122,34 +129,31 @@ class _ObjectType(object):
         """
         decoded = list()
         optional = dict()
+        one_map_entry = False
 
         if len(self.__register_maps[register]['map']) == 1:
+            one_map_entry = True
             # if only one entry in map, add optional parameters, otherwise no
             optional = {
                 key: self.__register_maps[register][key]
                 for key in self.__register_maps[register]
-                if key not in {'map',
-                               'description',
-                               'value',
-                               'function',
-                               'parameter',
-                               'multiplier',
-                               'offset',
-                               'datatype',
-                               'min',
-                               'max'}
+                if key not in FEATURE_SET
             }
         for key, name in self.__register_maps[register]['map'].items():
             decoded.append(
-                dict(  # note: two dicts must not contain same key
+                dict(  # note: **dicts must never contain same key
                     {
-                        "parameter":
-                            self.__register_maps[register]['parameter'],
                         "value": value[self.__binary_map(binarystring=key)],
-                        "description": name,
                         "datatype": MODBUS2AVRO(function).datatype
                     },
-                    **optional)
+                    **defined_kwargs(
+                        parameter_alt=name if not one_map_entry else None,
+                        value_alt=name if one_map_entry else None,
+                        parameter=self.__register_maps[register]['parameter'] \
+                        if not one_map_entry else None
+                    ),
+                    **optional
+                )
             )
 
         return decoded
@@ -169,19 +173,11 @@ class _ObjectType(object):
         :return: List of Dict
         """
         maps = self.__register_maps[register].get('map')
-        desc = self.__register_maps[register].get('description')
         datatype = MODBUS2AVRO(function).datatype
         optional = {
             key: self.__register_maps[register][key]
             for key in self.__register_maps[register]
-            if key not in {'map',
-                           'description',
-                           'function',
-                           'datatype',
-                           'multiplier',
-                           'offset',
-                           'min',
-                           'max'}
+            if key not in FEATURE_SET
         }
         if datatype in ['int', 'long'] and not maps:
             # multiplier and/or offset make sense for int data types and when
@@ -197,9 +193,8 @@ class _ObjectType(object):
         }
         # add description if applicable and other optional features
         if maps is not None:
-            desc = maps.get(str(round(value)))
-        if desc is not None:
-            di["description"] = desc
+            di["value_alt"] = maps.get(str(round(value)), "n.a.")
+
         # pass on min & max to output for int & float
         if re.match(".+_(int|uint|float)$", function):
             if self.__register_maps[register].get('min'):
@@ -208,7 +203,7 @@ class _ObjectType(object):
                 di['max'] = self.__register_maps[register].get('max')
 
         return [
-            dict(  # note: di and optional must not contain same key
+            dict(  # note: **di and **optional must never contain same key
                 **di,
                 **optional
             )
@@ -273,7 +268,7 @@ class _ObjectType(object):
         :return: List of Dict
         """
         return [
-            dict(  # note: two dicts must not contain same key
+            dict(  # note: **dicts must never contain same key
                 **self.__register_maps[register],
                 **{
                     "datatype": MODBUS2AVRO("decode_bits").datatype,
@@ -326,15 +321,15 @@ class _ObjectType(object):
             if minimum:
                 if value < minimum:
                     _throw_error(
-                        ("value: {0} < min of {1} for '{2}'"
-                         .format(value, minimum, parameter)),
+                        ("Error encountered for '{2}' when writing value: "
+                         "{0} < {1} (min)".format(value, minimum, parameter)),
                         422
                     )
             if maximum:
                 if value > maximum:
                     _throw_error(
-                        ("value: {0} > max of {1} for '{2}'"
-                         .format(value, maximum, parameter)),
+                        ("Error encountered for '{2}' shen writing value: "
+                         "{0} > {1} (max)".format(value, maximum, parameter)),
                         422
                     )
 
