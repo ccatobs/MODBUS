@@ -14,13 +14,16 @@ from typing import Dict, List
 from .mb_client_aux import MODBUS2AVRO, _throw_error, defined_kwargs
 
 UNIT = 0x1
-FEATURE_SET = {'map',
-               'function',
-               'datatype',
-               'multiplier',
-               'offset',
-               'min',
-               'max'}
+FEATURE_EXCLUDE_SET = {'map',
+                       'function',
+                       'datatype',
+                       'multiplier',
+                       'offset',
+                       'min',
+                       'max',
+                       'value',
+                       'parameter_alt',
+                       'value_alt'}
 
 
 class _ObjectType(object):
@@ -125,7 +128,7 @@ class _ObjectType(object):
         :param register: string - key in dictionary mapping
         :param value: List[bool] - result from payload decoder method
         :param function: string - decoder method
-        :return: List of Dict
+        :return: List of Dict with each parameter_alt
         """
         decoded = list()
         optional = dict()
@@ -137,23 +140,21 @@ class _ObjectType(object):
             optional = {
                 key: self.__register_maps[register][key]
                 for key in self.__register_maps[register]
-                if key not in FEATURE_SET
+                if key not in FEATURE_EXCLUDE_SET
             }
         for key, name in self.__register_maps[register]['map'].items():
             decoded.append(
-                dict(  # note: **dicts must never contain same key
-                    {
-                        "value": value[self.__binary_map(binarystring=key)],
-                        "datatype": MODBUS2AVRO(function).datatype
-                    },
-                    **defined_kwargs(
-                        parameter_alt=name if not one_map_entry else None,
-                        value_alt=name if one_map_entry else None,
-                        parameter=self.__register_maps[register]['parameter'] \
-                        if not one_map_entry else None
-                    ),
-                    **optional
-                )
+                {
+                    "value": value[self.__binary_map(binarystring=key)],
+                    "datatype": MODBUS2AVRO(function).datatype
+                } |
+                defined_kwargs(
+                    parameter_alt=name if not one_map_entry else None,
+                    value_alt=name if one_map_entry else None,
+                    parameter=self.__register_maps[register]['parameter']
+                    if not one_map_entry else None
+                ) |
+                optional
             )
 
         return decoded
@@ -170,14 +171,14 @@ class _ObjectType(object):
         :param register: string - key in dictionary mapping
         :param value: str | int | float - result from payload decoder method
         :param function: string - decoder method
-        :return: List of Dict
+        :return: List of Dict with each parameter
         """
         maps = self.__register_maps[register].get('map')
         datatype = MODBUS2AVRO(function).datatype
         optional = {
             key: self.__register_maps[register][key]
             for key in self.__register_maps[register]
-            if key not in FEATURE_SET
+            if key not in FEATURE_EXCLUDE_SET
         }
         if datatype in ['int', 'long'] and not maps:
             # multiplier and/or offset make sense for int data types and when
@@ -191,10 +192,9 @@ class _ObjectType(object):
             "value": value,
             "datatype": datatype
         }
-        # add description if applicable and other optional features
+        # add "value_alt" if applicable and other optional features
         if maps is not None:
             di["value_alt"] = maps.get(str(round(value)), "n.a.")
-
         # pass on min & max to output for int & float
         if re.match(".+_(int|uint|float)$", function):
             if self.__register_maps[register].get('min'):
@@ -202,12 +202,7 @@ class _ObjectType(object):
             if self.__register_maps[register].get('max'):
                 di['max'] = self.__register_maps[register].get('max')
 
-        return [
-            dict(  # note: **di and **optional must never contain same key
-                **di,
-                **optional
-            )
-        ]
+        return [di | optional]
 
     def __formatter(
             self,
@@ -268,13 +263,11 @@ class _ObjectType(object):
         :return: List of Dict
         """
         return [
-            dict(  # note: **dicts must never contain same key
-                **self.__register_maps[register],
-                **{
-                    "datatype": MODBUS2AVRO("decode_bits").datatype,
-                    "value": decoder[0]
-                }
-            )
+            self.__register_maps[register] |
+            {
+                "datatype": MODBUS2AVRO("decode_bits").datatype,
+                "value": decoder[0]
+            }
         ]
 
     def __coil(
