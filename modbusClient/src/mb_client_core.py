@@ -56,10 +56,10 @@ class _ObjectType(object):
         self._entity = entity
         self.__client = init["client"]
         self.__endianness = init["endianness"]
-        # select mapping for each entity and sort by key
+        # select mapping for each entity and sort by register number
         self.__register_maps = {
-            key: value for key, value in
-            sorted(init["mapping"].items()) if key[0] == self._entity
+            k: v for k, v in
+            sorted(init["mapping"].items()) if k[0] == self._entity
         }
         # parameter updated in registers after write to date, needs reset
         self.updated_items = dict()
@@ -152,20 +152,20 @@ class _ObjectType(object):
             one_map_entry = True
             # if only one entry in map, add optional parameters, otherwise no
             optional = {
-                key: self.__register_maps[register][key]
-                for key in self.__register_maps[register]
-                if key not in FEATURE_EXCLUDE_SET
+                k: self.__register_maps[register][k]
+                for k in self.__register_maps[register]
+                if k not in FEATURE_EXCLUDE_SET
             }
-        for key, name in self.__register_maps[register]['map'].items():
+        for k, v in self.__register_maps[register]['map'].items():
             decoded.append(
                 {
                     "parameter": self.__register_maps[register]['parameter'],
-                    "value": value[self.__binary_map(binarystring=key)],
+                    "value": value[self.__binary_map(binarystring=k)],
                     "datatype": MODBUS2AVRO(function).datatype
                 } |
                 defined_kwargs(
-                    parameter_alt=name if not one_map_entry else None,
-                    value_alt=name if one_map_entry else None,
+                    parameter_alt=v if not one_map_entry else None,
+                    value_alt=v if one_map_entry else None,
                     description=desc if not one_map_entry else None
                 ) |
                 optional
@@ -190,10 +190,11 @@ class _ObjectType(object):
         maps = self.__register_maps[register].get('map')
         datatype = MODBUS2AVRO(function).datatype
         optional = {
-            key: self.__register_maps[register][key]
-            for key in self.__register_maps[register]
-            if key not in FEATURE_EXCLUDE_SET
+            k: self.__register_maps[register][k]
+            for k in self.__register_maps[register]
+            if k not in FEATURE_EXCLUDE_SET
         }
+
         if datatype in ['int', 'long'] and not maps:
             # multiplier and/or offset make sense for int data types and when
             # no map is defined
@@ -277,7 +278,10 @@ class _ObjectType(object):
         :return: List of Dict
         """
         return [
-            self.__register_maps[register] |
+            {
+                k: v for k, v in self.__register_maps[register].items()
+                if k not in FEATURE_EXCLUDE_SET
+            } |
             {
                 "datatype": MODBUS2AVRO("decode_bits").datatype,
                 "value": decoder[0]
@@ -466,7 +470,9 @@ class _ObjectType(object):
                     no_bytes=reg_info['no_bytes']
                 )
 
-        return decoded
+        return [
+            {k: v for k, v in sorted(item.items())} for item in decoded
+        ]
 
     def register_write(
             self,

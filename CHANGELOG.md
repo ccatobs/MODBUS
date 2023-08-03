@@ -12,7 +12,10 @@
 - throw exception if feature name is not provided 
 in [README.md](https://github.com/ccatp/MODBUS/blob/913e3f9ae53a86cc9def6d47ff442d4c4a991fa7/README.md)
 ### Changed
+- features in dict are sorted for output
 ### Fixed
+- for coil and discrete input registers only features not listed 
+in FEATURE_EXCLUDE_SET are passed on to output
 ## 4.0.0 (2023-08-02)
 ### Added
 ### Changed
