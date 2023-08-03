@@ -25,7 +25,7 @@ import logging
 from typing import Dict, Any
 import datetime
 # internal
-from .mb_client_core import _ObjectType
+from .mb_client_core import _ObjectType, FEATURE_ALLOWED_SET
 from .mb_client_aux import (mytimer, _client_config, _throw_error, MyException,
                             defined_kwargs)
 
@@ -132,7 +132,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "4.0.0"
+__version__ = "4.1.0"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -231,7 +231,8 @@ class MODBUSClient(object):
             mapping: Dict
     ) -> None:
         """
-        perform checks on the client mapping: parameter must not be duplicate
+        perform checks on the client mapping: parameter must not be duplicate,
+        available features must be taken from README.md
         :param mapping: Dict
         :return:
         """
@@ -241,6 +242,11 @@ class MODBUSClient(object):
                 detail = "Wrong key in mapping: {0}.".format(key)
                 _throw_error(detail, 422)
             rev_dict.setdefault(value["parameter"], set()).add(key)
+            for feature in value:
+                if feature not in FEATURE_ALLOWED_SET:
+                    detail = ("Feature '{1}' in key {0} is not supported"
+                              .format(key, feature))
+                    _throw_error(detail, 422)
         parameter = [key for key, values in rev_dict.items() if len(values) > 1]
         if parameter:
             detail = "Duplicate parameter: {0}.".format(parameter)

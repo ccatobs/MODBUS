@@ -2,12 +2,17 @@
 #### for the documentation of earlier releases see docstring inside [mb_client_v2.py](https://github.com/ccatp/MODBUS/blob/05c387611b738852c8d53d44a64b80398edb9cda/modbusClient/src/mb_client_v2.py)
 ## unreleased (2023-mm-dd)
 ### Added
-- throw error if feature names are outside list provided in README.md
 ### Changed
 ### Fixed
 ### Deprecated
 ### Removed
 ### Security
+## 4.1.0 (2023-08-03)
+### Added
+- throw exception if feature name is not provided 
+in [README.md](https://github.com/ccatp/MODBUS/blob/913e3f9ae53a86cc9def6d47ff442d4c4a991fa7/README.md)
+### Changed
+### Fixed
 ## 4.0.0 (2023-08-02)
 ### Added
 ### Changed

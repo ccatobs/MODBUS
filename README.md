@@ -10,7 +10,7 @@ represents a single MODBUS register, multiple of it or
 a single byte - major or minor - of it. 
 Its value comprises a dictionary of various features, such as 
 
-| Feature       | Description                                                                               | Applied                             | Mandatory/<br/>Optional | Output JSON    |
+| Feature       | Description                                                                               | Applied To                          | Mandatory/<br/>Optional | Output         |
 |---------------|-------------------------------------------------------------------------------------------|-------------------------------------|-------------------------|----------------|
 | parameter     | unique parameter name to identify register space                                          | all                                 | mandatory               | yes            |
 | function      | data type, see table below                                                                | all                                 | mandatory               | AVRO data type | 

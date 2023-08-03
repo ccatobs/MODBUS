@@ -24,6 +24,18 @@ FEATURE_EXCLUDE_SET = {'map',
                        'value',
                        'parameter_alt',
                        'value_alt'}
+FEATURE_ALLOWED_SET = {'parameter',
+                       'function',
+                       'description',
+                       'alias',
+                       'unit',
+                       'defaultValue',
+                       'map',
+                       'isTag',
+                       'min',
+                       'max',
+                       'multiplier',
+                       'offset'}
 
 
 class _ObjectType(object):
@@ -128,7 +140,7 @@ class _ObjectType(object):
         :param register: string - key in dictionary mapping
         :param value: List[bool] - result from payload decoder method
         :param function: string - decoder method
-        :return: List of Dict with each parameter_alt
+        :return: List of Dict for each parameter_alt
         """
         decoded = list()
         optional = dict()
@@ -145,14 +157,13 @@ class _ObjectType(object):
         for key, name in self.__register_maps[register]['map'].items():
             decoded.append(
                 {
+                    "parameter": self.__register_maps[register]['parameter'],
                     "value": value[self.__binary_map(binarystring=key)],
                     "datatype": MODBUS2AVRO(function).datatype
                 } |
                 defined_kwargs(
                     parameter_alt=name if not one_map_entry else None,
-                    value_alt=name if one_map_entry else None,
-                    parameter=self.__register_maps[register]['parameter']
-                    if not one_map_entry else None
+                    value_alt=name if one_map_entry else None
                 ) |
                 optional
             )
@@ -171,7 +182,7 @@ class _ObjectType(object):
         :param register: string - key in dictionary mapping
         :param value: str | int | float - result from payload decoder method
         :param function: string - decoder method
-        :return: List of Dict with each parameter
+        :return: List of Dict for each parameter
         """
         maps = self.__register_maps[register].get('map')
         datatype = MODBUS2AVRO(function).datatype
