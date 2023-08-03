@@ -14,28 +14,29 @@ from typing import Dict, List
 from .mb_client_aux import MODBUS2AVRO, _throw_error, defined_kwargs
 
 UNIT = 0x1
-FEATURE_EXCLUDE_SET = {'map',
-                       'function',
-                       'datatype',
-                       'multiplier',
-                       'offset',
-                       'min',
-                       'max',
-                       'value',
-                       'parameter_alt',
-                       'value_alt'}
-FEATURE_ALLOWED_SET = {'parameter',
-                       'function',
-                       'description',
-                       'alias',
-                       'unit',
-                       'defaultValue',
-                       'map',
-                       'isTag',
-                       'min',
-                       'max',
-                       'multiplier',
-                       'offset'}
+FEATURE_EXCLUDE_SET = {
+    'map',
+    'function',
+    'multiplier',
+    'offset',
+    'min',
+    'max',
+    'unit'
+}
+FEATURE_ALLOWED_SET = {
+    'parameter',
+    'function',
+    'description',
+    'alias',
+    'unit',
+    'defaultValue',
+    'map',
+    'isTag',
+    'min',
+    'max',
+    'multiplier',
+    'offset'
+}
 
 
 class _ObjectType(object):
@@ -145,6 +146,7 @@ class _ObjectType(object):
         decoded = list()
         optional = dict()
         one_map_entry = False
+        desc = self.__register_maps[register].get('description')
 
         if len(self.__register_maps[register]['map']) == 1:
             one_map_entry = True
@@ -163,7 +165,8 @@ class _ObjectType(object):
                 } |
                 defined_kwargs(
                     parameter_alt=name if not one_map_entry else None,
-                    value_alt=name if one_map_entry else None
+                    value_alt=name if one_map_entry else None,
+                    description=desc if not one_map_entry else None
                 ) |
                 optional
             )

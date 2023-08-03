@@ -5,10 +5,9 @@
 A universal MODBUS interface, where the mapping of the parameters to coil,
 discrete input, input and holding registers is entirely defined
 by a JSON file, with no modification to the coding required whatsoever. 
-The device class config file comprises a dictionary with key/value pairs, where the key 
-represents a single MODBUS register, multiple of it or 
-a single byte - major or minor - of it. 
-Its value comprises a dictionary of various features, such as 
+The device class config file comprises a dictionary, where the key 
+represents a MODBUS register, multiples or a single byte - major or minor - of it. 
+Its value comprises a dictionary of various features, namely
 
 | Feature       | Description                                                                               | Applied To                          | Mandatory/<br/>Optional | Output         |
 |---------------|-------------------------------------------------------------------------------------------|-------------------------------------|-------------------------|----------------|
@@ -25,7 +24,7 @@ Its value comprises a dictionary of various features, such as
 | multiplier    | multiply by register value: <br/> **<em>value = multiplier x register [+ offset] </em>**  | input & holding register, int       | optional                | no             |
 | offset        | add offset to register value: <br/>**<em>value = [multiplier x] register + offset </em>** | input & holding register, int       | optional                | no             |
 
-Features "value" and "datatype" (AVRO naming conventions) are reserved for 
+Features, such as "value" and "datatype" (AVRO naming conventions) are reserved for 
 the output only. Same applies to "parameter_alt" and "value_alt". They are 
 provided in case maps are used. Additional features may be provided in the 
 client registry mapping, which will be merely passed on to the output. 
