@@ -8,14 +8,11 @@ by a JSON file, with no modification to the coding required whatsoever.
 The device class config file comprises a dictionary with key/value pairs, where the key 
 represents a single MODBUS register, multiple of it or 
 a single byte - major or minor - of it. 
-Its value comprises a subdictionary of various features, such as 
+Its value comprises a dictionary of various features, such as 
 
 | Feature       | Description                                                                               | Applied                             | Mandatory/<br/>Optional | Output JSON    |
 |---------------|-------------------------------------------------------------------------------------------|-------------------------------------|-------------------------|----------------|
-| parameter     | parameter name (unique over registers)                                                    | all                                 | mandatory               | yes            |
-| value         | register value                                                                            | all                                 | reserved                | yes            |   
-| parameter_alt | alternative parameter name                                                                | multiple bits                       | reserved                | yes, if map    |   
-| value_alt     | alternative value                                                                         | int/float/bit                       | reserved                | yes, if map    |
+| parameter     | unique parameter name to identify register space                                          | all                                 | mandatory               | yes            |
 | function      | data type, see table below                                                                | all                                 | mandatory               | AVRO data type | 
 | description   | parameter description                                                                     | all                                 | optional                | yes            |
 | alias         | alternative identifier                                                                    | all                                 | optional                | yes            |
@@ -28,18 +25,17 @@ Its value comprises a subdictionary of various features, such as
 | multiplier    | multiply by register value: <br/> **<em>value = multiplier x register [+ offset] </em>**  | input & holding register, int       | optional                | no             |
 | offset        | add offset to register value: <br/>**<em>value = [multiplier x] register + offset </em>** | input & holding register, int       | optional                | no             |
 
-A map is provided in case a value needs to match an entry of a given list. 
-The corresponding field value is passed on to the output as feature "value_alt". 
-If a map is defined, "value_alt" is chosen according to round(value). 
-A map might also contain entries matching the 8 bits of the leading or 
-trailing byte of a register. In that case the values of the individual bits are
-provided under the feature "parameter_alt".
+Features "value" and "datatype" (AVRO naming conventions) are reserved for 
+the output only. Same applies to "parameter_alt" and "value_alt". They are 
+provided in case maps are used. Additional features may be provided in the 
+client registry mapping, which will be merely passed on to the output. 
 
-Furthermore, "value" and "datatype" (AVRO conventions) are
-reserved features, since they will be generated in the output dictionary.
-Additional features may be provided in the client registry
-mapping, which will be merely passed on to the output. To maintain consistancy we 
-urge selecting same feature names over all various modbus client config classes.
+A map may be specified if a value needs to match an entry of a given list. In 
+this case the corresponding field value of the map is passed on to the output 
+as feature "value_alt". 
+A map might also contain entries matching the 8 bits of the 
+leading or trailing byte of a register. In that case the values of the 
+individual bits are provided under the feature "parameter_alt".
 
 Register keys are in the following formates: 
 e.g. "30011" addressing the 12th register

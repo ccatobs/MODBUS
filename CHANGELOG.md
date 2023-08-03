@@ -2,6 +2,7 @@
 #### for the documentation of earlier releases see docstring inside [mb_client_v2.py](https://github.com/ccatp/MODBUS/blob/05c387611b738852c8d53d44a64b80398edb9cda/modbusClient/src/mb_client_v2.py)
 ## unreleased (2023-mm-dd)
 ### Added
+- throw error if feature names are outside list provided in README.md
 ### Changed
 ### Fixed
 ### Deprecated
