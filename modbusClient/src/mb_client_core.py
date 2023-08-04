@@ -148,10 +148,11 @@ class _ObjectType(object):
         optional = dict()
         one_map_entry = False
         desc = self.__register_maps[register].get('description')
+        alias = self.__register_maps[register].get('alias')
 
         if len(self.__register_maps[register]['map']) == 1:
             one_map_entry = True
-            # if only one entry in map, add optional parameters, otherwise no
+            # if only one entry in map, add optional parameters, no otherwise
             optional = {
                 k: self.__register_maps[register][k]
                 for k in self.__register_maps[register]
@@ -167,7 +168,8 @@ class _ObjectType(object):
                 defined_kwargs(
                     parameter_alt=v if not one_map_entry else None,
                     value_alt=v if one_map_entry else None,
-                    description=desc if not one_map_entry else None
+                    description=desc if not one_map_entry else None,
+                    alias=alias if not one_map_entry else None,
                 ) |
                 optional
             )
@@ -210,7 +212,8 @@ class _ObjectType(object):
         }
         # add "value_alt" if applicable and other optional features
         if maps is not None:
-            di["value_alt"] = maps.get(str(round(value)), "n.a.")
+            di["value_alt"] = maps.get(str(round(value)),
+                                       "corresponding value not found in map")
         # pass on min & max to output for int & float
         if re.match(".+_(int|uint|float)$", function):
             if self.__register_maps[register].get('min'):

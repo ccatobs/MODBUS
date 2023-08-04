@@ -6,7 +6,8 @@ A universal MODBUS interface, where the mapping of the parameters to coil,
 discrete input, input and holding registers is entirely defined
 by a JSON file, with no modification to the coding required whatsoever. 
 The device class config file comprises a dictionary, where the key 
-represents a MODBUS register, multiples or a single byte - major or minor - of it. 
+represents a MODBUS register, multiples or a single byte - major or minor - of it.
+Note: a register key cannot be read out twice.
 Its value comprises a dictionary of various features, namely
 
 | Feature       | Description                                                                               | Applied To                          | Mandatory/<br/>Optional | Output         |
@@ -15,10 +16,10 @@ Its value comprises a dictionary of various features, namely
 | function      | data type, see table below                                                                | all                                 | mandatory               | AVRO data type | 
 | description   | parameter description                                                                     | all                                 | optional                | yes            |
 | alias         | alternative identifier                                                                    | all                                 | optional                | yes            |
-| unit          | units                                                                                     | all                                 | optional                | yes            |
-| defaultValue  | default value                                                                             | all                                 | optional                | yes            |
+| unit          | units                                                                                     | int/float                           | optional                | yes            |
+| defaultValue  | default value                                                                             | all but map of bits                 | optional                | yes            |
 | map           | see below                                                                                 | all                                 | optional                | no             |
-| isTag         | tag a parameter, for influxDB (boolean)                                                   | all                                 | optional                | yes            |
+| isTag         | tag a parameter, for influxDB (boolean)                                                   | all but map of bits                 | optional                | yes            |
 | min           | minimum of parameter value, write error if exceeded                                       | input & holding register, int/float | optional                | yes            |
 | max           | maximum of parameter value, write error if exceeded                                       | input & holding register, int/float | optional                | yes            |
 | multiplier    | multiply by register value: <br/> **<em>value = multiplier x register [+ offset] </em>**  | input & holding register, int       | optional                | no             |
