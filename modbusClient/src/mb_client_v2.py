@@ -283,8 +283,10 @@ class MODBUSClient(object):
                 tz=datetime.timezone.utc
             ).isoformat(),
             "host": self.__device,
-            "data": [item for entity in self.__entity_list for item in
-                     entity.register_readout()]
+            "data": [
+                item for entity in self.__entity_list for item in
+                entity.register_readout()
+            ]
         }
 
     def __updated_registers(self) -> Dict[str, Any]:

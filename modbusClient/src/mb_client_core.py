@@ -9,7 +9,7 @@ from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 import json
 import re
 import logging
-from typing import Dict, List
+from typing import Dict, List, Any
 # internal
 from .mb_client_aux import MODBUS2AVRO, _throw_error, defined_kwargs
 
@@ -70,7 +70,7 @@ class _ObjectType(object):
     def __register_width(
             self,
             address: str
-    ) -> Dict:
+    ) -> Dict[str, int]:
         """
         determine the specs for an address
         :param address: string
@@ -119,7 +119,7 @@ class _ObjectType(object):
             register: str,
             value: List[bool],
             function: str
-    ) -> List[Dict]:
+    ) -> List[Dict[str, bool | str]]:
         """
         decode payload messages from a modbus reponse message and enrich with
         add. parameters from input mapping
@@ -179,7 +179,7 @@ class _ObjectType(object):
             register: str,
             value: str | int | float,
             function: str
-    ) -> List[Dict]:
+    ) -> List[Dict[str, Any]]:
         """
         decode payload messages from a modbus reponse message and enrich with
         add. parameters from input mapping
@@ -225,7 +225,7 @@ class _ObjectType(object):
             decoder: BinaryPayloadDecoder,
             register: str,
             no_bytes: int
-    ) -> List[Dict]:
+    ) -> List[Dict[str, Any]]:
         """
         format the output dictionary and append by scanning through the mapping
         of the registers. If gaps in the mappings are detected they are skipped
@@ -271,7 +271,7 @@ class _ObjectType(object):
             self,
             decoder: List,
             register: str
-    ) -> List[Dict]:
+    ) -> List[Dict[str, bool | str]]:
         """
         indexes the result array of bits by the keys found in the mapping
         :param decoder: A deferred response handle from the register readings
@@ -415,7 +415,7 @@ class _ObjectType(object):
                     break
                     # if match parameter - end
 
-    def register_readout(self) -> List:
+    def register_readout(self) -> List[Dict[str, Any]]:
         """
         reads the coil discrete input, input, or holding registers according
         to their length defined in key and decodes them accordingly. The
