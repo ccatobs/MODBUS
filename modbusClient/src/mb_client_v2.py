@@ -226,19 +226,39 @@ class MODBUSClient(object):
 
         return ""
 
-    def __client_mapping_checks(
-            self,
-            mapping: Dict
-    ) -> None:
+    @staticmethod
+    def __client_mapping_checks(mapping: Dict) -> None:
         """
         perform checks on the client mapping: parameter must not be duplicate,
         available features must be taken from README.md
         :param mapping: Dict
         :return:
         """
+
+        def register_integrity(address: str) -> bool:
+            """
+            check integrity of dictionary keys in mapping file
+            key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y,
+            where x=0000-9999 and y=1|2
+            :param address: str
+            :return: bool = True (NoError)
+            """
+            if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$",
+                            address):
+                return False
+            comp = address.split("/")
+            if len(comp) == 2:
+                if (comp[1] not in ["1", "2"]
+                        and (comp[0][0] != comp[1][0]  # same register class
+                             or int(comp[1]) - int(
+                                    comp[0]) < 1)):  # ascendant register
+                    return False
+            return True
+        # end nested function
+
         rev_dict = dict()
         for key, value in mapping.items():
-            if not self.__register_integrity(address=key):
+            if not register_integrity(address=key):
                 detail = "Wrong key in mapping: {0}.".format(key)
                 _throw_error(detail, 422)
             rev_dict.setdefault(value["parameter"], set()).add(key)
@@ -251,27 +271,6 @@ class MODBUSClient(object):
         if parameter:
             detail = "Duplicate parameter: {0}.".format(parameter)
             _throw_error(detail, 422)
-
-    @staticmethod
-    def __register_integrity(address: str) -> bool:
-        """
-        check integrity of dictionary keys in mapping file
-        key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y,
-        where x=0000-9999 and y=1|2
-        :param address: str
-        :return: bool = True (NoError)
-        """
-        if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", address):
-            return False
-        comp = address.split("/")
-        if len(comp) == 2:
-            if (comp[1] not in ["1", "2"]
-                and (comp[0][0] != comp[1][0]  # same register class
-                     or int(comp[1]) - int(comp[0]) < 1)):  # ascendant register
-
-                return False
-
-        return True
 
     @mytimer
     def read_register(self) -> Dict[str, Any]:

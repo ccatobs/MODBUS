@@ -13,6 +13,7 @@
 in [README.md](https://github.com/ccatp/MODBUS/blob/913e3f9ae53a86cc9def6d47ff442d4c4a991fa7/README.md)
 ### Changed
 - features in dict are sorted for output
+- code cleansing
 ### Fixed
 - for coil and discrete input registers only features not listed 
 in FEATURE_EXCLUDE_SET are passed on to output

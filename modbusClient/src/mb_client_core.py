@@ -114,21 +114,6 @@ class _ObjectType(object):
 
         return result
 
-    @staticmethod
-    def __binary_map(binarystring: str) -> int:
-        """
-        position of True in binary string. Report if malformated in mapping.
-        source for regular expression:
-        https://stackoverflow.com/questions/469913/regular-expressions-is-there-an-and-operator
-        :param binarystring: str
-        :return: int
-        """
-        if re.match(r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)", binarystring):
-            return binarystring.split("0b")[1][::-1].index('1')
-        else:
-            detail = "Error in binary string in mapping."
-            _throw_error(detail, 422)
-
     def __decode_byte(
             self,
             register: str,
@@ -143,6 +128,22 @@ class _ObjectType(object):
         :param function: string - decoder method
         :return: List of Dict for each parameter_alt
         """
+
+        def binary_map(binarystring: str) -> int:
+            """
+            position of True in binary string. Report if malformated in mapping.
+            source for regular expression:
+            https://stackoverflow.com/questions/469913/regular-expressions-is-there-an-and-operator
+            :param binarystring: str
+            :return: int
+            """
+            if re.match(r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)", binarystring):
+                return binarystring.split("0b")[1][::-1].index('1')
+            else:
+                detail = "Error in binary string in mapping."
+                _throw_error(detail, 422)
+        # end nested function
+
         decoded = list()
         optional = dict()
         one_map_entry = False
@@ -160,7 +161,7 @@ class _ObjectType(object):
             decoded.append(
                 {
                     "parameter": self.__register_maps[register]['parameter'],
-                    "value": value[self.__binary_map(binarystring=k)],
+                    "value": value[binary_map(binarystring=k)],
                     "datatype": MODBUS2AVRO(function).datatype
                 } |
                 defined_kwargs(
@@ -327,8 +328,8 @@ class _ObjectType(object):
         """
 
         def test_min_max():
-            minimum = attributes.get('min', None)
-            maximum = attributes.get('max', None)
+            minimum = attributes.get('min')
+            maximum = attributes.get('max')
             if minimum:
                 if value < minimum:
                     _throw_error(
@@ -343,6 +344,7 @@ class _ObjectType(object):
                          "{0} > {1} (max)".format(value, maximum, parameter)),
                         422
                     )
+        # end nested function
 
         builder = BinaryPayloadBuilder(
             byteorder=self.__endianness['byteorder'],
@@ -423,8 +425,8 @@ class _ObjectType(object):
         f = None
         decoded = list()
 
-        for key in self.__register_maps.keys():
-            reg_info = self.__register_width(key)
+        for register in self.__register_maps.keys():
+            reg_info = self.__register_width(register)
             # read appropriate register(s)
             match self._entity:
                 case '0':
@@ -453,7 +455,7 @@ class _ObjectType(object):
             if self._entity in ['0', '1']:
                 decoded = decoded + self.__formatter_bit(
                     decoder=result.bits,
-                    register=key
+                    register=register
                 )
             elif self._entity in ['3', '4']:
                 decoder = BinaryPayloadDecoder.fromRegisters(
@@ -466,11 +468,11 @@ class _ObjectType(object):
                     decoder.skip_bytes(nbytes=1)
                 decoded = decoded + self.__formatter(
                     decoder=decoder,
-                    register=key,
+                    register=register,
                     no_bytes=reg_info['no_bytes']
                 )
 
-        return [
+        return [  # sort by feature
             {k: v for k, v in sorted(item.items())} for item in decoded
         ]
 
