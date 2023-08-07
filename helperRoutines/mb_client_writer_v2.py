@@ -72,7 +72,7 @@ python3 mb_client_writer_v2.py
                                             e.detail))
         sys.exit(1)
     print(json.dumps(to_monitoring, indent=2))
-    print("Time consumed to process the modbus writer: {0:.1f} ms".format(
+    print("Time consumed to process the MODBUS writer: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )
 

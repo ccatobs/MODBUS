@@ -7,6 +7,14 @@
 ### Deprecated
 ### Removed
 ### Security
+## 4.2.0 (2023-08-07)
+### Added
+- additional integrity checks on features
+### Changed
+### Fixed
+### Deprecated
+### Removed
+### Security
 ## 4.1.0 (2023-08-03)
 ### Added
 - throw exception if feature name is not provided 

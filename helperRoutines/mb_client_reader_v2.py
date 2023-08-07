@@ -58,7 +58,7 @@ def main():
         sys.exit(1)
     print(json.dumps(to_housekeeping,
                      indent=2))
-    print("Time consumed to process modbus interface: {0:.1f} ms".format(
+    print("Time consumed to process MODBUS interface: {0:.1f} ms".format(
         (timer() - _start_time) * 1000)
     )
 

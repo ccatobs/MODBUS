@@ -27,7 +27,7 @@ import datetime
 # internal
 from .mb_client_core import _ObjectType, FEATURE_ALLOWED_SET
 from .mb_client_aux import (mytimer, _client_config, _throw_error, MyException,
-                            defined_kwargs)
+                            defined_kwargs, MODBUS2AVRO)
 
 """
 change history
@@ -132,7 +132,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "4.1.0"
+__version__ = "4.2.0"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -179,9 +179,8 @@ class MODBUSClient(object):
             **defined_kwargs(port=port),
         )
         if not client.connect():
-            detail = ("Could not connect to MODBUS server: IP={}"
-                      .format(self._ip))
-            _throw_error(detail, 503)
+            _throw_error("Could not connect to MODBUS server: IP={}"
+                         .format(self._ip), 503)
 
         # used for wrapper & output dict
         self.__device = client.comm_params.host
@@ -235,42 +234,80 @@ class MODBUSClient(object):
         :return:
         """
 
-        def register_integrity(address: str) -> bool:
+        def check_register_integrity() -> None:
             """
-            check integrity of dictionary keys in mapping file
-            key formate: '0xxxx', '3xxxx/3xxxx', or '4xxxx/y,
+            check registry integrity of dictionary keys in mapping file
+            key formate, e.g. '0xxxx', '3xxxx/3xxxx', or '4xxxx/y,
             where x=0000-9999 and y=1|2
-            :param address: str
-            :return: bool = True (NoError)
             """
+            msg = "Wrong register in mapping: {0}".format(register)
             if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$",
-                            address):
-                return False
-            comp = address.split("/")
+                            register):
+                _throw_error(msg, 422)
+            comp = register.split("/")
             if len(comp) == 2:
                 if (comp[1] not in ["1", "2"]
-                        and (comp[0][0] != comp[1][0]  # same register class
-                             or int(comp[1]) - int(
-                                    comp[0]) < 1)):  # ascendant register
-                    return False
-            return True
-        # end nested function
+                    and (comp[0][0] != comp[1][0]  # same register class
+                         or int(comp[1]) - int(comp[0]) < 1)):  # ascending
+                    _throw_error(msg, 422)
+
+        def check_feature_integrity() -> None:
+            if feature not in FEATURE_ALLOWED_SET:
+                _throw_error(("Feature '{1}' in register {0} is not supported"
+                              .format(register, feature)), 422)
+            if re.match("(min|max)", feature):  # check for features min or max
+                if not re.match("(int|long|float|double)", datatype):
+                    _throw_error(("Feature min or max not permitted for "
+                                  "register '{0}'".format(register)), 422)
+                if type(v) not in (int, float):
+                    _throw_error(("Feature '{1}' in register '{0}' is not "
+                                  "numerical".format(register, feature)), 422)
+
+        def function_available() -> str:
+            function = "decode_bits"
+            if register[0] in ['3', '4']:  # discrete input or holding
+                try:
+                    function = value['function']
+                    return MODBUS2AVRO(function).datatype
+                except ValueError:
+                    _throw_error(("Decoding function '{0}' not defined for "
+                                  "register '{1}'").format(function,
+                                                           register), 422)
+                except KeyError:
+                    _throw_error(("Decoding function not provided for "
+                                  "register '{0}'").format(register), 422)
+            return MODBUS2AVRO(function).datatype  # coil & input register
+
+        def parameter_available() -> str:
+            try:
+                return value["parameter"]
+            except KeyError:
+                _throw_error(("Feature parameter missing for register {0}"
+                              .format(register)), 422)
+
+        def seek_parameter_duplicate() -> None:
+            parameter_duplicate = [
+                reg for reg, parm in rev_dict.items() if len(parm) > 1
+            ]
+            if parameter_duplicate:
+                _throw_error(("Duplicate parameter '{0}'"
+                              .format(", ".join(parameter_duplicate))), 422)
+        # end nested functions
 
         rev_dict = dict()
-        for key, value in mapping.items():
-            if not register_integrity(address=key):
-                detail = "Wrong key in mapping: {0}.".format(key)
-                _throw_error(detail, 422)
-            rev_dict.setdefault(value["parameter"], set()).add(key)
-            for feature in value:
-                if feature not in FEATURE_ALLOWED_SET:
-                    detail = ("Feature '{1}' in key {0} is not supported"
-                              .format(key, feature))
-                    _throw_error(detail, 422)
-        parameter = [key for key, values in rev_dict.items() if len(values) > 1]
-        if parameter:
-            detail = "Duplicate parameter: {0}.".format(parameter)
-            _throw_error(detail, 422)
+        for register, value in mapping.items():
+
+            check_register_integrity()
+
+            parameter = parameter_available()
+            rev_dict.setdefault(parameter, set()).add(register)
+
+            datatype = function_available()
+
+            for feature, v in value.items():  # investigate features
+                check_feature_integrity()
+
+        seek_parameter_duplicate()
 
     @mytimer
     def read_register(self) -> Dict[str, Any]:

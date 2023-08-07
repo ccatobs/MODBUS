@@ -91,18 +91,11 @@ class _ObjectType(object):
                 width = int(comp[1]) - int(comp[0]) + 1
                 no_bytes = width * 2
 
-        parameter = self.__register_maps[address]['parameter']
         function = self.__register_maps[address].get('function')
         if function:
-            try:
-                if MODBUS2AVRO(function).supersede:
-                    width = MODBUS2AVRO.width(function)
-                    no_bytes = MODBUS2AVRO.no_bytes(function)
-            except ValueError:
-                detail = ("Decoding function '{0}' not defined for parameter"
-                          " '{1}'").format(function,
-                                           parameter)
-                _throw_error(detail, 422)
+            if MODBUS2AVRO(function).supersede:
+                width = MODBUS2AVRO.width(function)
+                no_bytes = MODBUS2AVRO.no_bytes(function)
         result = {
             "start": start,
             "width": width,
@@ -140,11 +133,9 @@ class _ObjectType(object):
             if re.match(r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)", binarystring):
                 return binarystring.split("0b")[1][::-1].index('1')
             else:
-                detail = "Error in binary string in mapping."
-                _throw_error(detail, 422)
+                _throw_error("Binary string error in mapping", 422)
         # end nested function
 
-        decoded = list()
         optional = dict()
         one_map_entry = False
         desc = self.__register_maps[register].get('description')
@@ -158,23 +149,22 @@ class _ObjectType(object):
                 for k in self.__register_maps[register]
                 if k not in FEATURE_EXCLUDE_SET
             }
-        for k, v in self.__register_maps[register]['map'].items():
-            decoded.append(
-                {
-                    "parameter": self.__register_maps[register]['parameter'],
-                    "value": value[binary_map(binarystring=k)],
-                    "datatype": MODBUS2AVRO(function).datatype
-                } |
-                defined_kwargs(
-                    parameter_alt=v if not one_map_entry else None,
-                    value_alt=v if one_map_entry else None,
-                    description=desc if not one_map_entry else None,
-                    alias=alias if not one_map_entry else None,
-                ) |
-                optional
-            )
 
-        return decoded
+        return [
+            {
+                "parameter": self.__register_maps[register]['parameter'],
+                "value": value[binary_map(binarystring=k)],
+                "datatype": MODBUS2AVRO(function).datatype
+            } |
+            defined_kwargs(
+                parameter_alt=v if not one_map_entry else None,
+                value_alt=v if one_map_entry else None,
+                description=desc if not one_map_entry else None,
+                alias=alias if not one_map_entry else None,
+            ) |
+            optional
+            for k, v in self.__register_maps[register]['map'].items()
+        ]
 
     def __decode_prop(
             self,
@@ -215,11 +205,10 @@ class _ObjectType(object):
             di["value_alt"] = maps.get(str(round(value)),
                                        "corresponding value not found in map")
         # pass on min & max to output for int & float
-        if re.match(".+_(int|uint|float)$", function):
-            if self.__register_maps[register].get('min'):
-                di['min'] = self.__register_maps[register].get('min')
-            if self.__register_maps[register].get('max'):
-                di['max'] = self.__register_maps[register].get('max')
+        if self.__register_maps[register].get('min'):
+            di['min'] = self.__register_maps[register].get('min')
+        if self.__register_maps[register].get('max'):
+            di['max'] = self.__register_maps[register].get('max')
 
         return [di | optional]
 
@@ -238,15 +227,9 @@ class _ObjectType(object):
         :param no_bytes: int - no of bytes to decode for strings
         :return: List of Dict
         """
-        value = None
-        parameter = self.__register_maps[register]['parameter']
         function = self.__register_maps[register].get('function')
 
         match function:
-            case None:
-                detail = ("Decoding function missing for "
-                          "parameter '{0}'").format(parameter)
-                _throw_error(detail, 422)
             case 'decode_bits':
                 return self.__decode_byte(register=register,
                                           value=getattr(decoder, function)(),
@@ -254,6 +237,7 @@ class _ObjectType(object):
             case "decode_string":
                 # Pending: characters to be removed?
                 # value = re.sub(r'[^\x01-\x7F]+', r'', encod.decode())
+                value = ""
                 try:
                     value = "".join(
                         list(s for s in
@@ -347,6 +331,7 @@ class _ObjectType(object):
                          "{0} > {1} (max)".format(value, maximum, parameter)),
                         422
                     )
+
         # end nested function
 
         builder = BinaryPayloadBuilder(
