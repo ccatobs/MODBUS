@@ -47,6 +47,11 @@ if registers are in zeroMode = True at the server's configuration.
 A start/end register is to be provided for strings only, whereas the 
 specification of an end register is not required for other data types.
 
+[Note](https://en.wikipedia.org/wiki/Modbus): the number of registers per class 
+de facto extends to 0xFFFF, such that 65536 registers could be utilized.
+
+
+
 A function needs to be defined for input and holding registers that translates
 the 8, 16, 32, or 64 bits into appropriate values. This function is in the form,
 e.g. "decode_32bit_uint" (see below for a selection):

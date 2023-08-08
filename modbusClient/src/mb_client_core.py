@@ -121,21 +121,6 @@ class _ObjectType(object):
         :param function: string - decoder method
         :return: List of Dict for each parameter_alt
         """
-
-        def binary_map(binarystring: str) -> int:
-            """
-            position of True in binary string. Report if malformated in mapping.
-            source for regular expression:
-            https://stackoverflow.com/questions/469913/regular-expressions-is-there-an-and-operator
-            :param binarystring: str
-            :return: int
-            """
-            if re.match(r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)", binarystring):
-                return binarystring.split("0b")[1][::-1].index('1')
-            else:
-                _throw_error("Binary string error in mapping", 422)
-        # end nested function
-
         optional = dict()
         one_map_entry = False
         desc = self.__register_maps[register].get('description')
@@ -153,7 +138,7 @@ class _ObjectType(object):
         return [
             {
                 "parameter": self.__register_maps[register]['parameter'],
-                "value": value[binary_map(binarystring=k)],
+                "value": value[k.split("0b")[1][::-1].index('1')],
                 "datatype": MODBUS2AVRO(function).datatype
             } |
             defined_kwargs(

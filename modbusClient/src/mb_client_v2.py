@@ -255,13 +255,21 @@ class MODBUSClient(object):
             if feature not in FEATURE_ALLOWED_SET:
                 _throw_error(("Feature '{1}' in register {0} is not supported"
                               .format(register, feature)), 422)
-            if re.match("(min|max)", feature):  # check for features min or max
+            if re.match("(min|max)", feature):  # check features min or max
                 if not re.match("(int|long|float|double)", datatype):
                     _throw_error(("Feature min or max not permitted for "
                                   "register '{0}'".format(register)), 422)
                 if type(v) not in (int, float):
                     _throw_error(("Feature '{1}' in register '{0}' is not "
                                   "numerical".format(register, feature)), 422)
+            if re.match("map", feature):  # check feature map
+                if re.match("boolean", datatype):
+                    for binarystring in v.keys():
+                        if not re.match(r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)",
+                                        binarystring):
+                            _throw_error("Binary string error in map for "
+                                         "register '{0}'".format(register),
+                                         422)
 
         def function_available() -> str:
             function = "decode_bits"
@@ -296,14 +304,10 @@ class MODBUSClient(object):
 
         rev_dict = dict()
         for register, value in mapping.items():
-
             check_register_integrity()
-
             parameter = parameter_available()
             rev_dict.setdefault(parameter, set()).add(register)
-
             datatype = function_available()
-
             for feature, v in value.items():  # investigate features
                 check_feature_integrity()
 
