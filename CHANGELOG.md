@@ -7,6 +7,11 @@
 ### Deprecated
 ### Removed
 ### Security
+## 5.0.0 (2023-08-10)
+### Added
+- Asynchronous MODBUS client
+### Changed
+### Fixed
 ## 4.2.0 (2023-08-07)
 ### Added
 - additional integrity checks on features
