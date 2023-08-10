@@ -150,7 +150,7 @@ def mytimer(supersede: Callable | str = None) -> Callable:
                     func.__name__ if 'supersede' not in locals()
                                      or callable(supersede)
                                      or supersede is None else supersede,
-                    args[0].__dict__.get('_MODBUSClient__device', 'n.a.'),
+                    args[0].__dict__.get('_ip', 'n.a.'),
                     (default_timer() - start_time) * 1_000
                 )
             )

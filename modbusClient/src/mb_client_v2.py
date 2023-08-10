@@ -182,8 +182,6 @@ class MODBUSClient(object):
             _throw_error("Could not connect to MODBUS server: IP={}"
                          .format(self._ip), 503)
 
-        # used for wrapper & output dict
-        self.__device = client.comm_params.host
         self.__init = {
             "client": client,
             "mapping": client_config['mapping'],
@@ -323,7 +321,7 @@ class MODBUSClient(object):
             "timestamp": datetime.datetime.now(
                 tz=datetime.timezone.utc
             ).isoformat(),
-            "host": self.__device,
+            "host": self._ip,
             "data": [
                 item for entity in self.__entity_list for item in
                 entity.register_readout()
