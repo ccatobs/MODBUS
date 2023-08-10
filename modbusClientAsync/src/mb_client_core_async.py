@@ -350,13 +350,24 @@ class _ObjectTypeAsync(object):
                             / attributes.get('multiplier', 1)
                         )
 
-                    # test max length of string
-                    elif ("_string" in function
-                          and len(value) > (2 * reg_info['width'])):
-                        detail = ("'{0}' too long for parameter '{1}'"
-                                  .format(value,
-                                          parameter))
-                        _throw_error(detail, 422)
+                    elif "_string" in function:
+                        # test max length of string
+                        if len(value) > (2 * reg_info['width']):
+                            detail = ("'{0}' too long for parameter '{1}'"
+                                      .format(value,
+                                              parameter))
+                            _throw_error(detail, 422)
+                        # printability
+                        try:
+                            if not value.isprintable():
+                                raise ValueError
+                        except (AttributeError, ValueError) as e:
+                            detail = ("'{0}' seems not printable for "
+                                      "parameter '{1}' with error: {2}"
+                                      .format(value,
+                                              parameter,
+                                              str(e)))
+                            _throw_error(detail, 422)
 
                     # test max length of bit list
                     elif ("_bits" in function

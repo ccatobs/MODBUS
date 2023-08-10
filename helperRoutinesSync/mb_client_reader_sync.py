@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-MODBUS READER
+Synchronous MODBUS Reader
 version {0}
 
 For a detailed description, see https://github.com/ccatp/MODBUS
@@ -16,8 +16,8 @@ import sys
 from timeit import default_timer as timer
 import argparse
 # internal
-from modbusClient import MODBUSClient, MyException
-from modbusClient import __version__
+from modbusClientSync import MODBUSClientSync, MyException
+from modbusClientSync import __version__
 
 print(__doc__.format(__version__))
 
@@ -45,7 +45,7 @@ def main():
 
     _start_time = timer()
     try:
-        mb_client = MODBUSClient(
+        mb_client = MODBUSClientSync(
             host=argparser.parse_args().host,
             port=argparser.parse_args().port,
             debug=argparser.parse_args().debug

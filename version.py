@@ -1,1 +1,1 @@
-__version__ = '532b6d9'
+__version__ = '945e5fe'

@@ -2,8 +2,8 @@ FROM python:3.10
 
 WORKDIR MODBUS
 
-COPY modbusClient/ modbusClient/
-COPY RestAPI/mb_client_RestAPI.py RestAPI/
+COPY modbusClientSync/ modbusClientSync/
+COPY RestAPISync/mb_client_RestAPISync.py RestAPISync/
 COPY requirements.txt .
 # needs to be adapted according to the device class
 COPY DeviceClassConfigs/mb_client_config_test.json modbusClient/configFiles/
@@ -14,4 +14,4 @@ RUN pip install --upgrade pip && \
 
 ENV PYTHONPATH .
 
-ENTRYPOINT python -u RestAPI/mb_client_RestAPI.py --host ${HOST} --port ${PORT}
+ENTRYPOINT python -u RestAPISync/mb_client_RestAPISync.py --host ${HOST} --port ${PORT}

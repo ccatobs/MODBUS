@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-MODBUS WRITER
+Asynchronous MODBUS Writer
 version {0}
 
 For a detailed description, see https://github.com/ccatp/MODBUS

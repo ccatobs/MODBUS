@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-MODBUS Client
+Asychronous MODBUS Client
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 Running and testing:
@@ -395,9 +395,3 @@ class MODBUSClientAsync(object):
             "status": "write success",
             "updated register content": self.__updated_registers()
         }
-
-    # def close(self) -> None:
-    #     client = self.__init["client"]
-    #     if client.connected:
-    #         logging.debug("Closing {}".format(client))
-    #         client.close()

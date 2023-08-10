@@ -1,11 +1,11 @@
 version: '3.8'
 services:
-  mb_rest_api:
+  mb_rest_api_async:
     build:
       context: ../..
       dockerfile: ./docker/RestAPIAsync/Dockerfile
     image: 'mb_restapi_async:0.1'
-    container_name: "mb_restapi"
+    container_name: "mb_restapi_async"
     env_file:
       - .env
     restart: unless-stopped # always

@@ -6,10 +6,10 @@ RUN apt-get update  \
 
 WORKDIR MODBUS
 
-COPY modbusClient/ modbusClient/
+COPY modbusClientSync/ modbusClientSync/
 COPY modbusServerSimulator/ modbusServerSimulator/
 COPY docker/ServerSimulator/python_wrapper.sh .
-COPY RestAPI/mb_client_RestAPI.py RestAPI/
+COPY RestAPISync/mb_client_RestAPISync.py RestAPISync/
 COPY requirements.txt .
 # needs to be adapted according to the device class
 COPY DeviceClassConfigs/mb_client_config_test.json modbusClient/configFiles/

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-MODBUS Client
+Synchronous MODBUS Client
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 Running and testing:
@@ -25,9 +25,9 @@ import logging
 from typing import Dict, Any
 import datetime
 # internal
-from .mb_client_core import _ObjectType, FEATURE_ALLOWED_SET
-from .mb_client_aux import (mytimer, _client_config, _throw_error, MyException,
-                            defined_kwargs, MODBUS2AVRO)
+from .mb_client_core_sync import _ObjectTypeSync, FEATURE_ALLOWED_SET
+from .mb_client_aux_sync import (mytimer, _client_config, _throw_error,
+                                 MyException, defined_kwargs, MODBUS2AVRO)
 
 """
 change history
@@ -144,7 +144,7 @@ logging.basicConfig(format=myformat,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 
-class MODBUSClient(object):
+class MODBUSClientSync(object):
 
     def __init__(
             self,
@@ -195,7 +195,7 @@ class MODBUSClient(object):
         self.__entity_list = list()
         for regs in ['0', '1', '3', '4']:
             self.__entity_list.append(
-                _ObjectType(
+                _ObjectTypeSync(
                     init=self.__init,
                     entity=regs
                 )

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-MODBUS READER
+Asynchronous MODBUS Reader
 version {0}
 
 For a detailed description, see https://github.com/ccatp/MODBUS

@@ -246,14 +246,14 @@ Not implemented to date:
 The result provided 
 for the housekeeping (Kafka producer) is a list of dictionary objects.
 
-The present MODBUS client version deployes the syncronous ModbusTcpClient at its
-version v3.4.1 (as of 2023/07/28).
+The present MODBUS client versions deploye the asynchronous and 
+synchronous ModbusTcpClient in its version v3.4.1 (as of 2023/07/28).
 
 Run (for testing):
     
-    python3 mb_client_reader_v2.py --ip <device ip address> \
-                                   [--port <device port> (default: 502)] \
-                                   [--debug]
+    python3 mb_client_reader_xxx.py --ip <device ip address> \
+                                    [--port <device port> (default: 502)] \
+                                    [--debug]
 
 
 ## WRITER
@@ -264,10 +264,10 @@ changed by utilizing the writer method of MODBUSClient class.
 
 Run (for testing):
     
-    python3 mb_client_writer_v2.py --ip <device ip address> \
-                                   [--port <device port> (default: 502)] \
-                                   [--debug] \
-                                   --payload "{\"test 32 bit int\": 720.04, ...}"
+    python3 mb_client_writer_xxx.py --ip <device ip address> \
+                                    [--port <device port> (default: 502)] \
+                                    [--debug] \
+                                    --payload "{\"test 32 bit int\": 720.04, ...}"
 
 It accepts - as input - a JSON with one or multiple
 {"parameter": "value"} pairs, where parameter needs to match (required!)
@@ -322,8 +322,8 @@ directory. It will be copied appropriately with the Docker container setup.
 
 Run the RestAPI for testing:
 
-    python3 mb_client_RestAPI.py --host <host> (default: 127.0.0.1) \
-                                 --port <port> (default: 5100)
+    python3 mb_client_RestAPI_xxx.py --host <host> (default: 127.0.0.1) \
+                                     --port <port> (default: 5100)
 
 Get the read and write endpoints, by typing in the browser URL:
 
@@ -371,26 +371,27 @@ is roughly 100 ms.
 
 The current repository comprises:
 
-* [class MODBUSClient](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/modbusClient)
-    * read_register(...)
-    * write_register(...)
-    * close()
-* MODBUS 
-[Reader](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/helperRoutines/mb_client_reader_v2.py) 
-* MODBUS [Writer](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/helperRoutines/mb_client_writer_v2.py)
-* MODBUS [Server Simulator](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/modbusServerSimulator/src/modbus_server.py) 
-(cloned from 
-https://hub.docker.com/r/oitc/modbus-server) with its 
-[config file](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/modbusServerSimulator/src/modbus_server.json).
-* MODBUS 
-[REST API](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/RestAPI/mb_client_RestAPI.py)
+* class MODBUSClientSync (synchronous version)
+    * read_register
+    * write_register
+    * close
+* class MODBUSClientAsync (Asynchronous version)
+    * read_register
+    * write_register
+* MODBUS Helper Routines
+  * Synchronous Reader/Writer
+  * Asynchronous Reader/Writer
+  * Server Simulator (cloned from https://hub.docker.com/r/oitc/modbus-server)
+* MODBUS RestAPI
+  * Synchronous
+  * Asynchronous
 * Docker 
-[RestAPI](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/docker/RestAPI) &
-[ServerSimulator](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/docker/ServerSimulator) 
-(runs with additional Server Simulator)
+  * Synchronous RestAPI
+  * Asynchronous RestAPI
+  * Synchronous RestAPI + ServerSimulator 
+  (runs with additional Server Simulator)
 
-For Reader and Writer the MODBUS 
-server connection and register mapping details are defined in
+MODBUS Server connection and register mapping details are defined in
 mb_client_config_&lt;device&gt;.json.
 
 For the Conda environment used, 

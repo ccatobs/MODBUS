@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-mb_client_RestAPI.py
+SYNCHRONOUS MODBUS REST API
 version {0}
 
 Web API to serve the read and write methods of the MODBUSClient class.
@@ -20,7 +20,7 @@ from typing import Dict
 from distutils.util import strtobool
 from enum import Enum
 # internal
-from modbusClient import MODBUSClient, LockGroup, MyException, __version__
+from modbusClientSync import MODBUSClientSync, LockGroup, MyException, __version__
 
 """
 version history:
@@ -57,7 +57,7 @@ app = FastAPI(
 )
 
 
-def mb_clients(host: str) -> MODBUSClient:
+def mb_clients(host: str) -> MODBUSClientSync:
     """
     Helper to store MODBUSClient instances over the entire time the RestAPI is
     running once it was called the first time
@@ -65,7 +65,7 @@ def mb_clients(host: str) -> MODBUSClient:
     :return: MODBUSClient instance each device
     """
     if host not in clients:
-        clients[host] = MODBUSClient(
+        clients[host] = MODBUSClientSync(
             host=host,
             port=port,  # from environment variable
             debug=debug  # from environment variable
