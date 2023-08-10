@@ -3,7 +3,7 @@ services:
   mb_rest_api:
     build:
       context: ../..
-      dockerfile: ./docker/ServerSimulator/Dockerfile
+      dockerfile: /Dockerfile
     image: 'mb_simulator:0.1'
     container_name: "mb_simulator"
     env_file:

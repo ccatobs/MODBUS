@@ -7,7 +7,9 @@
     "00000": {
       "parameter": "Write Coil 0",
       "description": true,
-      "isTag": true
+      "isTag": true,
+      "alias": "Write Coil 0 ALias",
+      "map": {}
     },
     "00001": {
       "parameter": "Write Coil 1",
@@ -101,7 +103,8 @@
     "30024": {
       "function": "decode_string",
       "parameter": "decode_string_full",
-      "description": "gx"
+      "description": "gx",
+      "unit": "string has not unit"
     },
     "30032/2": {
       "function": "decode_8bit_uint",
@@ -167,8 +170,8 @@
       "multiplier": 0.1,
       "parameter": "decode_16bit_int_4",
       "description": -408.1,
-      "min": 10,
-      "max": 1000
+      "min": 1,
+      "max": 1.0e3
     },
     "40001": {
       "function": "decode_16bit_uint",
@@ -225,9 +228,7 @@
     "40023/40024": {
       "function": "decode_string",
       "parameter": "decode_string_1_4",
-      "description": "CHgx",
-      "min": "false",
-      "max": "true"
+      "description": "CHgx"
     },
     "40025/1": {
       "function": "decode_string",
@@ -288,6 +289,8 @@
       "defaultValue": true,
       "unit": "none",
       "description": "contains a true",
+      "isTag": true,
+      "alias": "Dummy_4_alias",
       "map": {
         "0b00000100": "special test"
       }
@@ -296,9 +299,10 @@
       "function": "decode_bits",
       "parameter": "TEST_4",
       "description": "this is not parsed!",
-      "alias": "jy",
+      "alias": "TEST_4_alias",
       "unit": "none",
       "defaultValue": true,
+      "isTag": true,
       "map": {
         "0b00000001": "test0",
         "0b00000010": "test1",
@@ -308,9 +312,32 @@
         "0b00100000": "test5",
         "0b01000000": "test6",
         "0b10000000": "test7"
-      },
-      "min": false,
-      "max": true
+      }
+    },
+    "40035/1": {
+      "function": "decode_bits",
+      "parameter": "test_major",
+      "defaultValue": true,
+      "unit": "none",
+      "description": "contains a true",
+      "isTag": true,
+      "alias": "Dummy_4_alias",
+      "map": {
+        "0b00000001": "last bit of mayor"
+      }
+    },
+    "40035/2": {
+      "function": "decode_bits",
+      "parameter": "test_minor",
+      "defaultValue": true,
+      "unit": "none",
+      "description": "contains a true",
+      "isTag": true,
+      "alias": "Dummy_4_alias",
+      "map": {
+        "0b00000010": "2nd last bit of mayor"
+      }
     }
+
   }
 }

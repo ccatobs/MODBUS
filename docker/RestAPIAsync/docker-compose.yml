@@ -3,8 +3,8 @@ services:
   mb_rest_api:
     build:
       context: ../..
-      dockerfile: ./docker/RestAPI/Dockerfile
-    image: 'mb_restapi:0.1'
+      dockerfile: ./docker/RestAPIAsync/Dockerfile
+    image: 'mb_restapi_async:0.1'
     container_name: "mb_restapi"
     env_file:
       - .env
