@@ -6,14 +6,14 @@ Asychronous MODBUS Client
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 Running and testing:
-python3 mb_client_reader_v2.py --ip <device ip address> \
-                               [--port <device port (default: 502)] \
-                               [--debug]
+python3 mb_client_reader_async.py --ip <device ip address> \
+                                  [--port <device port (default: 502)] \
+                                  [--debug]
 
-python3 mb_client_writer_v2.py --ip <device ip address> \
-                               [--port <device port (default: 502)] \
-                               [--debug] \
-                               --payload "{\"test 32 bit int\": 720.04, ...}"
+python3 mb_client_writer_async.py --ip <device ip address> \
+                                  [--port <device port (default: 502)] \
+                                  [--debug] \
+                                  --payload "{\"test 32 bit int\": 720.04, ...}"
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
 Argelander Institute for Astronomy (AIfA), University Bonn.
@@ -308,7 +308,6 @@ class MODBUSClientAsync(object):
             datatype = function_available()
             for feature, v in value.items():  # investigate features
                 check_feature_integrity()
-
         seek_parameter_duplicate()
 
     async def read_register(self) -> Dict[str, Any]:
@@ -318,14 +317,15 @@ class MODBUSClientAsync(object):
         """
         start_time = default_timer()
         await self.__client.connect()
-        if not self.__init['client'].connected:
+        if not self.__client.connected:
             _throw_error("Could not connect to MODBUS server: IP={}"
                          .format(self._ip), 503)
+        logging.debug("MODBUS Communication Parameters {}"
+                      .format(self.__client.comm_params))
 
         decoded = list()
         coros = [entity.register_readout() for entity in self.__entity_list]
-        values = await asyncio.gather(*coros)
-        for item in values:
+        for item in await asyncio.gather(*coros):
             decoded = decoded + item
 
         if self.__client.connected:
@@ -344,7 +344,7 @@ class MODBUSClientAsync(object):
                 tz=datetime.timezone.utc
             ).isoformat(),
             "host": self._ip,
-            "data": [dict(sorted(item.items())) for item in decoded]
+            "data": decoded
         }
 
     def __updated_registers(self) -> Dict[str, Any]:
@@ -369,9 +369,11 @@ class MODBUSClientAsync(object):
         """
         start_time = default_timer()
         await self.__client.connect()
-        if not self.__init['client'].connected:
+        if not self.__client.connected:
             _throw_error("Could not connect to MODBUS server: IP={}"
                          .format(self._ip), 503)
+        logging.debug("MODBUS Communication Parameters {}"
+                      .format(self.__client.comm_params))
 
         detail = self.__existance_mapping_checks(wr=wr)
         if detail:

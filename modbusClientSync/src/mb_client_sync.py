@@ -6,14 +6,14 @@ Synchronous MODBUS Client
 
 For a detailed description, see https://github.com/ccatp/MODBUS
 Running and testing:
-python3 mb_client_reader_v2.py --ip <device ip address> \
-                               [--port <device port (default: 502)] \
-                               [--debug]
+python3 mb_client_reader_sync.py --ip <device ip address> \
+                                 [--port <device port (default: 502)] \
+                                 [--debug]
 
-python3 mb_client_writer_v2.py --ip <device ip address> \
-                               [--port <device port (default: 502)] \
-                               [--debug] \
-                               --payload "{\"test 32 bit int\": 720.04, ...}"
+python3 mb_client_writer_sync.py --ip <device ip address> \
+                                 [--port <device port (default: 502)] \
+                                 [--debug] \
+                                 --payload "{\"test 32 bit int\": 720.04, ...}"
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
 Argelander Institute for Astronomy (AIfA), University Bonn.
@@ -178,9 +178,12 @@ class MODBUSClientSync(object):
             debug=debug,
             **defined_kwargs(port=port),
         )
-        if not client.connect():
+        client.connect()
+        if not client.connected:
             _throw_error("Could not connect to MODBUS server: IP={}"
                          .format(self._ip), 503)
+        logging.debug("MODBUS Communication Parameters {}"
+                      .format(client.comm_params))
 
         self.__init = {
             "client": client,
@@ -308,7 +311,6 @@ class MODBUSClientSync(object):
             datatype = function_available()
             for feature, v in value.items():  # investigate features
                 check_feature_integrity()
-
         seek_parameter_duplicate()
 
     @mytimer
@@ -378,6 +380,6 @@ class MODBUSClientSync(object):
 
     def close(self) -> None:
         client = self.__init["client"]
-        if client.connect():
+        if client.connected:
             logging.debug("Closing {}".format(client))
             client.close()

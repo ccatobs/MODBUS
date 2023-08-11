@@ -246,7 +246,7 @@ Not implemented to date:
 The result provided 
 for the housekeeping (Kafka producer) is a list of dictionary objects.
 
-The present MODBUS client versions deploye the asynchronous and 
+The present MODBUS client version deploys the asynchronous and 
 synchronous ModbusTcpClient in its version v3.4.1 (as of 2023/07/28).
 
 Run (for testing):
@@ -358,14 +358,6 @@ OS environment, in which *mb_client_RestAPI.py* runs, ita est:
 *ServerIPS=&lt;MODBUS Server IP[, ...]&gt;*, and
 
 *Debug=True/False*
-
-#### Processing Times
-
-As a note aside, the processing time of the MODBUS reader is quite slow, though. 
-For example, the time to read out all registers from the server simulator, 
-as defined in 
-[test config](https://github.com/ccatp/MODBUS/blob/625c77910993694c4dbdb4cad42c152e099af639/DeviceClassConfigs/mb_client_config_test.json),
-is roughly 100 ms.
 
 ## Content
 

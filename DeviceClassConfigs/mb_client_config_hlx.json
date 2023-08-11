@@ -391,8 +391,8 @@
       "multiplier": 0.1,
       "parameter": "FAN_TACHO_r",
       "description": "Fan speed feedback",
-      "min": "0.0",
-      "max": "9999.9"
+      "min": 0.0,
+      "max": 9999.9
     },
     "30006": {
       "function": "decode_16bit_int",
@@ -476,9 +476,9 @@
       "function": "decode_32bit_uint",
       "parameter": "HourCount_System_udi",
       "description": "Operating hour counter  (x 1000)",
-      "defaultvalue": "0",
-      "min": "0",
-      "max": "999999",
+      "defaultValue": "0",
+      "min": 0,
+      "max": 999999,
       "unit": "Hours"
     },
     "30024": {
@@ -513,7 +513,7 @@
     "40000/2": {
       "function": "decode_bits",
       "parameter": "POU_Unit_Mng.BmsOn",
-      "defaultvalue": "TRUE",
+      "defaultValue": "TRUE",
       "map": {
         "0b00000001": "Unit On/Off by BMS"
       }
@@ -521,7 +521,7 @@
     "40001/2": {
       "function": "decode_bits",
       "parameter": "MAX_COOLING",
-      "defaultvalue": "FALSE",
+      "defaultValue": "FALSE",
       "map": {
         "0b00000001": "max cooling"
       }
@@ -532,16 +532,14 @@
       "description": "Water Regulation Mode",
       "max": 5,
       "min": 0,
-      "defaultvalue": 3
+      "defaultValue": 3
     },
     "40008": {
       "parameter": "Water_ManValvePosition_ui",
       "function": "decode_16bit_uint",
       "description": "Manual valve position",
       "unit": "Percent",
-      "max": "water_PID_max_ui",
-      "min": "water_PID_min_ui",
-      "defaultvalue": 50
+      "defaultValue": 50
     },
     "40009": {
       "parameter": "Water_Setpoint.SP_r",
@@ -549,15 +547,13 @@
       "multiplier": 0.1,
       "description": "Setpoint Water",
       "unit": "DegreesCelsius",
-      "max": "Water_Setpoint.max_r",
-      "min": "Water_Setpoint.min_r",
-      "defaultvalue": 24.0
+      "defaultValue": 24.0
     },
     "40012": {
       "parameter": "ALARM_LIMIT_CNTRL_MARGIN_r",
       "function": "decode_16bit_int",
       "multiplier": 0.1,
-      "defaultvalue": 4.0
+      "defaultValue": 4.0
     },
     "40013": {
       "parameter": "Water_PID.Kp",
@@ -566,7 +562,7 @@
       "description": "PID Water - .Kp",
       "max": 100.0,
       "min": 0.0,
-      "defaultvalue": 8.0
+      "defaultValue": 8.0
     },
     "40014": {
       "parameter": "Water_PID.Ti",
@@ -589,7 +585,7 @@
       "description": "PID Water - .Deadband",
       "max": 5.0,
       "min": 0.0,
-      "defaultvalue": 0.2
+      "defaultValue": 0.2
     },
     "40017": {
       "parameter": "AIR_REG_MODE_ui",
@@ -597,25 +593,21 @@
       "description": "Air Regulation Mode",
       "max": 1,
       "min": 0,
-      "defaultvalue": 0
+      "defaultValue": 0
     },
     "40018": {
       "parameter": "Air_ManFanLevel_ui",
       "function": "decode_16bit_uint",
       "description": "Manual Fan Level",
       "unit": "Percent",
-      "max": "air_PID_max_ui",
-      "min": "air_PID_min_ui",
-      "defaultvalue": 50
+      "defaultValue": 50
     },
     "40019": {
       "parameter": "Air_Setpoint.SP_r",
       "function": "decode_16bit_int",
       "multiplier": 0.1,
       "description": "Setpoint Differential Air Pressure",
-      "max": "Air_Setpoint.max_r",
-      "min": "Air_Setpoint.min_r",
-      "defaultvalue": 15.0
+      "defaultValue": 15.0
     },
     "40022": {
       "parameter": "Air_PID.Kp",
@@ -624,7 +616,7 @@
       "description": "Air PID - .Kp",
       "max": 100.0,
       "min": 0.0,
-      "defaultvalue": 1.5
+      "defaultValue": 1.5
     },
     "40023": {
       "parameter": "Air_PID.Ti",
@@ -645,43 +637,43 @@
       "function": "decode_16bit_int",
       "multiplier": 0.1,
       "description": "Air PID - .Deadband",
-      "defaultvalue": 0.0
+      "defaultValue": 0.0
     },
     "40026": {
       "parameter": "ALARM_LIMIT_WARM_AIR_r",
       "function": "decode_16bit_int",
       "multiplier": 0.1,
-      "defaultvalue": 55.0
+      "defaultValue": 55.0
     },
     "40027": {
       "parameter": "ALARM_LIMIT_COLD_AIR_r",
       "function": "decode_16bit_int",
       "multiplier": 0.1,
-      "defaultvalue": 35.0
+      "defaultValue": 35.0
     },
     "40028": {
       "parameter": "ALARM_LIMIT_WATER_IN_r",
       "function": "decode_16bit_int",
       "multiplier": 0.1,
-      "defaultvalue": 18.0
+      "defaultValue": 18.0
     },
     "40029": {
       "parameter": "ALARM_LIMIT_WATER_OUT_r",
       "function": "decode_16bit_int",
       "multiplier": 0.1,
-      "defaultvalue": 30.0
+      "defaultValue": 30.0
     },
     "40030": {
       "parameter": "ALARM_LIMIT_WATER_PRES_r",
       "function": "decode_16bit_int",
       "multiplier": 0.1,
-      "defaultvalue": 6.0
+      "defaultValue": 6.0
     },
     "40031": {
       "parameter": "ALARM_LIMIT_WATER_FLOW_r",
       "function": "decode_16bit_int",
       "multiplier": 0.1,
-      "defaultvalue": 100.0
+      "defaultValue": 100.0
     }
   }
 }
