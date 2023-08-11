@@ -10,6 +10,7 @@ import json
 import re
 import logging
 from typing import Dict, List, Any
+import asyncio
 # internal
 from .mb_client_aux_async import MODBUS2AVRO, _throw_error, defined_kwargs
 
@@ -408,11 +409,12 @@ class _ObjectTypeAsync(object):
         list of dictionary/ies is appended to the result
         :return: List
         """
-        f = None
-        decoded = list()
 
-        for register in self.__register_maps.keys():
+        async def acquire(register):
+            f: str = ""
+            decode: Dict = dict()
             reg_info = self.__register_width(register)
+
             # read appropriate register(s)
             match self._entity:
                 case '0':
@@ -430,16 +432,17 @@ class _ObjectTypeAsync(object):
                 slave=UNIT
             )
             if result.isError():
-                detail = (("Error reading register at address '{0}' and width "
-                          "'{1}' for MODBUS class '{2}'")
-                          .format(reg_info['start'],
-                                  reg_info['width'],
-                                  self._entity))
+                detail = (
+                    ("Error reading register at address '{0}' and width "
+                     "'{1}' for MODBUS class '{2}'")
+                    .format(reg_info['start'],
+                            reg_info['width'],
+                            self._entity))
                 _throw_error(detail)
 
             # decode and append to list
             if self._entity in ['0', '1']:
-                decoded = decoded + self.__formatter_bit(
+                decode = self.__formatter_bit(
                     decoder=result.bits,
                     register=register
                 )
@@ -452,11 +455,19 @@ class _ObjectTypeAsync(object):
                 # skip major byte, if key = "xxxxx/2"
                 if reg_info['pos_byte'] == 2:
                     decoder.skip_bytes(nbytes=1)
-                decoded = decoded + self.__formatter(
+                decode = self.__formatter(
                     decoder=decoder,
                     register=register,
                     no_bytes=reg_info['no_bytes']
                 )
+
+            return decode
+        # end nested function
+
+        decoded: List = list()
+        coros = [acquire(register) for register in self.__register_maps.keys()]
+        for item in await asyncio.gather(*coros):
+            decoded = decoded + item
 
         return [  # sort by feature
             {k: v for k, v in sorted(item.items())} for item in decoded
