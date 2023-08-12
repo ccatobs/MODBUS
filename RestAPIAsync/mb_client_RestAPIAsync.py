@@ -133,13 +133,6 @@ async def write_register(
         lock_mb_client(host.value).release()
 
 
-@app.on_event("shutdown")
-def shutdown_event():
-    for items, value in clients.items():
-        logging.info("Closing client for device extention: {}".format(items))
-        value.close()
-
-
 def main():
     argparser = argparse.ArgumentParser(
         description="Rest API for MODBUS client")

@@ -66,7 +66,7 @@ class _ObjectTypeAsync(object):
         self.updated_items = dict()
 
     @property
-    def entity(self): return self._entity
+    def entity(self) -> str: return self._entity
 
     def __register_width(
             self,
@@ -301,7 +301,7 @@ class _ObjectTypeAsync(object):
         :return:
         """
 
-        def test_min_max():
+        def test_min_max() -> None:
             minimum = attributes.get('min')
             maximum = attributes.get('max')
             if minimum:
@@ -410,9 +410,8 @@ class _ObjectTypeAsync(object):
         :return: List
         """
 
-        async def acquire(register):
+        async def acquire(register) -> List[Dict[str, Any]]:
             f: str = ""
-            decode: Dict = dict()
             reg_info = self.__register_width(register)
 
             # read appropriate register(s)
@@ -442,26 +441,24 @@ class _ObjectTypeAsync(object):
 
             # decode and append to list
             if self._entity in ['0', '1']:
-                decode = self.__formatter_bit(
+                return self.__formatter_bit(
                     decoder=result.bits,
                     register=register
                 )
-            elif self._entity in ['3', '4']:
+            else:  # self._entity in ['3', '4']
                 decoder = BinaryPayloadDecoder.fromRegisters(
                     registers=result.registers,
                     byteorder=self.__endianness["byteorder"],
                     wordorder=self.__endianness["wordorder"]
                 )
-                # skip major byte, if key = "xxxxx/2"
-                if reg_info['pos_byte'] == 2:
+                if reg_info['pos_byte'] == 2:  # skip major byte: key="xxxxx/2"
                     decoder.skip_bytes(nbytes=1)
-                decode = self.__formatter(
+                return self.__formatter(
                     decoder=decoder,
                     register=register,
                     no_bytes=reg_info['no_bytes']
                 )
 
-            return decode
         # end nested function
 
         decoded: List = list()

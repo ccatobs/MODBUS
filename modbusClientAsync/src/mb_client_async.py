@@ -320,7 +320,7 @@ class MODBUSClientAsync(object):
         if not self.__client.connected:
             _throw_error("Could not connect to MODBUS server: IP={}"
                          .format(self._ip), 503)
-        logging.debug("MODBUS Communication Parameters {}"
+        logging.debug("MODBUS Communication Parameters: {}"
                       .format(self.__client.comm_params))
 
         decoded = list()
@@ -372,7 +372,7 @@ class MODBUSClientAsync(object):
         if not self.__client.connected:
             _throw_error("Could not connect to MODBUS server: IP={}"
                          .format(self._ip), 503)
-        logging.debug("MODBUS Communication Parameters {}"
+        logging.debug("MODBUS Communication Parameters: {}"
                       .format(self.__client.comm_params))
 
         detail = self.__existance_mapping_checks(wr=wr)
