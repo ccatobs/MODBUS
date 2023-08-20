@@ -7,7 +7,7 @@
 ### Deprecated
 ### Removed
 ### Security
-## 5.0.1 (2023-08-xx)
+## 5.0.1 (2023-08-21)
 ### Added
 - timeout_connect option for async client
 ### Changed
