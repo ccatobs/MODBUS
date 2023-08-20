@@ -331,7 +331,7 @@ class _ObjectTypeAsync(object):
                 if attributes['parameter'] == parameter:
                     # if match parameter - start
                     function = attributes['function'].replace("decode_", "add_")
-                    reg_info = self.__register_width(address)
+                    reg_info = self.__register_width(address=address)
 
                     # disable update of solely a register's minor byte
                     if reg_info['pos_byte'] == 2:
@@ -410,9 +410,9 @@ class _ObjectTypeAsync(object):
         :return: List
         """
 
-        async def acquire(register) -> List[Dict[str, Any]]:
+        async def acquire(register: str) -> List[Dict[str, Any]]:
             f: str = ""
-            reg_info = self.__register_width(register)
+            reg_info = self.__register_width(address=register)
 
             # read appropriate register(s)
             match self._entity:
@@ -464,7 +464,7 @@ class _ObjectTypeAsync(object):
         decoded: List = list()
         coros = [acquire(register) for register in self.__register_maps.keys()]
         for item in await asyncio.gather(*coros):
-            decoded = decoded + item
+            decoded += item  # item comprises multiple elements if map
 
         return [  # sort by feature
             {k: v for k, v in sorted(item.items())} for item in decoded

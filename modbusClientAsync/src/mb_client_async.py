@@ -23,7 +23,7 @@ from pymodbus.client import AsyncModbusTcpClient
 import asyncio
 import re
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 import datetime
 from timeit import default_timer
 # internal
@@ -134,7 +134,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.0.0"
+__version__ = "5.0.1"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -153,7 +153,8 @@ class MODBUSClientAsync(object):
             host: str,
             *,
             port: int = None,
-            debug: bool = False
+            debug: bool = False,
+            timeout_connect: float | None = None
     ):
         """
         initializing the modbus client and perform checks on
@@ -161,9 +162,10 @@ class MODBUSClientAsync(object):
         1) format of register key
         2) existance and uniqueness of "parameter"
         3) connection to modbus server via synchronous TCP
-        :param host: str - device ip or name
-        :param port: int - device port
-        :param debug: bool - debug mode True/False
+        :param host: device ip or name
+        :param port: device port
+        :param debug: debug mode (True/False)
+        :param timeout_connect: timeout for connecting to server (sec)
         """
         logging.getLogger().setLevel(
             getattr(logging,
@@ -182,6 +184,9 @@ class MODBUSClientAsync(object):
             debug=debug,
             **defined_kwargs(port=port),
         )
+        if timeout_connect:
+            self.__client.comm_params.timeout_connect = timeout_connect
+
         self.__init = {
             "client": self.__client,
             "mapping": client_config['mapping'],
@@ -192,7 +197,7 @@ class MODBUSClientAsync(object):
                                              "wordorder": ">"})
         }
         # initialize _ObjectType objects for each entity
-        self.__entity_list = list()
+        self.__entity_list: List = list()
         for regs in ['0', '1', '3', '4']:
             self.__entity_list.append(
                 _ObjectTypeAsync(
@@ -208,9 +213,9 @@ class MODBUSClientAsync(object):
         """
         check if parameter exists in mapping at all
         :param wr: list of dicts {parameter: value}
-        :return: str, empty (no error)
+        :return: str (empty = no error)
         """
-        parms = list()
+        parms: List = list()
         text = "Parameter {0} not mapped to register"
         for parameter in wr.keys():
             for attributes in self.__init['mapping'].values():
@@ -300,7 +305,7 @@ class MODBUSClientAsync(object):
                               .format(", ".join(parameter_duplicate))), 422)
         # end nested functions
 
-        rev_dict = dict()
+        rev_dict: Dict = dict()
         for register, value in mapping.items():
             check_register_integrity()
             parameter = parameter_available()
@@ -323,10 +328,17 @@ class MODBUSClientAsync(object):
         logging.debug("MODBUS Communication Parameters: {}"
                       .format(self.__client.comm_params))
 
-        decoded = list()
+        decoded: List = list()
         coros = [entity.register_readout() for entity in self.__entity_list]
-        for item in await asyncio.gather(*coros):
-            decoded = decoded + item
+        try:
+            for item in await asyncio.gather(*coros):
+                decoded += item
+        except asyncio.CancelledError:
+            raise MyException(
+                status_code=504,
+                detail="Async tasks could not be processed in time. "
+                       "Consider to increase 'timeout_connect'."
+                )
 
         if self.__client.connected:
             self.__client.close()
@@ -352,7 +364,7 @@ class MODBUSClientAsync(object):
         updated registers for coil and holding after write end or failure
         :return: values of register content
         """
-        tmp = dict()
+        tmp: Dict = dict()
         for entity in self.__entity_list:
             if entity.entity in ['0', '4']:
                 tmp.update(entity.updated_items)

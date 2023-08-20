@@ -22,8 +22,8 @@ class MyException(Exception):
                  detail):
         super().__init__(status_code,
                          detail)
-        self.status_code = status_code
-        self.detail = detail
+        self.status_code: int = status_code
+        self.detail: str = detail
 
 
 def _throw_error(detail: str,
@@ -108,6 +108,7 @@ class MODBUS2AVRO(
     def width(cls, key) -> int: return max(int(cls(key).no_bit/16), 1)
 
 
+# deprecated as of 2023-08-12
 class LockGroup(object):
     """
     Returns a lock object, unique for each unique value of param.
@@ -129,6 +130,7 @@ class LockGroup(object):
             return self.__lock_dict[param]
 
 
+# deprecated as of 2023-08-12
 def mytimer(supersede: Callable | str = None) -> Callable:
     """
     wrapper around function for which the consumed time is measured in
@@ -146,12 +148,12 @@ def mytimer(supersede: Callable | str = None) -> Callable:
             start_time = default_timer()
             result = func(*args, **kwargs)
             logging.debug(
-                "Time utilized for '{0}' of '{1}': {2:.2f} microsec".format(
+                "Time utilized for '{0}' of '{1}': {2:.2f} ms".format(
                     func.__name__ if 'supersede' not in locals()
                                      or callable(supersede)
                                      or supersede is None else supersede,
                     args[0].__dict__.get('_ip', 'n.a.'),
-                    (default_timer() - start_time) * 1_000_000
+                    (default_timer() - start_time) * 1_000
                 )
             )
 

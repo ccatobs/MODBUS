@@ -1,8 +1,17 @@
 # Changelog 
-#### for the documentation of earlier releases see docstring inside [mb_client_v2.py](https://github.com/ccatp/MODBUS/blob/05c387611b738852c8d53d44a64b80398edb9cda/modbusClient/src/mb_client_v2.py)
+#### for the documentation of earlier releases see docstring inside *mb_client_xxx.py*
 ## unreleased (2023-mm-dd)
 ### Added
 ### Changed
+### Fixed
+### Deprecated
+### Removed
+### Security
+## 5.0.1 (2023-08-xx)
+### Added
+- timeout_connect option for async client
+### Changed
+- async RestAPI: locking mechanism disabled 
 ### Fixed
 ### Deprecated
 ### Removed

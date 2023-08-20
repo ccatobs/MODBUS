@@ -43,13 +43,19 @@ async def main():
                            help='Debug Mode (default: False)',
                            action="store_true"
                            )
+    argparser.add_argument('--timeout_connect',
+                           required=False,
+                           help='Timeout Connect (default: None)',
+                           type=float
+                           )
 
     _start_time = timer()
     try:
         mb_client = MODBUSClientAsync(
             host=argparser.parse_args().host,
             port=argparser.parse_args().port,
-            debug=argparser.parse_args().debug
+            debug=argparser.parse_args().debug,
+            timeout_connect=argparser.parse_args().timeout_connect
         )
         to_housekeeping = await mb_client.read_register()
     except MyException as e:

@@ -86,7 +86,8 @@ async def read_hosts():
          tags=["monitoring", "operations"])
 async def read_register(
         host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP")
+                                description="Device IP"
+                                )
 ):
     try:
         lock_mb_client(host.value).acquire()
@@ -111,7 +112,8 @@ async def write_register(
         payload: Dict = Body(title="Payload",
                              description="Data to be written into registers"),
         host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP")
+                                description="Device IP"
+                                )
 ):
     if not payload:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

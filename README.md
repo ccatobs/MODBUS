@@ -246,14 +246,15 @@ Not implemented to date:
 The result provided 
 for the housekeeping (Kafka producer) is a list of dictionary objects.
 
-The present MODBUS client version deploys the asynchronous and 
-synchronous ModbusTcpClient in its version v3.4.1 (as of 2023/07/28).
+Present MODBUS clients versions deploy the synchronous and 
+asynchronous [ModbusTcpClients](https://pymodbus.readthedocs.io/en/latest/source/library/client.html#pymodbus.client.ModbusTcpClient) 
+in its version v3.4.1 (as of 2023/07/28).
 
 Run (for testing):
     
-    python3 mb_client_reader_xxx.py --ip <device ip address> \
-                                    [--port <device port> (default: 502)] \
-                                    [--debug]
+    python3 mb_client_reader_<sync/async>.py --host <host address> \
+                                             [--port <host port> (default: 502)] \
+                                             [--debug]
 
 
 ## WRITER
@@ -264,10 +265,10 @@ changed by utilizing the writer method of MODBUSClient class.
 
 Run (for testing):
     
-    python3 mb_client_writer_xxx.py --ip <device ip address> \
-                                    [--port <device port> (default: 502)] \
-                                    [--debug] \
-                                    --payload "{\"test 32 bit int\": 720.04, ...}"
+    python3 mb_client_writer_<sync/async>.py --host <host address> \
+                                             [--port <host port> (default: 502)] \
+                                             [--debug] \
+                                             --payload "{\"test 32 bit int\": 720.04, ...}"
 
 It accepts - as input - a JSON with one or multiple
 {"parameter": "value"} pairs, where parameter needs to match (required!)
@@ -322,23 +323,25 @@ directory. It will be copied appropriately with the Docker container setup.
 
 Run the RestAPI for testing:
 
-    python3 mb_client_RestAPI_xxx.py --host <host> (default: 127.0.0.1) \
-                                     --port <port> (default: 5100)
+    python3 mb_client_RestAPI_<sync/async>.py --host <RestAPI host> (default: 127.0.0.1) \
+                                              --port <RestAPI port> (default: 5100)
 
 Get the read and write endpoints, by typing in the browser URL:
 
-    <host>:<port>/docs#
+    <RestAPI host>:<RestAPI port>/docs#
 
 ![](https://github.com/ccatp/MODBUS/blob/a3cb28bf0e3df9b4a7fdd6e8e113a9134b3acd47/pics/API_swagger_MODBUS.png)
 
 Alternatively, invoke cli *curl* for the Reader:
 
-    curl <host><port>:/modbus/read/<device_ip> 
+    curl <RestAPI host><RestAPI port>:/modbus/read/<host> 
 
 and for the Writer:
 
-    curl <host>:<port>/modbus/write/<device_ip> -X PUT \
-            -d 'payload={
+    curl <RestAPI host>:<RestAPI port>/modbus/write/<host> -X PUT \
+            -H 'accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -d '{
             "test 32 bit int": 720.04, 
             "write int register": 10, 
             "string of register/1": "YZ", 
@@ -351,7 +354,7 @@ Caveat:
 
 Whilst environmental parameters are set in the Docker container, they have 
 to be defined separately in the 
-OS environment, in which *mb_client_RestAPI.py* runs, ita est:
+OS environment, ita est:
 
 *ServerPort=&lt;MODBUS Server Port&gt;*,
 

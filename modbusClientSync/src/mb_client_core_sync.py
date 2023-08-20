@@ -65,7 +65,7 @@ class _ObjectTypeSync(object):
         self.updated_items = dict()
 
     @property
-    def entity(self): return self._entity
+    def entity(self) -> str: return self._entity
 
     def __register_width(
             self,
@@ -299,7 +299,7 @@ class _ObjectTypeSync(object):
         :return:
         """
 
-        def test_min_max():
+        def test_min_max() -> None:
             minimum = attributes.get('min')
             maximum = attributes.get('max')
             if minimum:
@@ -437,7 +437,7 @@ class _ObjectTypeSync(object):
 
             # decode and append to list
             if self._entity in ['0', '1']:
-                decoded = decoded + self.__formatter_bit(
+                decoded += self.__formatter_bit(
                     decoder=result.bits,
                     register=register
                 )
@@ -450,7 +450,7 @@ class _ObjectTypeSync(object):
                 # skip major byte, if key = "xxxxx/2"
                 if reg_info['pos_byte'] == 2:
                     decoder.skip_bytes(nbytes=1)
-                decoded = decoded + self.__formatter(
+                decoded += self.__formatter(
                     decoder=decoder,
                     register=register,
                     no_bytes=reg_info['no_bytes']

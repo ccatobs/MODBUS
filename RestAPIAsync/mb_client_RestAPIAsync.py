@@ -6,8 +6,6 @@ mb_client_RestAPI.py
 version {0}
 
 Web API to serve the read and write methods of the MODBUSClient class.
-Implements a locking mechanism for each
-device, such that reader and writer can not be invoked simulaneously.
 """
 
 from fastapi import HTTPException, status, FastAPI, Path, Body
@@ -20,7 +18,7 @@ from typing import Dict
 from distutils.util import strtobool
 from enum import Enum
 # internal
-from modbusClientAsync import (MODBUSClientAsync, LockGroup, MyException,
+from modbusClientAsync import (MODBUSClientAsync, MyException,  # LockGroup,
                                __version__)
 
 """
@@ -41,9 +39,11 @@ print(__doc__.format(__version__))
 hosts = os.getenv("ServerHost")
 port = int(os.environ.get('ServerPort'))
 debug = strtobool(os.environ.get('Debug'))
+timeout_connect = float(os.environ.get('TimeoutConnect')) \
+    if os.environ.get('TimeoutConnect') else None
 
-lock_mb_client = LockGroup()
-clients = dict()
+# lock_mb_client = LockGroup()
+clients: Dict = dict()
 
 DeviceEnum = Enum(
     "DeviceEnum",
@@ -69,7 +69,8 @@ def mb_clients(host: str) -> MODBUSClientAsync:
         clients[host] = MODBUSClientAsync(
             host=host,
             port=port,  # from environment variable
-            debug=debug  # from environment variable
+            debug=debug,  # from environment variable
+            timeout_connect=timeout_connect  # from environment variable
         )
 
     return clients[host]
@@ -87,10 +88,12 @@ async def read_hosts():
          tags=["monitoring", "operations"])
 async def read_register(
         host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP")
+                                description="Device IP",
+                                # enum=[e.value for e in DeviceEnum]
+                                )
 ):
     try:
-        lock_mb_client(host.value).acquire()
+        # lock_mb_client(host.value).acquire()
         return JSONResponse(
             await mb_clients(
                 host=host.value
@@ -102,7 +105,8 @@ async def read_register(
             detail=e.detail
         )
     finally:
-        lock_mb_client(host.value).release()
+        # lock_mb_client(host.value).release()
+        pass
 
 
 @app.put("/modbus/write/{host}",
@@ -112,13 +116,15 @@ async def write_register(
         payload: Dict = Body(title="Payload",
                              description="Data to be written into registers"),
         host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP")
+                                description="Device IP",
+                                # enum=[e.value for e in DeviceEnum]
+                                )
 ):
     if not payload:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail="Empty request body, nothing to show!")
     try:
-        lock_mb_client(host.value).acquire()
+        # lock_mb_client(host.value).acquire()
         return JSONResponse(
             await mb_clients(
                 host=host.value
@@ -130,7 +136,8 @@ async def write_register(
             detail=e.detail
         )
     finally:
-        lock_mb_client(host.value).release()
+        # lock_mb_client(host.value).release()
+        pass
 
 
 def main():
