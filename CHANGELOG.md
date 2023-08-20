@@ -11,11 +11,9 @@
 ### Added
 - timeout_connect option for async client
 ### Changed
-- async RestAPI: locking mechanism disabled 
 ### Fixed
 ### Deprecated
-### Removed
-### Security
+- async RestAPI: locking mechanism disabled 
 ## 5.0.0 (2023-08-10)
 ### Added
 - Asynchronous MODBUS client
