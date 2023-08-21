@@ -38,7 +38,8 @@ print(__doc__.format(__version__))
 
 hosts = os.getenv("ServerHost")
 port = int(os.environ.get('ServerPort'))
-debug = strtobool(os.environ.get('Debug'))
+debug = strtobool(os.environ.get('Debug')) \
+    if os.environ.get('Debug') else None
 timeout_connect = float(os.environ.get('TimeoutConnect')) \
     if os.environ.get('TimeoutConnect') else None
 

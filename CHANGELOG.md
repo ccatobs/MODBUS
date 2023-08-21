@@ -7,6 +7,11 @@
 ### Deprecated
 ### Removed
 ### Security
+## 5.0.2 (2023-08-21)
+### Added
+### Changed
+### Fixed
+- debug input parameter may be None for clients
 ## 5.0.1 (2023-08-21)
 ### Added
 - timeout_connect option for async client

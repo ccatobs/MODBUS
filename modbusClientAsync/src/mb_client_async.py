@@ -134,7 +134,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.0.1"
+__version__ = "5.0.2"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -153,7 +153,7 @@ class MODBUSClientAsync(object):
             host: str,
             *,
             port: int = None,
-            debug: bool = False,
+            debug: bool | None = None,
             timeout_connect: float | None = None
     ):
         """
@@ -172,8 +172,6 @@ class MODBUSClientAsync(object):
                     "DEBUG" if debug else "INFO")
         )
         self._ip = host
-        self.__port = port
-        self.__debug = debug
         client_config = _client_config()
 
         # integrity checks
@@ -181,8 +179,8 @@ class MODBUSClientAsync(object):
 
         self.__client = AsyncModbusTcpClient(
             host=self._ip,
-            debug=debug,
-            **defined_kwargs(port=port),
+            **defined_kwargs(port=port,
+                             debug=debug),
         )
         if timeout_connect:
             self.__client.comm_params.timeout_connect = timeout_connect
@@ -323,8 +321,8 @@ class MODBUSClientAsync(object):
         start_time = default_timer()
         await self.__client.connect()
         if not self.__client.connected:
-            _throw_error("Could not connect to MODBUS server: IP={}"
-                         .format(self._ip), 503)
+            _throw_error(("Could not connect to MODBUS server: IP={}"
+                         .format(self._ip)), 503)
         logging.debug("MODBUS Communication Parameters: {}"
                       .format(self.__client.comm_params))
 
@@ -334,11 +332,11 @@ class MODBUSClientAsync(object):
             for item in await asyncio.gather(*coros):
                 decoded += item
         except asyncio.CancelledError:
-            raise MyException(
-                status_code=504,
-                detail="Async tasks could not be processed in time. "
-                       "Consider to increase 'timeout_connect'."
-                )
+            _throw_error(("Async tasks could not be processed in "
+                          "<timeout_connect>={} sec. "
+                          "Consider to increase value."
+                          .format(self.__client.comm_params.timeout_connect)),
+                         504)
 
         if self.__client.connected:
             self.__client.close()
@@ -382,8 +380,9 @@ class MODBUSClientAsync(object):
         start_time = default_timer()
         await self.__client.connect()
         if not self.__client.connected:
-            _throw_error("Could not connect to MODBUS server: IP={}"
-                         .format(self._ip), 503)
+            _throw_error(("Could not connect to MODBUS server: IP={}"
+                         .format(self._ip)),
+                         503)
         logging.debug("MODBUS Communication Parameters: {}"
                       .format(self.__client.comm_params))
 

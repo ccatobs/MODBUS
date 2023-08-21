@@ -132,7 +132,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.0.1"
+__version__ = "5.0.2"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -151,7 +151,7 @@ class MODBUSClientSync(object):
             host: str,
             *,
             port: int = None,
-            debug: bool = False
+            debug: bool | None = None
     ):
         """
         initializing the modbus client and perform checks on
@@ -175,8 +175,8 @@ class MODBUSClientSync(object):
 
         client = ModbusTcpClient(
             host=self._ip,
-            debug=debug,
-            **defined_kwargs(port=port),
+            **defined_kwargs(port=port,
+                             debug=debug),
         )
         client.connect()
         if not client.connected:

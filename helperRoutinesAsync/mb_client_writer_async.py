@@ -47,7 +47,6 @@ python3 mb_client_writer_v2.py
                            )
     argparser.add_argument('--debug',
                            required=False,
-                           default=False,
                            help='Debug Mode (default: False)',
                            action="store_true"
                            )

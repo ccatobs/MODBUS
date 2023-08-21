@@ -38,7 +38,6 @@ def main():
                            )
     argparser.add_argument('--debug',
                            required=False,
-                           default=False,
                            help='Debug Mode (default: False)',
                            action="store_true"
                            )
