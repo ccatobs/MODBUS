@@ -312,7 +312,7 @@ class _ObjectTypeSync(object):
             if maximum:
                 if value > maximum:
                     _throw_error(
-                        ("Error encountered for '{2}' shen writing value: "
+                        ("Error encountered for '{2}' when writing value: "
                          "{0} > {1} (max)".format(value, maximum, parameter)),
                         422
                     )

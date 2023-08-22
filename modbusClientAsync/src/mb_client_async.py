@@ -153,8 +153,8 @@ class MODBUSClientAsync(object):
             host: str,
             *,
             port: int = None,
-            debug: bool | None = None,
-            timeout_connect: float | None = None
+            debug: bool = None,
+            timeout_connect: float = None
     ):
         """
         initializing the modbus client and perform checks on
@@ -254,7 +254,7 @@ class MODBUSClientAsync(object):
 
         def check_feature_integrity() -> None:
             if feature not in FEATURE_ALLOWED_SET:
-                _throw_error(("Feature '{1}' in register {0} is not supported"
+                _throw_error(("Feature '{1}' in register '{0}' is not supported"
                               .format(register, feature)), 422)
             if re.match("(min|max)", feature):  # check features min or max
                 if not re.match("(int|long|float|double)", datatype):
@@ -291,7 +291,7 @@ class MODBUSClientAsync(object):
             try:
                 return value["parameter"]
             except KeyError:
-                _throw_error(("Feature parameter missing for register {0}"
+                _throw_error(("Feature parameter missing for register '{0}'"
                               .format(register)), 422)
 
         def seek_parameter_duplicate() -> None:
@@ -332,9 +332,8 @@ class MODBUSClientAsync(object):
             for item in await asyncio.gather(*coros):
                 decoded += item
         except asyncio.CancelledError:
-            _throw_error(("Async tasks could not be processed in "
-                          "<timeout_connect>={} sec. "
-                          "Consider to increase value."
+            _throw_error(("Async tasks could not be processed within {} sec. "
+                          "Consider to increase value for 'timeout_connect'"
                           .format(self.__client.comm_params.timeout_connect)),
                          504)
 

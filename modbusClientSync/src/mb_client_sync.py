@@ -151,7 +151,7 @@ class MODBUSClientSync(object):
             host: str,
             *,
             port: int = None,
-            debug: bool | None = None
+            debug: bool = None
     ):
         """
         initializing the modbus client and perform checks on
@@ -254,7 +254,7 @@ class MODBUSClientSync(object):
 
         def check_feature_integrity() -> None:
             if feature not in FEATURE_ALLOWED_SET:
-                _throw_error(("Feature '{1}' in register {0} is not supported"
+                _throw_error(("Feature '{1}' in register '{0}' is not supported"
                               .format(register, feature)), 422)
             if re.match("(min|max)", feature):  # check features min or max
                 if not re.match("(int|long|float|double)", datatype):
@@ -291,7 +291,7 @@ class MODBUSClientSync(object):
             try:
                 return value["parameter"]
             except KeyError:
-                _throw_error(("Feature parameter missing for register {0}"
+                _throw_error(("Feature parameter missing for register '{0}'"
                               .format(register)), 422)
 
         def seek_parameter_duplicate() -> None:
