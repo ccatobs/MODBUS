@@ -7,6 +7,11 @@
 ### Deprecated
 ### Removed
 ### Security
+## 5.0.3 (2023-08-23)
+### Added
+### Changed
+### Fixed
+- mytimer decorator enabled  again for async calls
 ## 5.0.2 (2023-08-21)
 ### Added
 ### Changed

@@ -130,7 +130,6 @@ class LockGroup(object):
             return self.__lock_dict[param]
 
 
-# deprecated as of 2023-08-12
 def mytimer(supersede: Callable | str = None) -> Callable:
     """
     wrapper around function for which the consumed time is measured in
@@ -144,9 +143,9 @@ def mytimer(supersede: Callable | str = None) -> Callable:
     """
     def _decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        async def wrapper(*args, **kwargs) -> Any:
             start_time = default_timer()
-            result = func(*args, **kwargs)
+            result = await func(*args, **kwargs)
             logging.debug(
                 "Time utilized for '{0}' of '{1}': {2:.2f} ms".format(
                     func.__name__ if 'supersede' not in locals()

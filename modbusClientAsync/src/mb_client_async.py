@@ -28,7 +28,7 @@ import datetime
 from timeit import default_timer
 # internal
 from .mb_client_core_async import _ObjectTypeAsync, FEATURE_ALLOWED_SET
-from .mb_client_aux_async import (_client_config, _throw_error,
+from .mb_client_aux_async import (_client_config, _throw_error, mytimer,
                                   MyException, defined_kwargs, MODBUS2AVRO)
 
 """
@@ -134,7 +134,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.0.2"
+__version__ = "5.0.3"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -313,19 +313,18 @@ class MODBUSClientAsync(object):
                 check_feature_integrity()
         seek_parameter_duplicate()
 
+    @mytimer
     async def read_register(self) -> Dict[str, Any]:
         """
         invoke the read all mapped registers for monitoring
         :return: List of Dict for housekeeping
         """
-        start_time = default_timer()
         await self.__client.connect()
         if not self.__client.connected:
             _throw_error(("Could not connect to MODBUS server: IP={}"
                          .format(self._ip)), 503)
         logging.debug("MODBUS Communication Parameters: {}"
                       .format(self.__client.comm_params))
-
         decoded: List = list()
         coros = [entity.register_readout() for entity in self.__entity_list]
         try:
@@ -336,17 +335,9 @@ class MODBUSClientAsync(object):
                           "Consider to increase value for 'timeout_connect'"
                           .format(self.__client.comm_params.timeout_connect)),
                          504)
-
         if self.__client.connected:
             self.__client.close()
             logging.debug("Closing {}".format(self.__client))
-
-        logging.debug(
-            "Time utilized for Reader of '{0}': {1:.2f} ms".format(
-                self._ip,
-                (default_timer() - start_time) * 1_000
-            )
-        )
 
         return {
             "timestamp": datetime.datetime.now(
@@ -367,6 +358,7 @@ class MODBUSClientAsync(object):
                 tmp.update(entity.updated_items)
         return tmp
 
+    @mytimer
     async def write_register(
             self,
             wr: Dict
@@ -376,7 +368,6 @@ class MODBUSClientAsync(object):
         :param wr: list of dicts {parameter: value}
         :return: status
         """
-        start_time = default_timer()
         await self.__client.connect()
         if not self.__client.connected:
             _throw_error(("Could not connect to MODBUS server: IP={}"
@@ -384,7 +375,6 @@ class MODBUSClientAsync(object):
                          503)
         logging.debug("MODBUS Communication Parameters: {}"
                       .format(self.__client.comm_params))
-
         detail = self.__existance_mapping_checks(wr=wr)
         if detail:
             raise MyException(
@@ -394,7 +384,6 @@ class MODBUSClientAsync(object):
                     {}
                 )
             )
-
         try:
             for entity in self.__entity_list:
                 await entity.register_write(wr)
@@ -406,17 +395,9 @@ class MODBUSClientAsync(object):
                     self.__updated_registers()
                 )
             )
-
         if self.__client.connected:
             self.__client.close()
             logging.debug("Closing {}".format(self.__client))
-
-        logging.debug(
-            "Time utilized for Writer of '{0}': {1:.2f} ms".format(
-                self._ip,
-                (default_timer() - start_time) * 1_000
-            )
-        )
 
         return {
             "status": "write success",
