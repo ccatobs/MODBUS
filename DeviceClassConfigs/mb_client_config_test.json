@@ -251,6 +251,8 @@
       "description": "9C correct!",
       "unit": "none",
       "defaultValue": true,
+      "isTag": true,
+      "alias": "here's the minor number etc.",
       "map": {
         "1": "A1",
         "2": "01",
@@ -335,7 +337,7 @@
       "isTag": true,
       "alias": "Dummy_4_alias",
       "map": {
-        "0b00000010": "2nd last bit of mayor"
+        "0b00000010": "2nd last bit of major"
       }
     }
 

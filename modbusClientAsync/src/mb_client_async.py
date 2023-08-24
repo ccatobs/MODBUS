@@ -25,7 +25,6 @@ import re
 import logging
 from typing import Dict, Any, List
 import datetime
-from timeit import default_timer
 # internal
 from .mb_client_core_async import _ObjectTypeAsync, FEATURE_ALLOWED_SET
 from .mb_client_aux_async import (_client_config, _throw_error, mytimer,
@@ -134,7 +133,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.0.3"
+__version__ = "5.0.4"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -157,11 +156,8 @@ class MODBUSClientAsync(object):
             timeout_connect: float = None
     ):
         """
-        initializing the modbus client and perform checks on
+        initializing the async modbus client and perform integrity checks on
         mb_client_config_<device>.json:
-        1) format of register key
-        2) existance and uniqueness of "parameter"
-        3) connection to modbus server via synchronous TCP
         :param host: device ip or name
         :param port: device port
         :param debug: debug mode (True/False)

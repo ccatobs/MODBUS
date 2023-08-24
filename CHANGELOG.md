@@ -7,6 +7,11 @@
 ### Deprecated
 ### Removed
 ### Security
+## 5.0.4 (2023-08-24)
+### Added
+- integrity check on existance of feature "map" in bit registers: function "decode_bits"
+### Changed
+### Fixed
 ## 5.0.3 (2023-08-23)
 ### Added
 ### Changed

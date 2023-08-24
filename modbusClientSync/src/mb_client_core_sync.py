@@ -123,21 +123,25 @@ class _ObjectTypeSync(object):
         """
         optional = dict()
         one_map_entry = False
-        desc = self.__register_maps[register].get('description')
-        alias = self.__register_maps[register].get('alias')
+        register_maps = self.__register_maps[register]
+        desc = register_maps.get('description')
+        alias = register_maps.get('alias')
+        maps = register_maps.get('map')
 
-        if len(self.__register_maps[register]['map']) == 1:
+        if not maps:
+            _throw_error("Register {} lacks bit map feature".format(register))
+        elif len(maps) == 1:
             one_map_entry = True
             # if only one entry in map, add optional parameters, no otherwise
             optional = {
-                k: self.__register_maps[register][k]
-                for k in self.__register_maps[register]
+                k: register_maps[k]
+                for k in register_maps
                 if k not in FEATURE_EXCLUDE_SET
             }
 
         return [
             {
-                "parameter": self.__register_maps[register]['parameter'],
+                "parameter": register_maps['parameter'],
                 "value": value[k.split("0b")[1][::-1].index('1')],
                 "datatype": MODBUS2AVRO(function).datatype
             } |
@@ -148,7 +152,7 @@ class _ObjectTypeSync(object):
                 alias=alias if not one_map_entry else None,
             ) |
             optional
-            for k, v in self.__register_maps[register]['map'].items()
+            for k, v in maps.items()
         ]
 
     def __decode_prop(
@@ -165,11 +169,12 @@ class _ObjectTypeSync(object):
         :param function: string - decoder method
         :return: List of Dict for each parameter
         """
-        maps = self.__register_maps[register].get('map')
+        register_maps = self.__register_maps[register]
+        maps = register_maps.get('map')
         datatype = MODBUS2AVRO(function).datatype
         optional = {
-            k: self.__register_maps[register][k]
-            for k in self.__register_maps[register]
+            k: register_maps[k]
+            for k in register_maps
             if k not in FEATURE_EXCLUDE_SET
         }
 
@@ -177,23 +182,24 @@ class _ObjectTypeSync(object):
             # multiplier and/or offset make sense for int data types and when
             # no map is defined
             value = (value
-                     * self.__register_maps[register].get('multiplier', 1)
-                     + self.__register_maps[register].get('offset', 0))
+                     * register_maps.get('multiplier', 1)
+                     + register_maps.get('offset', 0))
             if isinstance(value, float):
                 datatype = "float"  # to serve AVRO schema
         di = {
             "value": value,
             "datatype": datatype
         }
-        # add "value_alt" if applicable and other optional features
-        if maps is not None:
-            di["value_alt"] = maps.get(str(round(value)),
-                                       "corresponding value not found in map")
+        # add "value_alt" if feature map provided and other optional features
         # pass on min & max to output for int & float
-        if self.__register_maps[register].get('min'):
-            di['min'] = self.__register_maps[register].get('min')
-        if self.__register_maps[register].get('max'):
-            di['max'] = self.__register_maps[register].get('max')
+        di.update(**defined_kwargs(
+            value_alt=maps.get(str(round(value)),
+                               "corresponding value not found in map")
+            if maps is not None else None,
+            min=register_maps.get('min'),
+            max=register_maps.get('max')
+        )
+                  )
 
         return [di | optional]
 
@@ -355,7 +361,7 @@ class _ObjectTypeSync(object):
                             detail = ("'{0}' too long for parameter '{1}'"
                                       .format(value,
                                               parameter))
-                        _throw_error(detail, 422)
+                            _throw_error(detail, 422)
                         # printability
                         try:
                             if not value.isprintable():

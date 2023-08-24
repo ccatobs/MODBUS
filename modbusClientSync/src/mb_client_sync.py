@@ -132,7 +132,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.0.3"
+__version__ = "5.0.4"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -154,11 +154,8 @@ class MODBUSClientSync(object):
             debug: bool = None
     ):
         """
-        initializing the modbus client and perform checks on
+        initializing the sync modbus client and perform integrity checks on
         mb_client_config_<device>.json:
-        1) format of register key
-        2) existance and uniqueness of "parameter"
-        3) connection to modbus server via synchronous TCP
         :param host: str - device ip or name
         :param port: int - device port
         :param debug: bool - debug mode True/False
