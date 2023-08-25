@@ -7,6 +7,11 @@
 ### Deprecated
 ### Removed
 ### Security
+## 5.0.5 (2023-08-25)
+### Added
+- PYTHONPATH set when executing helper routines
+### Changed
+### Fixed
 ## 5.0.4 (2023-08-24)
 ### Added
 - integrity check on existance of feature "map" in bit registers: function "decode_bits"

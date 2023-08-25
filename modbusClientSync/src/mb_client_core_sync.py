@@ -130,7 +130,7 @@ class _ObjectTypeSync(object):
 
         if not maps:
             _throw_error("Register {} lacks bit map feature".format(register))
-        elif len(maps) == 1:
+        if len(maps) == 1:
             one_map_entry = True
             # if only one entry in map, add optional parameters, no otherwise
             optional = {
@@ -322,7 +322,6 @@ class _ObjectTypeSync(object):
                          "{0} > {1} (max)".format(value, maximum, parameter)),
                         422
                     )
-
         # end nested function
 
         builder = BinaryPayloadBuilder(

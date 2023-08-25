@@ -16,6 +16,7 @@ from timeit import default_timer as timer
 import argparse
 import sys
 # internal
+from prerun import PreRun
 from modbusClientSync import MODBUSClientSync, MyException
 from modbusClientSync import __version__
 

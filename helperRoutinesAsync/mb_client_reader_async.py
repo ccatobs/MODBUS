@@ -17,6 +17,7 @@ from timeit import default_timer as timer
 import argparse
 import asyncio
 # internal
+from prerun import PreRun
 from modbusClientAsync import MODBUSClientAsync, MyException
 from modbusClientAsync import __version__
 
