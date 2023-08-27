@@ -2,6 +2,13 @@
 #### for the documentation of earlier releases see docstring inside *mb_client_xxx.py*
 ## unreleased (2023-mm-dd)
 ### Added
+### Changed
+### Fixed
+### Deprecated
+### Removed
+### Security
+## 5.1.0 (2023-08-27)
+### Added
 - sync/async helper reader and writer merged into one
 ### Changed
 ### Fixed
