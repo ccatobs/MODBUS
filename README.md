@@ -373,9 +373,9 @@ The current repository comprises:
 * class MODBUSClientAsync (Asynchronous version)
     * read_register
     * write_register
-* MODBUS Helper Routines
-  * Synchronous Reader/Writer
-  * Asynchronous Reader/Writer
+* MODBUS Helper Routine
+  * Synchronous Reader and Writer
+  * Asynchronous Reader and Writer
   * Server Simulator (cloned from https://hub.docker.com/r/oitc/modbus-server)
 * MODBUS RestAPI
   * Synchronous

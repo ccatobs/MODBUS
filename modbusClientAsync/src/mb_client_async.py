@@ -5,15 +5,6 @@
 Asychronous MODBUS Client
 
 For a detailed description, see https://github.com/ccatp/MODBUS
-Running and testing:
-python3 mb_client_reader_async.py --ip <device ip address> \
-                                  [--port <device port (default: 502)] \
-                                  [--debug]
-
-python3 mb_client_writer_async.py --ip <device ip address> \
-                                  [--port <device port (default: 502)] \
-                                  [--debug] \
-                                  --payload "{\"test 32 bit int\": 720.04, ...}"
 
 Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
 Argelander Institute for Astronomy (AIfA), University Bonn.
@@ -133,7 +124,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.0.5"
+__version__ = "5.1.0"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"

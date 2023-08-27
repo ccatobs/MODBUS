@@ -16,8 +16,12 @@ from timeit import default_timer as timer
 import argparse
 import sys
 import asyncio
+import os
 # internal
-from prerun import PreRun
+if os.environ.get('PYTHONPATH') is None:
+    sys.path.append("{0}{1}".format(
+        os.path.dirname(os.path.realpath(__file__)),
+        "/../"))
 from modbusClientAsync import MODBUSClientAsync, MyException
 from modbusClientAsync import __version__
 

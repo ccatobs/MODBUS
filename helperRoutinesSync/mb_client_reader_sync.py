@@ -15,8 +15,12 @@ import json
 import sys
 from timeit import default_timer as timer
 import argparse
+import os
 # internal
-from prerun import PreRun
+if os.environ.get('PYTHONPATH') is None:
+    sys.path.append("{0}{1}".format(
+        os.path.dirname(os.path.realpath(__file__)),
+        "/../"))
 from modbusClientSync import MODBUSClientSync, MyException
 from modbusClientSync import __version__
 
