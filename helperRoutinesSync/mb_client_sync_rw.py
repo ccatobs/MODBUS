@@ -30,7 +30,7 @@ print(__doc__.format(__version__))
 def main():
     """
 test writer module with, e.g.
-python3 mb_client_rw_async.py
+python3 mb_client_sync_rw.py
 --ip 127.0.0.40
 --port 5020
 --payload "{
@@ -69,17 +69,17 @@ python3 mb_client_rw_async.py
                            help="Payload ('{parameter1: value1, "
                                 "parameter2: value2, ...}')"
                            )
+    args = argparser.parse_args()
 
     _start_time = timer()
     try:
         mb_client = MODBUSClientSync(
-            host=argparser.parse_args().host,
-            port=argparser.parse_args().port,
-            debug=argparser.parse_args().debug,
+            host=args.host,
+            port=args.port,
+            debug=args.debug,
         )
-        if argparser.parse_args().payload:
-            print(json.dumps(mb_client.write_register(
-                json.loads(argparser.parse_args().payload)),
+        if args.payload:
+            print(json.dumps(mb_client.write_register(json.loads(args.payload)),
                              indent=2))
         else:
             print(json.dumps(mb_client.read_register(),
