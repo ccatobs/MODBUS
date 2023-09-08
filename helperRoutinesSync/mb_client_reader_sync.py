@@ -41,13 +41,19 @@ def main():
                            help='Debug Mode (default: False)',
                            action="store_true"
                            )
-
+    argparser.add_argument('--config_filename',
+                           required=False,
+                           default="",
+                           help='path to config file'
+                           )
     _start_time = timer()
+    args = argparser.parse_args()
     try:
         mb_client = MODBUSClientSync(
-            host=argparser.parse_args().host,
-            port=argparser.parse_args().port,
-            debug=argparser.parse_args().debug
+            host=args.host,
+            port=args.port,
+            debug=args.debug,
+            config_filename=args.config_filename
         )
         to_housekeeping = mb_client.read_register()
         mb_client.close()

@@ -55,9 +55,17 @@ def _client_config() -> Dict:
             dir_content[0]
         )
         logging.info("Config File: {0}".format(config_device_class))
-        with open(config_device_class) as config_file:
-            return json.load(config_file)
+        return _load_config_file(config_filename)
 
+def _load_config_file(config_filename) -> Dict:
+    if os.path.exists(config_filename):
+        with open(config_filename) as config_file:
+            return json.load(config_file)
+    else:
+        logging.error(f"{config_filename} not found")
+        _throw_error(detail, 404)
+
+    
 
 class _MyMeta(EnumMeta):
     def __contains__(self, other) -> bool:

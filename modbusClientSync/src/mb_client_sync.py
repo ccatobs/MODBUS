@@ -27,7 +27,7 @@ import datetime
 # internal
 from .mb_client_core_sync import _ObjectTypeSync, FEATURE_ALLOWED_SET
 from .mb_client_aux_sync import (mytimer, _client_config, _throw_error,
-                                 MyException, defined_kwargs, MODBUS2AVRO)
+                                 MyException, defined_kwargs, MODBUS2AVRO, _load_config_file)
 
 """
 change history
@@ -151,7 +151,8 @@ class MODBUSClientSync(object):
             host: str,
             *,
             port: int = None,
-            debug: bool = None
+            debug: bool = None,
+            config_filename: str=""
     ):
         """
         initializing the modbus client and perform checks on
@@ -167,8 +168,11 @@ class MODBUSClientSync(object):
             getattr(logging,
                     "DEBUG" if debug else "INFO")
         )
-        self._ip = host
-        client_config = _client_config()
+        self._ip = host    
+        if config_filename!="":
+            client_config = _load_config_file(config_filename)
+        else:
+            client_config = _client_config()
 
         # integrity checks
         self.__client_mapping_checks(mapping=client_config['mapping'])
