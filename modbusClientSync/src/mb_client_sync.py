@@ -188,7 +188,6 @@ class MODBUSClientSync(object):
                          .format(self._ip), 503)
         logging.debug("MODBUS Communication Parameters {}"
                       .format(client.comm_params))
-
         self.__init = {
             "client": client,
             "mapping": client_config['mapping'],
@@ -318,6 +317,23 @@ class MODBUSClientSync(object):
         seek_parameter_duplicate()
 
     @mytimer
+        
+    def read_register_bulk(self) -> Dict[str, Any]:
+        """
+        invoke the read all mapped registers for monitoring
+        :return: List of Dict for housekeeping
+        """
+        return {
+            "timestamp": datetime.datetime.now(
+                tz=datetime.timezone.utc
+            ).isoformat(),
+            "host": self._ip,
+            "data": [
+                item for entity in self.__entity_list for item in
+                entity.register_readout_bulk()
+            ]
+        }
+
     def read_register(self) -> Dict[str, Any]:
         """
         invoke the read all mapped registers for monitoring
@@ -333,6 +349,7 @@ class MODBUSClientSync(object):
                 entity.register_readout()
             ]
         }
+    
 
     def __updated_registers(self) -> Dict[str, Any]:
         """

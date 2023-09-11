@@ -46,6 +46,11 @@ def main():
                            default="",
                            help='path to config file'
                            )
+    argparser.add_argument('--bulk_read',
+                           default=False,
+                           action="store_true",
+                           help='toggle bulk read default: False'
+                           )    
     _start_time = timer()
     args = argparser.parse_args()
     try:
@@ -55,7 +60,10 @@ def main():
             debug=args.debug,
             config_filename=args.config_filename
         )
-        to_housekeeping = mb_client.read_register()
+        if args.bulk_read:
+            to_housekeeping = mb_client.read_register_bulk()
+        else:
+            to_housekeeping = mb_client.read_register()
         mb_client.close()
     except MyException as e:
         print("Code={0}, detail={1}".format(e.status_code,

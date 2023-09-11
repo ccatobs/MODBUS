@@ -58,8 +58,9 @@ def _client_config() -> Dict:
         return _load_config_file(config_filename)
 
 def _load_config_file(config_filename) -> Dict:
-    if os.path.exists(config_filename):
-        with open(config_filename) as config_file:
+    if os.path.exists(config_filename):        
+        logging.debug(f"opening {config_filename}")
+        with open(config_filename) as config_file:            
             return json.load(config_file)
     else:
         logging.error(f"{config_filename} not found")

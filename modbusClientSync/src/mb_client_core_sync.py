@@ -399,6 +399,76 @@ class _ObjectTypeSync(object):
                     break
                     # if match parameter - end
 
+
+    def register_readout_bulk(self) -> List[Dict[str, Any]]:
+        """
+        reads the coil discrete input, input, or holding registers according
+        to their length defined in key and decodes them accordingly. The
+        list of dictionary/ies is appended to the result
+        :return: List
+        """
+        f = None
+        decoded = list()                
+        if len(self.__register_maps.keys()) == 0:
+            return []
+        #
+        # get the size to read, get maximum register, assume that the buffer size
+        # FIXME this could be cleaner, add 4 bytes to the end to capture potential 32bit entries
+        byte_size = int(sorted(self.__register_maps.keys())[-1][1:]) + 4
+        # read appropriate register(s)
+        match self._entity:
+            case '0':
+                f = "read_coils"
+            case '1':
+                f = "read_discrete_inputs"
+            case '3':
+                f = "read_input_registers"
+            case '4':
+                f = "read_holding_registers"
+        # reading data from modbus
+        # read from the start of the buffer to the end plus 4 bytes
+        result = getattr(self.__client, f)(
+            address=0,
+            count=byte_size,
+            slave=UNIT
+        )
+        if result.isError():
+            detail = (("Error reading register at address '{0}' and width "
+                        "'{1}' for MODBUS class '{2}'")
+                        .format(reg_info['start'],
+                                reg_info['width'],
+                                self._entity))
+            _throw_error(detail)     
+        #
+        for register,register_dict in self.__register_maps.items():
+            reg_info = self.__register_width(register)
+
+            # decode and append to list
+            if self._entity in ['0', '1']:
+                decoded += self.__formatter_bit(
+                    decoder=result.bits[reg_info['start']:reg_info['start']+reg_info['width']],
+                    register=register
+                )
+            elif self._entity in ['3', '4']:
+                decoder = BinaryPayloadDecoder.fromRegisters(
+                    registers=result.registers[reg_info['start']:reg_info['start']+reg_info['width']],
+                    byteorder=self.__endianness["byteorder"],
+                    wordorder=self.__endianness["wordorder"]
+                )
+                # skip major byte, if key = "xxxxx/2"
+                if reg_info['pos_byte'] == 2:
+                    decoder.skip_bytes(nbytes=1)
+                decoded += self.__formatter(
+                    decoder=decoder,
+                    register=register,
+                    no_bytes=reg_info['no_bytes']
+                )
+
+        return [  # sort by feature
+            {k: v for k, v in sorted(item.items())} for item in decoded
+        ]
+
+        
     def register_readout(self) -> List[Dict[str, Any]]:
         """
         reads the coil discrete input, input, or holding registers according
@@ -407,8 +477,7 @@ class _ObjectTypeSync(object):
         :return: List
         """
         f = None
-        decoded = list()
-
+        decoded = list()        
         for register in self.__register_maps.keys():
             reg_info = self.__register_width(register)
             # read appropriate register(s)
@@ -421,7 +490,7 @@ class _ObjectTypeSync(object):
                     f = "read_input_registers"
                 case '4':
                     f = "read_holding_registers"
-
+            # reading data from modbus
             result = getattr(self.__client, f)(
                 address=reg_info['start'],
                 count=reg_info['width'],
@@ -460,6 +529,11 @@ class _ObjectTypeSync(object):
             {k: v for k, v in sorted(item.items())} for item in decoded
         ]
 
+    def decode_coil_discrete_input(self) :
+        return self.__formatter_bit(
+                    decoder=result.bits,
+                    register=register
+                )
     def register_write(
             self,
             wr: Dict
