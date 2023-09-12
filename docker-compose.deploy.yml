@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  mb_rest_api_async:
+    build: .
+    environment:
+      - name=value
+      - ENV_FOR_DYNACONF=default
+    restart: unless-stopped # always
+    #    ports:
+    #      - "5090:5090"
+    #    extra_hosts:
+    #      - "host.docker.internal:172.19.0.2"
+    # When enabling this, disable ports!
+    network_mode: host
+
+  mb_client_reader:
+    build: .
+    command: mb_client reader
+    environment:
+      - ENV_FOR_DYNACONF=default

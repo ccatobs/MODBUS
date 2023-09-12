@@ -5,29 +5,27 @@
 auxiliary functions
 """
 
-from timeit import default_timer
-from functools import wraps
-from threading import Lock
-import os
 import glob
 import json
 import logging
-from typing import Callable, Any, Dict
+import os
 from enum import Enum, EnumMeta
+from functools import wraps
+from threading import Lock
+from timeit import default_timer
+from typing import Any, Callable, Dict
+
+from .config.config import settings
 
 
 class MyException(Exception):
-    def __init__(self,
-                 status_code,
-                 detail):
-        super().__init__(status_code,
-                         detail)
+    def __init__(self, status_code, detail):
+        super().__init__(status_code, detail)
         self.status_code = status_code
         self.detail = detail
 
 
-def _throw_error(detail: str,
-                 status_code: int = 400) -> None:
+def _throw_error(detail: str, status_code: int = 400) -> None:
     """
     internal: throws a logging error plus raises an exception
     :param detail: error message
@@ -35,38 +33,33 @@ def _throw_error(detail: str,
     :return:
     """
     logging.error(detail)
-    raise MyException(status_code=status_code,
-                      detail=detail)
+    raise MyException(status_code=status_code, detail=detail)
 
 
 def _client_config() -> Dict:
     path_config = "{0}{1}".format(
-        os.path.dirname(os.path.realpath(__file__)),
-        "/../configFiles/"
+        os.path.dirname(os.path.realpath(__file__)), "/../configFiles/"
     )
-    dir_content = glob.glob1(path_config,
-                             "mb_client_config_*.json")
+    dir_content = glob.glob1(path_config, "mb_client_config_*.json")
     if len(dir_content) != 1:
         detail = "Client config file not found or multiple config files found."
         _throw_error(detail, 404)
     else:
-        config_device_class = "{0}{1}".format(
-            path_config,
-            dir_content[0]
-        )
+        config_device_class = "{0}{1}".format(path_config, dir_content[0])
         logging.info("Config File: {0}".format(config_device_class))
-        return _load_config_file(config_filename)
+        return _load_config_file(config_device_class)
+
 
 def _load_config_file(config_filename) -> Dict:
-    if os.path.exists(config_filename):        
+    if os.path.exists(config_filename):
         logging.debug(f"opening {config_filename}")
-        with open(config_filename) as config_file:            
+        with open(config_filename) as config_file:
             return json.load(config_file)
     else:
-        logging.error(f"{config_filename} not found")
+        detail = f"{config_filename} not found"
+        logging.error(detail)
         _throw_error(detail, 404)
 
-    
 
 class _MyMeta(EnumMeta):
     def __contains__(self, other) -> bool:
@@ -78,11 +71,7 @@ class _MyMeta(EnumMeta):
             return True
 
 
-class MODBUS2AVRO(
-    str,
-    Enum,
-    metaclass=_MyMeta
-):
+class MODBUS2AVRO(str, Enum, metaclass=_MyMeta):
     A = ("decode_bits", "boolean", 8, True)
     B = ("decode_8bit_int", "int", 8, True)
     C = ("decode_8bit_uint", "int", 8, True)
@@ -97,13 +86,7 @@ class MODBUS2AVRO(
     M = ("decode_64bit_float", "double", 64, True)
     N = ("decode_string", "string", 16, False)
 
-    def __new__(
-            cls,
-            key,
-            datatype,
-            no_bit,
-            supersede
-    ) -> Enum:
+    def __new__(cls, key, datatype, no_bit, supersede) -> Enum:
         obj = str.__new__(cls, [str])
         obj._value_ = key
         obj.datatype = datatype
@@ -112,9 +95,12 @@ class MODBUS2AVRO(
         return obj
 
     @classmethod
-    def no_bytes(cls, key) -> int: return int(cls(key).no_bit/8)
+    def no_bytes(cls, key) -> int:
+        return int(cls(key).no_bit / 8)
+
     @classmethod
-    def width(cls, key) -> int: return max(int(cls(key).no_bit/16), 1)
+    def width(cls, key) -> int:
+        return max(int(cls(key).no_bit / 16), 1)
 
 
 class LockGroup(object):
@@ -130,8 +116,7 @@ class LockGroup(object):
         self.__lock_dict = dict()
         self.__lock = Lock()
 
-    def __call__(self,
-                 param: str = None) -> Lock:
+    def __call__(self, param: str = None) -> Lock:
         with self.__lock:
             if param not in self.__lock_dict:
                 self.__lock_dict[param] = Lock()
@@ -149,6 +134,7 @@ def mytimer(supersede: Callable | str = None) -> Callable:
     :param supersede: string (default=None)
     :return: Callable - function wrapped
     """
+
     def _decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
@@ -156,11 +142,13 @@ def mytimer(supersede: Callable | str = None) -> Callable:
             result = func(*args, **kwargs)
             logging.debug(
                 "Time utilized for '{0}' of '{1}': {2:.2f} ms".format(
-                    func.__name__ if 'supersede' not in locals()
-                                     or callable(supersede)
-                                     or supersede is None else supersede,
-                    args[0].__dict__.get('_ip', 'n.a.'),
-                    (default_timer() - start_time) * 1_000
+                    func.__name__
+                    if "supersede" not in locals()
+                    or callable(supersede)
+                    or supersede is None
+                    else supersede,
+                    args[0].__dict__.get("_ip", "n.a."),
+                    (default_timer() - start_time) * 1_000,
                 )
             )
 

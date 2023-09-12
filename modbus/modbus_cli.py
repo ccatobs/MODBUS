@@ -5,8 +5,20 @@ from timeit import default_timer as timer
 
 import click
 
+from .config.config import settings
+
 # Import your MODBUSClientSync and MyException classes
 from .mb_client_sync import MODBUSClientSync, MyException, __version__
+
+log_format = (
+    "%(asctime)s.%(msecs)03d :: %(levelname)s: %(filename)s - "
+    "%(lineno)s - %(funcName)s()\t%(message)s"
+)
+
+log_level = logging.INFO
+if settings.LOG_LEVEL == "DEBUG":
+    log_level = logging.DEBUG
+logging.basicConfig(format=log_format, level=log_level, datefmt="%Y-%m-%d %H:%M:%S")
 
 
 @click.group()
@@ -80,3 +92,11 @@ def mb_client_reader(host, port, debug, config_filename, bulk_read):
         )
     )
     sys.exit(0)
+
+
+@modbus.command("debug")
+def debug():
+    print(settings.MODBUS_CLIENTS)
+    print(type(settings.MODBUS_CLIENTS))
+    for key, value in settings.MODBUS_CLIENTS.items():
+        print(key, value)

@@ -21,6 +21,10 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/ccatp/MODBUS",
     packages=find_packages(),
+    package_data={
+        "your_package_name": ["*.json", "*.toml"],
+    },
+    include_package_data=True,
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [

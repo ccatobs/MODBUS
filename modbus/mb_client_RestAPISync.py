@@ -10,18 +10,19 @@ Implements a locking mechanism for each
 device, such that reader and writer can not be invoked simulaneously.
 """
 
-from fastapi import HTTPException, status, FastAPI, Path, Body
-from fastapi.responses import JSONResponse
 import logging
-import argparse
 import os
-import uvicorn
-from typing import Dict
-from distutils.util import strtobool
 from enum import Enum
-from .mb_client_sync import MODBUSClientSync, __version__
-from .mb_client_aux_sync import LockGroup, MyException
+from typing import Dict
 
+import click
+import uvicorn
+from fastapi import Body, FastAPI, HTTPException, Path, status
+from fastapi.responses import JSONResponse
+
+from .config.config import settings
+from .mb_client_aux_sync import LockGroup, MyException
+from .mb_client_sync import MODBUSClientSync, __version__
 
 """
 version history:
@@ -36,26 +37,26 @@ version history:
 henceforth version history of modbusClient adopted
 """
 
-print(__doc__.format(__version__))
+log_format = (
+    "%(asctime)s.%(msecs)03d :: %(levelname)s: %(filename)s - "
+    "%(lineno)s - %(funcName)s()\t%(message)s"
+)
 
-hosts = os.getenv("ServerHost")
-port = int(os.environ.get('ServerPort'))
-debug = strtobool(os.environ.get('Debug')) \
-    if os.environ.get('Debug') else None
+log_level = logging.INFO
+if settings.LOG_LEVEL == "DEBUG":
+    log_level = logging.DEBUG
+logging.basicConfig(format=log_format, level=log_level, datefmt="%Y-%m-%d %H:%M:%S")
+
 
 lock_mb_client = LockGroup()
-clients = dict()
+CLIENTS = dict()
 
-DeviceEnum = Enum(
-    "DeviceEnum",
-    {host.strip(): host.strip() for host in hosts.split(",")}
-)
 app = FastAPI(
     title="MODBUS API",
     version=__version__,
     description="Connects with MODBUS devices. Enables to read/write from/to "
-                "MODBUS registers. Register mappings to parameters are defined "
-                "in config files available in modbusClient/configFiles."
+    "MODBUS registers. Register mappings to parameters are defined "
+    "in config files available in modbusClient/configFiles.",
 )
 
 
@@ -66,115 +67,88 @@ def mb_clients(host: str) -> MODBUSClientSync:
     :param host: device ip or name
     :return: MODBUSClient instance each device
     """
-    if host not in clients:
-        clients[host] = MODBUSClientSync(
+    if host not in CLIENTS:
+        CLIENTS[host] = MODBUSClientSync(
             host=host,
-            port=port,  # from environment variable
-            debug=debug  # from environment variable
+            port=settings.PORT,  # from environment variable
+            debug=settings.DEBUG,  # from environment variable
+            config_filename=settings.MODBUS_CLIENTS[host],
         )
 
-    return clients[host]
+    return CLIENTS[host]
 
 
-@app.get("/modbus/hosts",
-         summary="List all host names for present device class",
-         tags=["monitoring"])
+@app.get(
+    "/modbus/hosts",
+    summary="List all host names for present device class",
+    tags=["monitoring"],
+)
 async def read_hosts():
-    return JSONResponse([e.value for e in DeviceEnum])
+    return JSONResponse([ip for ip in settings.MODBUS_CLIENTS.keys()])
 
 
-@app.get("/modbus/read/{host}",
-         summary="List values of all registers for MODBUS Device IP/Name",
-         tags=["monitoring", "operations"])
-async def read_register(
-        host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP"
-                                )
-):
+@app.get(
+    "/modbus/read/{host}",
+    summary="List values of all registers for MODBUS Device IP/Name",
+    tags=["monitoring", "operations"],
+)
+async def read_register(host: str):
     try:
-        lock_mb_client(host.value).a  rm -f requirements.txt
-RUN ["chmod", "+x", "python_wrapper.sh"]
-
-ENV PYTHONPATH .
-ENV PORT ${PORT}
-ENV HOST ${HOST}cquire()
-        return JSONResponse(
-            mb_clients(
-                host=host.value
-            ).read_register()
-        )
+        lock_mb_client(host).acquire()
+        return JSONResponse(mb_clients(host).read_register_bulk())
     except MyException as e:
-        raise HTTPException(
-            status_code=e.status_code,
-            detail=e.detail
-        )
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
     finally:
-        lock_mb_client(host.value).release()
+        lock_mb_client(host).release()
 
 
-@app.put("/modbus/write/{host}",
-         summary="Write values to register(s) for MODBUS Device IP/Name",
-         tags=["operations"])
+@app.put(
+    "/modbus/write/{host}",
+    summary="Write values to register(s) for MODBUS Device IP/Name",
+    tags=["operations"],
+)
 async def write_register(
-        payload: Dict = Body(title="Payload",
-                             description="Data to be written into registers"),
-        host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP"
-                                )
+    payload: Dict = Body(
+        title="Payload", description="Data to be written into registers"
+    ),
+    host: str = Path(..., title="Device IP", description="Device IP"),
 ):
     if not payload:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail="Empty request body, nothing to show!")
-    try:
-        lock_mb_client(host.value).acquire()
-        return JSONResponse(
-            mb_clients(
-                host=host.value
-            ).write_register(wr=payload)
-        )
-    except MyException as e:
         raise HTTPException(
-            status_code=e.status_code,
-            detail=e.detail
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Empty request body, nothing to show!",
         )
+    try:
+        lock_mb_client(host).acquire()
+        return JSONResponse(mb_clients(host=host).write_register(wr=payload))
+    except MyException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
     finally:
-        lock_mb_client(host.value).release()
+        lock_mb_client(host).release()
 
 
 @app.on_event("shutdown")
 def shutdown_event():
-    for items, value in clients.items():
-        logging.info("Closing client for device extention: {}".format(items))
-        value.close()
+    for ip, mb_client in CLIENTS.items():
+        logging.info("Closing client for device extention: {}".format(ip))
+        mb_client.close()
 
 
-def main():
-    argparser = argparse.ArgumentParser(
-        description="Rest API for MODBUS client")
-    argparser.add_argument(
-        '--host',
-        required=False,
-        help='IP address for REST API (default: "127.0.0.1")',
-        default='127.0.0.1'
-    )
-    argparser.add_argument(
-        '--port',
-        required=False,
-        type=int,
-        help='Port (default: 5100)',
-        default=5100
-    )
+@click.command()
+@click.option(
+    "--host",
+    default="127.0.0.1",
+    type=str,
+    help='IP address for REST API (default: "127.0.0.1")',
+)
+@click.option("--port", default=5100, type=int, help="Port (default: 5100)")
+def main(host, port):
+    """Rest API for MODBUS client"""
+    logging.info("PID: %s", os.getpid())
+    logging.info("Host: %s, Port: %s", host, port)
 
-    logging.info("PID: {0}".format(os.getpid()))
-    logging.info("Host: {0}, Port: {1}".format(
-        argparser.parse_args().host,
-        argparser.parse_args().port)
-    )
-
-    uvicorn.run(app,
-                host=argparser.parse_args().host,
-                port=argparser.parse_args().port)
+    uvicorn.run(app, host=host, port=port)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

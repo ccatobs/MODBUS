@@ -1,0 +1,5 @@
+version: "3.8"
+services:
+  mb_rest_api_async:
+    environment:
+      - ENV_FOR_DYNACONF=develop

@@ -19,15 +19,25 @@ Copyright (C) 2021-23 Dr. Ralf Antonius Timmermann,
 Argelander Institute for Astronomy (AIfA), University Bonn.
 """
 
-from pymodbus.client import ModbusTcpClient
-import re
-import logging
-from typing import Dict, Any
 import datetime
+import logging
+import re
+from typing import Any, Dict
+
+from pymodbus.client import ModbusTcpClient
+
+from .mb_client_aux_sync import (
+    MODBUS2AVRO,
+    MyException,
+    _client_config,
+    _load_config_file,
+    _throw_error,
+    defined_kwargs,
+    mytimer,
+)
+
 # internal
-from .mb_client_core_sync import _ObjectTypeSync, FEATURE_ALLOWED_SET
-from .mb_client_aux_sync import (mytimer, _client_config, _throw_error,
-                                 MyException, defined_kwargs, MODBUS2AVRO, _load_config_file)
+from .mb_client_core_sync import FEATURE_ALLOWED_SET, _ObjectTypeSync
 
 """
 change history
@@ -128,8 +138,7 @@ henceforth version history continued in CHANGELOG.md
 """
 
 __author__ = "Ralf Antonius Timmermann"
-__copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
-                 "AIfA, University Bonn")
+__copyright__ = "Copyright (C) Ralf Antonius Timmermann, " "AIfA, University Bonn"
 __credits__ = ""
 __license__ = "BSD 3-Clause"
 __version__ = "5.0.3"
@@ -137,22 +146,15 @@ __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
 
-myformat = ("%(asctime)s.%(msecs)03d :: %(levelname)s: %(filename)s - "
-            "%(lineno)s - %(funcName)s()\t%(message)s")
-logging.basicConfig(format=myformat,
-                    level=logging.INFO,
-                    datefmt="%Y-%m-%d %H:%M:%S")
-
 
 class MODBUSClientSync(object):
-
     def __init__(
-            self,
-            host: str,
-            *,
-            port: int = None,
-            debug: bool = None,
-            config_filename: str=""
+        self,
+        host: str,
+        *,
+        port: int = None,
+        debug: bool = None,
+        config_filename: str = ""
     ):
         """
         initializing the modbus client and perform checks on
@@ -164,53 +166,44 @@ class MODBUSClientSync(object):
         :param port: int - device port
         :param debug: bool - debug mode True/False
         """
-        logging.getLogger().setLevel(
-            getattr(logging,
-                    "DEBUG" if debug else "INFO")
-        )
-        self._ip = host    
-        if config_filename!="":
+        log = logging.getLogger(__name__)
+        self._ip = host
+        logging.info("Initializing MODBUS client for {}".format(self._ip))
+        if config_filename != "":
+            logging.debug("Loading {}".format(config_filename))
             client_config = _load_config_file(config_filename)
         else:
+            logging.debug("Loading default config file")
             client_config = _client_config()
 
         # integrity checks
-        self.__client_mapping_checks(mapping=client_config['mapping'])
+        self.__client_mapping_checks(mapping=client_config["mapping"])
 
         client = ModbusTcpClient(
             host=self._ip,
-            **defined_kwargs(port=port,
-                             debug=debug),
+            **defined_kwargs(port=port, debug=debug),
         )
         client.connect()
         if not client.connected:
-            _throw_error("Could not connect to MODBUS server: IP={}"
-                         .format(self._ip), 503)
-        logging.debug("MODBUS Communication Parameters {}"
-                      .format(client.comm_params))
+            _throw_error(
+                "Could not connect to MODBUS server: IP={}".format(self._ip), 503
+            )
+        logging.debug("MODBUS Communication Parameters {}".format(client.comm_params))
         self.__init = {
             "client": client,
-            "mapping": client_config['mapping'],
+            "mapping": client_config["mapping"],
             # if endianness not found, apply default:
             # "byteorder": Endian.Little, "wordorder": Endian.Big
-            "endianness": client_config.get("endianness",
-                                            {"byteorder": "<",
-                                             "wordorder": ">"})
+            "endianness": client_config.get(
+                "endianness", {"byteorder": "<", "wordorder": ">"}
+            ),
         }
         # initialize _ObjectType objects for each entity
         self.__entity_list = list()
-        for regs in ['0', '1', '3', '4']:
-            self.__entity_list.append(
-                _ObjectTypeSync(
-                    init=self.__init,
-                    entity=regs
-                )
-            )
+        for regs in ["0", "1", "3", "4"]:
+            self.__entity_list.append(_ObjectTypeSync(init=self.__init, entity=regs))
 
-    def __existance_mapping_checks(
-            self,
-            wr: Dict
-    ) -> str:
+    def __existance_mapping_checks(self, wr: Dict) -> str:
         """
         check if parameter exists in mapping at all
         :param wr: list of dicts {parameter: value}
@@ -219,8 +212,8 @@ class MODBUSClientSync(object):
         parms = list()
         text = "Parameter {0} not mapped to register"
         for parameter in wr.keys():
-            for attributes in self.__init['mapping'].values():
-                if attributes['parameter'] == parameter:
+            for attributes in self.__init["mapping"].values():
+                if attributes["parameter"] == parameter:
                     break
             else:
                 parms.append("'{}'".format(parameter))
@@ -245,65 +238,100 @@ class MODBUSClientSync(object):
             where x=0000-9999 and y=1|2
             """
             msg = "Wrong register in mapping: {0}".format(register)
-            if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$",
-                            register):
+            if not re.match(r"^[0134][0-9]{4}(/([12]|[0134][0-9]{4}))?$", register):
                 _throw_error(msg, 422)
             comp = register.split("/")
             if len(comp) == 2:
-                if (comp[1] not in ["1", "2"]
-                    and (comp[0][0] != comp[1][0]  # same register class
-                         or int(comp[1]) - int(comp[0]) < 1)):  # ascending
+                if comp[1] not in ["1", "2"] and (
+                    comp[0][0] != comp[1][0]  # same register class
+                    or int(comp[1]) - int(comp[0]) < 1
+                ):  # ascending
                     _throw_error(msg, 422)
 
         def check_feature_integrity() -> None:
             if feature not in FEATURE_ALLOWED_SET:
-                _throw_error(("Feature '{1}' in register '{0}' is not supported"
-                              .format(register, feature)), 422)
+                _throw_error(
+                    (
+                        "Feature '{1}' in register '{0}' is not supported".format(
+                            register, feature
+                        )
+                    ),
+                    422,
+                )
             if re.match("(min|max)", feature):  # check features min or max
                 if not re.match("(int|long|float|double)", datatype):
-                    _throw_error(("Feature min or max not permitted for "
-                                  "register '{0}'".format(register)), 422)
+                    _throw_error(
+                        (
+                            "Feature min or max not permitted for "
+                            "register '{0}'".format(register)
+                        ),
+                        422,
+                    )
                 if type(v) not in (int, float):
-                    _throw_error(("Feature '{1}' in register '{0}' is not "
-                                  "numerical".format(register, feature)), 422)
+                    _throw_error(
+                        (
+                            "Feature '{1}' in register '{0}' is not "
+                            "numerical".format(register, feature)
+                        ),
+                        422,
+                    )
             if re.match("map", feature):  # check feature map
                 if re.match("boolean", datatype):
                     for binarystring in v.keys():
-                        if not re.match(r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)",
-                                        binarystring):
-                            _throw_error("Binary string error in map for "
-                                         "register '{0}'".format(register),
-                                         422)
+                        if not re.match(
+                            r"^0b(?=[01]{8}$)(?=[^1]*1[^1]*$)", binarystring
+                        ):
+                            _throw_error(
+                                "Binary string error in map for "
+                                "register '{0}'".format(register),
+                                422,
+                            )
 
         def function_available() -> str:
             function = "decode_bits"
-            if register[0] in ['3', '4']:  # discrete input or holding
+            if register[0] in ["3", "4"]:  # discrete input or holding
                 try:
-                    function = value['function']
+                    function = value["function"]
                     return MODBUS2AVRO(function).datatype
                 except ValueError:
-                    _throw_error(("Decoding function '{0}' not defined for "
-                                  "register '{1}'").format(function,
-                                                           register), 422)
+                    _throw_error(
+                        (
+                            "Decoding function '{0}' not defined for " "register '{1}'"
+                        ).format(function, register),
+                        422,
+                    )
                 except KeyError:
-                    _throw_error(("Decoding function not provided for "
-                                  "register '{0}'").format(register), 422)
+                    _throw_error(
+                        ("Decoding function not provided for " "register '{0}'").format(
+                            register
+                        ),
+                        422,
+                    )
             return MODBUS2AVRO(function).datatype  # coil & input register
 
         def parameter_available() -> str:
             try:
                 return value["parameter"]
             except KeyError:
-                _throw_error(("Feature parameter missing for register '{0}'"
-                              .format(register)), 422)
+                _throw_error(
+                    ("Feature parameter missing for register '{0}'".format(register)),
+                    422,
+                )
 
         def seek_parameter_duplicate() -> None:
             parameter_duplicate = [
                 reg for reg, parm in rev_dict.items() if len(parm) > 1
             ]
             if parameter_duplicate:
-                _throw_error(("Duplicate parameter '{0}'"
-                              .format(", ".join(parameter_duplicate))), 422)
+                _throw_error(
+                    (
+                        "Duplicate parameter '{0}'".format(
+                            ", ".join(parameter_duplicate)
+                        )
+                    ),
+                    422,
+                )
+
         # end nested functions
 
         rev_dict = dict()
@@ -317,21 +345,19 @@ class MODBUSClientSync(object):
         seek_parameter_duplicate()
 
     @mytimer
-        
     def read_register_bulk(self) -> Dict[str, Any]:
         """
         invoke the read all mapped registers for monitoring
         :return: List of Dict for housekeeping
         """
         return {
-            "timestamp": datetime.datetime.now(
-                tz=datetime.timezone.utc
-            ).isoformat(),
+            "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
             "host": self._ip,
             "data": [
-                item for entity in self.__entity_list for item in
-                entity.register_readout_bulk()
-            ]
+                item
+                for entity in self.__entity_list
+                for item in entity.register_readout_bulk()
+            ],
         }
 
     def read_register(self) -> Dict[str, Any]:
@@ -340,16 +366,14 @@ class MODBUSClientSync(object):
         :return: List of Dict for housekeeping
         """
         return {
-            "timestamp": datetime.datetime.now(
-                tz=datetime.timezone.utc
-            ).isoformat(),
+            "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
             "host": self._ip,
             "data": [
-                item for entity in self.__entity_list for item in
-                entity.register_readout()
-            ]
+                item
+                for entity in self.__entity_list
+                for item in entity.register_readout()
+            ],
         }
-    
 
     def __updated_registers(self) -> Dict[str, Any]:
         """
@@ -358,15 +382,12 @@ class MODBUSClientSync(object):
         """
         tmp = dict()
         for entity in self.__entity_list:
-            if entity.entity in ['0', '4']:
+            if entity.entity in ["0", "4"]:
                 tmp.update(entity.updated_items)
         return tmp
 
     @mytimer
-    def write_register(
-            self,
-            wr: Dict
-    ) -> Dict[str, str | Dict]:
+    def write_register(self, wr: Dict) -> Dict[str, str | Dict]:
         """
         invoke the writer to registers, where
         :param wr: list of dicts {parameter: value}
@@ -376,10 +397,7 @@ class MODBUSClientSync(object):
         if detail:
             raise MyException(
                 status_code=422,
-                detail="{0}, updated register content: {1}".format(
-                    detail,
-                    {}
-                )
+                detail="{0}, updated register content: {1}".format(detail, {}),
             )
 
         try:
@@ -389,14 +407,13 @@ class MODBUSClientSync(object):
             raise MyException(
                 status_code=e.status_code,
                 detail="{0}, updated register content: {1}".format(
-                    e.detail,
-                    self.__updated_registers()
-                )
+                    e.detail, self.__updated_registers()
+                ),
             )
 
         return {
             "status": "write success",
-            "updated register content": self.__updated_registers()
+            "updated register content": self.__updated_registers(),
         }
 
     def close(self) -> None:
