@@ -7,8 +7,7 @@ log_level = "INFO"
 config_file_path = "DeviceClassConfigs/"
 
 [default.modbus_clients]
-"127.0.0.40" = "device_config_files/mb_client_config_hlx.json"
-"127.0.0.41" = "device_config_files/mb_client_config_hlx.json"
+"10.10.1.30" = "device_config_files/mb_client_config_hlx.json"
 
 [develop]
 log_level = "DEBUG"

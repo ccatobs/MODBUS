@@ -70,7 +70,6 @@ def mb_clients(host: str) -> MODBUSClientSync:
     if host not in CLIENTS:
         CLIENTS[host] = MODBUSClientSync(
             host=host,
-            port=settings.PORT,  # from environment variable
             debug=settings.DEBUG,  # from environment variable
             config_filename=settings.MODBUS_CLIENTS[host],
         )
