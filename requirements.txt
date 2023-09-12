@@ -2,3 +2,4 @@ pymodbus==3.4.1
 fastapi>=0.100.0
 uvicorn>=0.23.1
 pydantic>=2.1.1
+click>=8.0.1
