@@ -144,7 +144,8 @@ class MODBUSClientAsync(object):
             *,
             port: int = None,
             debug: bool = None,
-            timeout_connect: float = None
+            timeout_connect: float = None,
+            config_filename: str = None
     ):
         """
         initializing the async modbus client and perform integrity checks on
@@ -159,7 +160,7 @@ class MODBUSClientAsync(object):
                     "DEBUG" if debug else "INFO")
         )
         self._ip = host
-        client_config = _client_config()
+        client_config = _client_config(config_filename=config_filename)
 
         # integrity checks
         self.__client_mapping_checks(mapping=client_config['mapping'])

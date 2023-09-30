@@ -7,6 +7,17 @@
 ### Deprecated
 ### Removed
 ### Security
+## 5.2.0 (2023-09-30)
+### Added
+- Only one helper routine for read/write and sync/async clients
+- Optional config file provided via command line
+- setup (thanks to Ronan)
+### Changed
+### Fixed
+### Deprecated
+### Removed
+- Helper routines for sync and async clients
+### Security
 ## 5.1.0 (2023-08-27)
 ### Added
 - sync/async helper reader and writer merged into one

@@ -10,7 +10,7 @@ Implements a locking mechanism for each
 device, such that reader and writer can not be invoked simulaneously.
 """
 
-from fastapi import HTTPException, status, FastAPI, Path, Body
+from fastapi import HTTPException, FastAPI, Path, Body
 from fastapi.responses import JSONResponse
 import logging
 import argparse
@@ -19,8 +19,10 @@ import uvicorn
 from typing import Dict
 from distutils.util import strtobool
 from enum import Enum
+from typing import Annotated
 # internal
-from modbusClientSync import MODBUSClientSync, LockGroup, MyException, __version__
+from modbusClientSync import (MODBUSClientSync, LockGroup, MyException,
+                              __version__)
 
 """
 version history:
@@ -75,27 +77,30 @@ def mb_clients(host: str) -> MODBUSClientSync:
     return clients[host]
 
 
-@app.get("/modbus/hosts",
-         summary="List all host names for present device class",
-         tags=["monitoring"])
-async def read_hosts():
+@app.get(
+    "/modbus/hosts",
+    summary="List all host names for present device class",
+    tags=["monitoring"]
+)
+async def read_hosts() -> JSONResponse:
     return JSONResponse([e.value for e in DeviceEnum])
 
 
-@app.get("/modbus/read/{host}",
-         summary="List values of all registers for MODBUS Device IP/Name",
-         tags=["monitoring", "operations"])
+@app.get(
+    "/modbus/read/{host}",
+    summary="List values of all registers for MODBUS Device IP/Name",
+    tags=["monitoring", "operations"]
+)
 async def read_register(
-        host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP"
-                                )
-):
+        host: Annotated[DeviceEnum, Path(
+            title="Device IP",
+            description="Device IP")
+        ]
+) -> JSONResponse:
     try:
         lock_mb_client(host.value).acquire()
         return JSONResponse(
-            mb_clients(
-                host=host.value
-            ).read_register()
+            mb_clients(host=host.value).read_register()
         )
     except MyException as e:
         raise HTTPException(
@@ -106,25 +111,25 @@ async def read_register(
         lock_mb_client(host.value).release()
 
 
-@app.put("/modbus/write/{host}",
-         summary="Write values to register(s) for MODBUS Device IP/Name",
-         tags=["operations"])
+@app.put(
+    "/modbus/write/{host}",
+    summary="Write values to register(s) for MODBUS Device IP/Name",
+    tags=["operations"]
+)
 async def write_register(
-        payload: Dict = Body(title="Payload",
-                             description="Data to be written into registers"),
-        host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP"
-                                )
+        payload: Annotated[Dict, Body(
+            title="Payload",
+            description="Data to be written into registers")
+        ],
+        host: Annotated[DeviceEnum, Path(
+            title="Device IP",
+            description="Device IP")
+        ]
 ):
-    if not payload:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail="Empty request body, nothing to show!")
     try:
         lock_mb_client(host.value).acquire()
         return JSONResponse(
-            mb_clients(
-                host=host.value
-            ).write_register(wr=payload)
+            mb_clients(host=host.value).write_register(wr=payload)
         )
     except MyException as e:
         raise HTTPException(

@@ -39,24 +39,33 @@ def _throw_error(detail: str,
                       detail=detail)
 
 
-def _client_config() -> Dict:
-    path_config = "{0}{1}".format(
-        os.path.dirname(os.path.realpath(__file__)),
-        "/../configFiles/"
-    )
-    dir_content = glob.glob1(path_config,
-                             "mb_client_config_*.json")
-    if len(dir_content) != 1:
-        detail = "Client config file not found or multiple config files found."
-        _throw_error(detail, 404)
+def _client_config(config_filename: str) -> Dict:
+    if config_filename:
+        if os.path.exists(config_filename):
+            config_device_class = config_filename
+        else:
+            detail = ("Optional client config file '{}' not found"
+                      .format(config_filename))
+            _throw_error(detail, 404)
     else:
-        config_device_class = "{0}{1}".format(
-            path_config,
-            dir_content[0]
+        path_config = "{0}{1}".format(
+            os.path.dirname(os.path.realpath(__file__)),
+            "/../configFiles/"
         )
-        logging.info("Config File: {0}".format(config_device_class))
-        with open(config_device_class) as config_file:
-            return json.load(config_file)
+        dir_content = glob.glob1(path_config,
+                                 "mb_client_config_*.json")
+        if len(dir_content) != 1:
+            detail = ("Client config file not found or multiple config "
+                      "files found")
+            _throw_error(detail, 404)
+        else:
+            config_device_class = "{0}{1}".format(
+                path_config,
+                dir_content[0]
+            )
+    logging.info("Config File: {0}".format(config_device_class))
+    with open(config_device_class) as config_file:
+        return json.load(config_file)
 
 
 class _MyMeta(EnumMeta):

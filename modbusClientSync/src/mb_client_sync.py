@@ -142,7 +142,8 @@ class MODBUSClientSync(object):
             host: str,
             *,
             port: int = None,
-            debug: bool = None
+            debug: bool = None,
+            config_filename: str = None
     ):
         """
         initializing the sync modbus client and perform integrity checks on
@@ -156,7 +157,7 @@ class MODBUSClientSync(object):
                     "DEBUG" if debug else "INFO")
         )
         self._ip = host
-        client_config = _client_config()
+        client_config = _client_config(config_filename=config_filename)
 
         # integrity checks
         self.__client_mapping_checks(mapping=client_config['mapping'])

@@ -10,7 +10,7 @@ services:
       - .env
     restart: unless-stopped # always
 #    ports:
-#      - "5090:5090"
+#      - "5100:5100"
 #    extra_hosts:
 #      - "host.docker.internal:172.19.0.2"
 # When enabling this, disable ports!

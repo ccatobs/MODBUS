@@ -8,7 +8,7 @@ version {0}
 Web API to serve the read and write methods of the MODBUSClient class.
 """
 
-from fastapi import HTTPException, status, FastAPI, Path, Body
+from fastapi import HTTPException, FastAPI, Path, Body
 from fastapi.responses import JSONResponse
 import logging
 import argparse
@@ -17,9 +17,9 @@ import uvicorn
 from typing import Dict
 from distutils.util import strtobool
 from enum import Enum
+from typing import Annotated
 # internal
-from modbusClientAsync import (MODBUSClientAsync, MyException,  # LockGroup,
-                               __version__)
+from modbusClientAsync import MODBUSClientAsync, MyException, __version__
 
 """
 version history:
@@ -43,9 +43,7 @@ debug = strtobool(os.environ.get('Debug')) \
 timeout_connect = float(os.environ.get('TimeoutConnect')) \
     if os.environ.get('TimeoutConnect') else None
 
-# lock_mb_client = LockGroup()
 clients: Dict = dict()
-
 DeviceEnum = Enum(
     "DeviceEnum",
     {host.strip(): host.strip() for host in hosts.split(",")}
@@ -77,68 +75,66 @@ def mb_clients(host: str) -> MODBUSClientAsync:
     return clients[host]
 
 
-@app.get("/modbus/hosts",
-         summary="List all host names for present device class",
-         tags=["monitoring"])
-async def read_hosts():
+@app.get(
+    "/modbus/hosts",
+    summary="List all host names for present device class",
+    tags=["monitoring"]
+)
+async def read_hosts() -> JSONResponse:
     return JSONResponse([e.value for e in DeviceEnum])
 
 
-@app.get("/modbus/read/{host}",
-         summary="List values of all registers for MODBUS Device IP/Name",
-         tags=["monitoring", "operations"])
+@app.get(
+    "/modbus/read/{host}",
+    summary="List values of all registers for MODBUS Device IP/Name",
+    tags=["monitoring", "operations"]
+)
 async def read_register(
-        host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP",
-                                # enum=[e.value for e in DeviceEnum]
-                                )
-):
+        host: Annotated[DeviceEnum, Path(
+            title="Device IP",
+            description="Device IP",
+            # enum = [e for e in DeviceEnum if len(DeviceEnum) == 1]
+        )
+        ]
+) -> JSONResponse:
+    """enabling enum as option:
+    in case there's only one enum element, this would show up in the dropdown
+    list of openapi's doc#, whilst it'd stay empty at all (bug in openapi)"""
     try:
-        # lock_mb_client(host.value).acquire()
         return JSONResponse(
-            await mb_clients(
-                host=host.value
-            ).read_register()
+            await mb_clients(host=host.value).read_register()
         )
     except MyException as e:
         raise HTTPException(
             status_code=e.status_code,
             detail=e.detail
         )
-    finally:
-        # lock_mb_client(host.value).release()
-        pass
 
 
-@app.put("/modbus/write/{host}",
-         summary="Write values to register(s) for MODBUS Device IP/Name",
-         tags=["operations"])
+@app.put(
+    "/modbus/write/{host}",
+    summary="Write values to register(s) for MODBUS Device IP/Name",
+    tags=["operations"]
+)
 async def write_register(
-        payload: Dict = Body(title="Payload",
-                             description="Data to be written into registers"),
-        host: DeviceEnum = Path(title="Device IP",
-                                description="Device IP",
-                                # enum=[e.value for e in DeviceEnum]
-                                )
-):
-    if not payload:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail="Empty request body, nothing to show!")
+        payload: Annotated[Dict, Body(
+            title="Payload",
+            description="Data to be written into registers")
+        ],
+        host: Annotated[DeviceEnum, Path(
+            title="Device IP",
+            description="Device IP")
+        ]
+) -> JSONResponse:
     try:
-        # lock_mb_client(host.value).acquire()
         return JSONResponse(
-            await mb_clients(
-                host=host.value
-            ).write_register(wr=payload)
+            await mb_clients(host=host.value).write_register(wr=payload)
         )
     except MyException as e:
         raise HTTPException(
             status_code=e.status_code,
             detail=e.detail
         )
-    finally:
-        # lock_mb_client(host.value).release()
-        pass
 
 
 def main():
