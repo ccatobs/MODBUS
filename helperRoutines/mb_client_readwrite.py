@@ -49,7 +49,7 @@ logging.basicConfig(format=myformat,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 argparser = argparse.ArgumentParser(
-    description="Universal MODBUS Client Reader & Writer"
+    description="Universal MODBUS (A)Sync Client Reader & Writer"
 )
 argparser.add_argument(
     '--host',
@@ -81,9 +81,9 @@ argparser.add_argument(
     help="Payload ('{parameter1: value1, parameter2: value2, ...}')"
 )
 argparser.add_argument(
-    '--async_reader',
+    '--async_mode',
     required=False,
-    help='Asynchronous Reader (default: False)',
+    help='Asynchronous Mode (default: Synchronous Mode)',
     action="store_true"
 )
 argparser.add_argument(
@@ -105,9 +105,11 @@ async def async_main():
             config_filename=args.config_filename
         )
         if args.payload:
-            print(json.dumps(await mb_client.write_register(
-                json.loads(args.payload)),
-                             indent=2))
+            print(json.dumps(
+                await mb_client.write_register(
+                    json.loads(args.payload)
+                ),
+                indent=2))
         else:
             print(json.dumps(await mb_client.read_register(),
                              indent=2))
@@ -115,7 +117,6 @@ async def async_main():
         print("Code={0}, detail={1}".format(e.status_code,
                                             e.detail))
         sys.exit(1)
-    sys.exit(0)
 
 
 def sync_main():
@@ -130,8 +131,11 @@ def sync_main():
             config_filename=args.config_filename
         )
         if args.payload:
-            print(json.dumps(mb_client.write_register(json.loads(args.payload)),
-                             indent=2))
+            print(json.dumps(
+                mb_client.write_register(
+                    json.loads(args.payload)
+                ),
+                indent=2))
         else:
             print(json.dumps(mb_client.read_register(),
                              indent=2))
@@ -139,15 +143,17 @@ def sync_main():
         print("Code={0}, detail={1}".format(e.status_code,
                                             e.detail))
         sys.exit(1)
-    sys.exit(0)
 
 
 if __name__ == '__main__':
     _start_time = timer()
-    if args.async_reader:
+    if args.async_mode:
+        print("MODBUS Asynchronous Client")
         asyncio.run(async_main())
     else:
+        print("MODBUS Synchronous Client")
         sync_main()
     print("Time consumed to process MODBUS interface: {0:.1f} ms".format(
         (timer() - _start_time) * 1_000)
     )
+    sys.exit(0)

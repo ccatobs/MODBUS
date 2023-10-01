@@ -247,14 +247,15 @@ The result provided
 for the housekeeping (Kafka producer) is a list of dictionary objects.
 
 Present MODBUS clients versions deploy the synchronous and 
-asynchronous [ModbusTcpClients](https://pymodbus.readthedocs.io/en/latest/source/library/client.html#pymodbus.client.ModbusTcpClient) 
-in its version v3.4.1 (as of 2023/07/28).
+asynchronous [ModbusTcpClients](https://pymodbus.readthedocs.io/en/latest/source/library/client.html#pymodbus.client.ModbusTcpClient) in its version v3.5.2 (as of 2023/10/01).
 
-Run (for testing):
+Run reader:
     
-    python3 mb_client_reader_<sync/async>.py --host <host address> \
-                                             [--port <host port> (default: 502)] \
-                                             [--debug]
+    python3 mb_client_readwrite.py --host <host address> \
+                                   [--port <host port> (default: 502)] \
+                                   [--debug]
+                                   [--async_mode]
+                                   [--config_filename <path to config file>]
 
 
 ## WRITER
@@ -263,12 +264,14 @@ Only the register classes coil (class 0) and holding registers (class 4)
 are eligible for writing. Registers in those classes may be 
 changed by utilizing the writer method of MODBUSClient class.
 
-Run (for testing):
+Run writer:
     
-    python3 mb_client_writer_<sync/async>.py --host <host address> \
-                                             [--port <host port> (default: 502)] \
-                                             [--debug] \
-                                             --payload "{\"test 32 bit int\": 720.04, ...}"
+    python3 mb_client_readwrite.py --host <host address> \
+                                   --payload "{\"test 32 bit int\": 720.04, ...}"
+                                   [--port <host port> (default: 502)] \
+                                   [--debug] \
+                                   [--async_mode]
+                                   [--config_filename <path to config file>]
 
 It accepts - as input - a JSON with one or multiple
 {"parameter": "value"} pairs, where parameter needs to match (required!)
@@ -374,8 +377,8 @@ The current repository comprises:
     * read_register
     * write_register
 * MODBUS Helper Routine
-  * Synchronous Reader and Writer
-  * Asynchronous Reader and Writer
+  * [Reader & Writer](https://github.com/ccatp/MODBUS/blob/339184677834f3a99d0d447083783113a0d5c1fc/helperRoutines/mb_client_readwrite.py) 
+routine for both Synchronous & Asynchronous Clients
   * Server Simulator (cloned from https://hub.docker.com/r/oitc/modbus-server)
 * MODBUS RestAPI
   * Synchronous
@@ -389,7 +392,6 @@ The current repository comprises:
 MODBUS Server connection and register mapping details are defined in
 mb_client_config_&lt;device&gt;.json.
 
-For the Conda environment used, 
-see [here](https://github.com/ccatp/MODBUS/blob/451ef17b0a7fc0eba00bc9a258781f206362849a/conda-env.yml)
+For the Conda environment used, see [here](https://github.com/ccatp/MODBUS/blob/451ef17b0a7fc0eba00bc9a258781f206362849a/conda-env.yml)
 
 Contact: Ralf Antonius Timmermann, AIfA, University Bonn, email: rtimmermann@astro.uni-bonn.de
