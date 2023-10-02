@@ -4,6 +4,7 @@
 ### Added
 ### Changed
 ### Fixed
+- error message fixed for async write to holding
 ### Deprecated
 ### Removed
 ### Security
