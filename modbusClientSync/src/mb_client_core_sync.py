@@ -355,12 +355,6 @@ class _ObjectTypeSync(object):
                         )
 
                     elif "_string" in function:
-                        # test max length of string
-                        if len(value) > (2 * reg_info['width']):
-                            detail = ("'{0}' too long for parameter '{1}'"
-                                      .format(value,
-                                              parameter))
-                            _throw_error(detail, 422)
                         # printability
                         try:
                             if not value.isprintable():
@@ -371,6 +365,12 @@ class _ObjectTypeSync(object):
                                       .format(value,
                                               parameter,
                                               str(e)))
+                            _throw_error(detail, 422)
+                        # test max length of string
+                        if len(value) > (2 * reg_info['width']):
+                            detail = ("'{0}' too long for parameter '{1}'"
+                                      .format(value,
+                                              parameter))
                             _throw_error(detail, 422)
 
                     # test max length of bit list

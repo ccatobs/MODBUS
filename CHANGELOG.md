@@ -7,6 +7,16 @@
 ### Deprecated
 ### Removed
 ### Security
+## 5.3.0 (2023-10-02)
+### Added
+### Changed
+### Fixed
+- Make write functions for coil and holding asynchronous in async client
+(yet missing exception handling: "async have never been awaited for" in case of error)
+- Check printability of strings before checking its length
+### Deprecated
+### Removed
+### Security
 ## 5.2.0 (2023-09-30)
 ### Added
 - Only one helper routine for read/write and sync/async clients

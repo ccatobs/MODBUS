@@ -278,23 +278,38 @@ class _ObjectTypeAsync(object):
         :param wr: dictionary with {parameter: value} pairs
         :return:
         """
+        async def write_coil(
+                parm: str,
+                add: str,
+                val: Any
+        ) -> None:
+            rr = await self.__client.write_coil(
+                address=int(add),
+                value=val,
+                slave=UNIT
+            )
+            if rr.isError():
+                detail = (("Error writing coil register at address "
+                           "'{0}' with payload '{1}'")
+                          .format(int(add), val))
+                _throw_error(detail, 422)
+            self.updated_items[parm] = val
+        # end nested function
+
+        coros = list()
         for parameter, value in wr.items():
             for address, attributes in self.__register_maps.items():
+                # coil register updates one-by-one in async mode
                 if attributes['parameter'] == parameter:
-                    # coil register updates one-by-one
-                    rr = await self.__client.write_coil(
-                            address=int(address),
-                            value=value,
-                            slave=UNIT
+                    coros.append(
+                        write_coil(
+                            parm=parameter,
+                            add=address,
+                            val=value)
                     )
-                    if rr.isError():
-                        detail = (("Error writing coil register at address "
-                                   "'{0}' with payload '{1}'")
-                                  .format(int(address),
-                                          value))
-                        _throw_error(detail, 422)
-                    self.updated_items[parameter] = value
                     break
+        for _ in await asyncio.gather(*coros):
+            continue
 
     async def __holding(
             self,
@@ -324,6 +339,24 @@ class _ObjectTypeAsync(object):
                          "{0} > {1} (max)".format(value, maximum, parameter)),
                         422
                     )
+
+        async def write_holding(
+                add: int,
+                values: Any,
+                val: Any,
+                parm: str
+        ) -> None:
+            rr = await self.__client.write_registers(
+                    address=add,
+                    values=values,
+                    slave=UNIT
+            )
+            if rr.isError():
+                detail = (("Error writing to holding "
+                           "register address '{0}' with payload '{1}'")
+                          .format(reg_info['start'], payload))
+                _throw_error(detail, 422)
+            self.updated_items[parm] = val
         # end nested function
 
         builder = BinaryPayloadBuilder(
@@ -331,6 +364,7 @@ class _ObjectTypeAsync(object):
             wordorder=self.__endianness['wordorder']
         )
 
+        coros = list()
         for parameter, value in wr.items():
             for address, attributes in self.__register_maps.items():
                 if attributes['parameter'] == parameter:
@@ -357,12 +391,6 @@ class _ObjectTypeAsync(object):
                         )
 
                     elif "_string" in function:
-                        # test max length of string
-                        if len(value) > (2 * reg_info['width']):
-                            detail = ("'{0}' too long for parameter '{1}'"
-                                      .format(value,
-                                              parameter))
-                            _throw_error(detail, 422)
                         # printability
                         try:
                             if not value.isprintable():
@@ -373,6 +401,12 @@ class _ObjectTypeAsync(object):
                                       .format(value,
                                               parameter,
                                               str(e)))
+                            _throw_error(detail, 422)
+                        # test max length of string
+                        if len(value) > (2 * reg_info['width']):
+                            detail = ("'{0}' too long for parameter '{1}'"
+                                      .format(value,
+                                              parameter))
                             _throw_error(detail, 422)
 
                     # test max length of bit list
@@ -387,25 +421,22 @@ class _ObjectTypeAsync(object):
                     try:
                         getattr(builder, function)(value)
                     except Exception as e:
-                        err = e
-                        pass
+                        err = e  # ToDo: this exception is yet to evaluated
+                        logging.warning(str(err))
                     payload = builder.to_registers()
-                    rr = await self.__client.write_registers(
-                            address=reg_info['start'],
+                    coros.append(
+                        write_holding(
+                            add=reg_info['start'],
                             values=payload,
-                            slave=UNIT
+                            val=value,
+                            parm=parameter)
                     )
-                    if rr.isError():
-                        detail = (("Error: {2} writing to holding "
-                                   "register address '{0}' with payload '{1}'")
-                                  .format(reg_info['start'],
-                                          payload,
-                                          err))
-                        _throw_error(detail, 422)
-                    self.updated_items[parameter] = value
                     builder.reset()  # reset builder
                     break
                     # if match parameter - end
+
+        for _ in await asyncio.gather(*coros):
+            continue
 
     async def register_readout(self) -> List[Dict[str, Any]]:
         """

@@ -253,9 +253,9 @@ Run reader:
     
     python3 mb_client_readwrite.py --host <host address> \
                                    [--port <host port> (default: 502)] \
-                                   [--debug]
-                                   [--async_mode]
-                                   [--config_filename <path to config file>]
+                                   [--debug] \
+                                   [--async_mode] \
+                                   [--config_filename <alternative path to config file>]
 
 
 ## WRITER
@@ -267,15 +267,15 @@ changed by utilizing the writer method of MODBUSClient class.
 Run writer:
     
     python3 mb_client_readwrite.py --host <host address> \
-                                   --payload "{\"test 32 bit int\": 720.04, ...}"
+                                   --payload "{\"test 32 bit int\": 720.04, ...}" \
                                    [--port <host port> (default: 502)] \
                                    [--debug] \
-                                   [--async_mode]
-                                   [--config_filename <path to config file>]
+                                   [--async_mode] (has no effect, yet!) \
+                                   [--config_filename <alternative path to config file>]
 
 It accepts - as input - a JSON with one or multiple
 {"parameter": "value"} pairs, where parameter needs to match (required!)
-its counterpart in the Reader JSON as already defined above.
+its counterpart in the Reader JSON as already defined above. 
 
 Note: parameters defined for MODBUS register classes 1 and 3 will be ignored.
 
@@ -294,7 +294,7 @@ will be set to false.
 
 ```
                         byte/1          byte/2
---payload "{\"TEST0\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
+--payload "{\"<parameter>\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
                         l             h l             h
 ```
 
