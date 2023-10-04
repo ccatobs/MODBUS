@@ -354,10 +354,10 @@ class _ObjectTypeAsync(object):
             if rr.isError():
                 detail = (("Error writing to holding "
                            "register address '{0}' with payload '{1}'")
-                          .format(reg_info['start'], payload))
+                          .format(add, values))
                 _throw_error(detail, 422)
             self.updated_items[parm] = val
-        # end nested function
+        # end nested functions
 
         builder = BinaryPayloadBuilder(
             byteorder=self.__endianness['byteorder'],
@@ -417,23 +417,24 @@ class _ObjectTypeAsync(object):
                                           parameter))
                         _throw_error(detail, 422)
 
-                    err = ""
                     try:
                         getattr(builder, function)(value)
                     except Exception as e:
-                        err = e  # ToDo: this exception is yet to evaluated
-                        logging.warning(str(err))
+                        detail = ("Error in BinaryPayloadBuilder: {}"
+                                  .format(str(e)))
+                        _throw_error(detail, 422)
                     payload = builder.to_registers()
                     coros.append(
                         write_holding(
                             add=reg_info['start'],
                             values=payload,
                             val=value,
-                            parm=parameter)
+                            parm=parameter
+                        )
                     )
                     builder.reset()  # reset builder
                     break
-                    # if match parameter - end
+                # if match parameter - end
 
         for _ in await asyncio.gather(*coros):
             continue

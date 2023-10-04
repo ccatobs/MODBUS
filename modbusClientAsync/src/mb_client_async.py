@@ -124,7 +124,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.3.0"
+__version__ = "5.3.1"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -378,7 +378,7 @@ class MODBUSClientAsync(object):
         except MyException as e:
             raise MyException(
                 status_code=e.status_code,
-                detail="{0}, updated register content: {1}".format(
+                detail="{0}. Updated register content: {1}".format(
                     e.detail,
                     self.__updated_registers()
                 )

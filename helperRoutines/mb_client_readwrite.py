@@ -18,6 +18,8 @@ import argparse
 import os
 import asyncio
 import logging
+from typing import Generator
+import re
 # internal
 if os.environ.get('PYTHONPATH') is None:
     sys.path.append("{0}{1}".format(
@@ -28,18 +30,65 @@ from modbusClientAsync import MODBUSClientAsync
 
 '''
 test writer module with, e.g.
-python3 mb_client_readwrite.py
---ip 127.0.0.40
---port 5020
+python3 mb_client_readwrite.py \
+--ip 127.0.0.40 \
+--port 5020 \
+--async_mode \
 --payload "{
 \"decode_16bit_int_4\": 720.04,
 \"decode_8bit_int_4\": 7,
 \"decode_string_1_4\": \"abd \",
 \"decode_string_1h\": \"Cd\",
 \"decode_string_fullh\": \"xy\",
-\"Dummy_4\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]
-}"
+\"Dummy_4\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
 '''
+
+
+class Range(object):
+    """
+    A container of range(s) that should be allowed for the usage of choices in
+    argparse, if its type is float. Boundary values can be in- or excluded:
+    range = '[|] float, float [|]' to include both boundaries,
+    exclude left, right boundary, and both boundaries.
+    Examples:
+    choices=Range('[0., 1.0[')
+    or
+    choices=[Range(']0., 1.0['),
+             Range(']  2.0E0, 3.0e0 ]'),
+             ...]
+    """
+    def __init__(self, scope: str):
+        r = re.compile(
+            r'^([\[\]]) *([-+]?(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?) *'
+            r', *([-+]?(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?) *([\[\]])$'
+        )
+        try:
+            i = [j for j in re.findall(r, scope)[0]]
+            self.__start, self.__end = float(i[1]), float(i[2])
+            if self.__start >= self.__end:
+                raise ArithmeticError
+        except (IndexError, ArithmeticError):
+            raise SyntaxError("An error occurred with the range provided!")
+        self.__st = '{}{{}}, {{}}{}'.format(i[0], i[3])
+        self.__lamba = "lambda start, end, item: start {0} item {1} end".format(
+            {'[': '<=', ']': '<'}[i[0]],
+            {']': '<=', '[': '<'}[i[3]]
+        )
+
+    def __eq__(self, item: float) -> bool: return eval(self.__lamba)(
+        self.__start,
+        self.__end,
+        item)
+
+    def __contains__(self, item: float) -> bool: return self.__eq__(item)
+
+    def __iter__(self) -> Generator[object, None, None]: yield self
+
+    def __str__(self) -> str: return self.__st.format(self.__start, self.__end)
+
+    def __repr__(self) -> str: return self.__str__()
+
+
 print(__doc__.format(__version__))
 
 myformat = ("%(asctime)s.%(msecs)03d :: %(levelname)s: %(filename)s - "
@@ -49,7 +98,7 @@ logging.basicConfig(format=myformat,
                     datefmt="%Y-%m-%d %H:%M:%S")
 
 argparser = argparse.ArgumentParser(
-    description="Universal MODBUS (A)Sync Client Reader & Writer"
+    description="Reader & Writer for Universal (A)Synchronous MODBUS Client"
 )
 argparser.add_argument(
     '--host',
@@ -73,7 +122,8 @@ argparser.add_argument(
     '--timeout_connect',
     required=False,
     help='Timeout Connect (default: 3 [sec])',
-    type=float
+    type=float,
+    choices=Range('[1, 10]')
 )
 argparser.add_argument(
     '--payload',
@@ -148,12 +198,11 @@ def sync_main():
 if __name__ == '__main__':
     _start_time = timer()
     if args.async_mode:
-        print("MODBUS Asynchronous Client")
         asyncio.run(async_main())
     else:
-        print("MODBUS Synchronous Client")
         sync_main()
-    print("Time consumed to process MODBUS interface: {0:.1f} ms".format(
-        (timer() - _start_time) * 1_000)
-    )
+    print("Time consumed to process {1}ynchronous MODBUS interface: {0:.1f} ms"
+          .format(
+              (timer() - _start_time) * 1_000,
+              "As" if args.async_mode else "S"))
     sys.exit(0)

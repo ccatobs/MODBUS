@@ -381,23 +381,21 @@ class _ObjectTypeSync(object):
                                           parameter))
                         _throw_error(detail, 422)
 
-                    err = ""
                     try:
                         getattr(builder, function)(value)
                     except Exception as e:
-                        err = e
-                        pass
+                        detail = ("Error in BinaryPayloadBuilder: {}"
+                                  .format(str(e)))
+                        _throw_error(detail, 422)
                     payload = builder.to_registers()
                     if self.__client.write_registers(
                             address=reg_info['start'],
                             values=payload,
                             slave=UNIT
                     ).isError():
-                        detail = (("Error: {2} writing to holding "
+                        detail = (("Error writing to holding "
                                    "register address '{0}' with payload '{1}'")
-                                  .format(reg_info['start'],
-                                          payload,
-                                          err))
+                                  .format(reg_info['start'], payload))
                         _throw_error(detail, 422)
                     self.updated_items[parameter] = value
                     builder.reset()  # reset builder

@@ -4,7 +4,15 @@
 ### Added
 ### Changed
 ### Fixed
-- error message fixed for async write to holding
+### Deprecated
+### Removed
+### Security
+## 5.3.1 (2023-10-04)
+### Added
+- range between 1 and 10 sec for timeout_connect option in mb_client_readwrite.py
+### Changed
+### Fixed
+- error message fixed for write to holding
 ### Deprecated
 ### Removed
 ### Security
