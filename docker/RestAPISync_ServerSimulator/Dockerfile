@@ -22,7 +22,7 @@ RUN ["chmod", "+x", "python_wrapper.sh"]
 ENV PYTHONPATH .
 ENV PORT ${PORT}
 ENV HOST ${HOST}
-ENV ServerPort ${ServerPort}
-ENV Debug ${Debug}
+ENV SERVERPORT ${SERVERPORT}
+ENV DEBUG ${DEBUG}
 
 CMD  ./python_wrapper.sh

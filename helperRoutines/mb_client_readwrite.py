@@ -63,7 +63,7 @@ class Range(object):
             r', *([-+]?(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?) *([\[\]])$'
         )
         try:
-            i = [j for j in re.findall(r, scope)[0]]
+            i = re.findall(r, scope)[0]
             self.__start, self.__end = float(i[1]), float(i[2])
             if self.__start >= self.__end:
                 raise ArithmeticError

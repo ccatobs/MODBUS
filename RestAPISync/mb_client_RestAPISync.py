@@ -39,8 +39,8 @@ henceforth version history of modbusClient adopted
 
 print(__doc__.format(__version__))
 
-hosts = os.getenv("ServerHost")
-port = int(os.environ.get('ServerPort'))
+hosts = os.getenv("SERVERHOST")
+port = int(os.environ.get('SERVERPORT'))
 debug = strtobool(os.environ.get('Debug')) \
     if os.environ.get('Debug') else None
 
@@ -49,7 +49,7 @@ clients = dict()
 
 DeviceEnum = Enum(
     "DeviceEnum",
-    {host.strip(): host.strip() for host in hosts.split(",")}
+    {host.strip(): host for host in hosts.split(",")}
 )
 app = FastAPI(
     title="MODBUS API",

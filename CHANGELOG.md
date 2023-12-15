@@ -7,6 +7,14 @@
 ### Deprecated
 ### Removed
 ### Security
+## 5.3.2 (2023-12-15)
+### Added
+### Changed
+- minor modifications
+### Fixed
+### Deprecated
+### Removed
+### Security
 ## 5.3.1 (2023-10-04)
 ### Added
 - range between 1 and 10 sec for timeout_connect option in mb_client_readwrite.py

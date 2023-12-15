@@ -1,5 +1,4 @@
-import os
-from setuptools import setup,find_packages
+from setuptools import setup, find_packages
 import glob
 
 with open('requirements.txt') as f:
@@ -14,8 +13,8 @@ scripts = glob.glob("./helperRoutines/*py")
 print(scripts)
 
 setup(
-    name="MODBUS", # Replace with your username
-    version="5.2.0",
+    name="(A)Synchronous TCP MODBUS Client",
+    version="5.3.2",
     author="Ralf A. Timmermann",
     install_requires=required,
     author_email="rtimmermann@astro.uni-bonn.de",
@@ -23,9 +22,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ccatp/MODBUS",
-    packages=["modbusClientSync","modbusClientAsync"],
+    packages=["modbusClientSync", "modbusClientAsync"],
     scripts=scripts,
-    python_requires='>=3.10',
+    python_requires='>=3.10'
 )
-
-

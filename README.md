@@ -1,8 +1,8 @@
-# A Universal MODBUS Client
+# A Universal TCP MODBUS Client
 
 ## READER
 
-A universal MODBUS interface, where the mapping of the parameters to coil,
+A universal TCP MODBUS interface, where the mapping of the parameters to coil,
 discrete input, input and holding registers is entirely defined
 by a JSON file, with no modification to the coding required whatsoever. 
 The device class config file comprises a dictionary, where the key 
@@ -246,7 +246,7 @@ Not implemented to date:
 The result provided 
 for the housekeeping (Kafka producer) is a list of dictionary objects.
 
-Present MODBUS clients versions deploy the synchronous and 
+Present TCP MODBUS clients versions deploy the synchronous and 
 asynchronous [ModbusTcpClients](https://pymodbus.readthedocs.io/en/latest/source/library/client.html#pymodbus.client.ModbusTcpClient) in its version v3.5.2 (as of 2023/10/01).
 
 Run reader:
