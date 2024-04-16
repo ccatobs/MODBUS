@@ -43,24 +43,21 @@ python3 mb_client_readwrite.py \
 \"Dummy_4\": [1,0,0,1,0,0,0,1,1,1,0,1,0,1,0,1]}"
 '''
 
+print(__doc__.format(__version__))
+
+myformat = ("%(asctime)s.%(msecs)03d :: %(levelname)s: %(filename)s - "
+            "%(lineno)s - %(funcName)s()\t%(message)s")
+logging.basicConfig(format=myformat,
+                    level=logging.INFO,
+                    datefmt="%Y-%m-%d %H:%M:%S")
+
 
 class Range(object):
-    """
-    A container of range(s) that should be allowed for the usage of choices in
-    argparse, if its type is float. Boundary values can be in- or excluded:
-    range = '[|] float, float [|]' to include both boundaries,
-    exclude left, right boundary, and both boundaries.
-    Examples:
-    choices=Range('[0., 1.0[')
-    or
-    choices=[Range(']0., 1.0['),
-             Range(']  2.0E0, 3.0e0 ]'),
-             ...]
-    """
+
     def __init__(self, scope: str):
         r = re.compile(
-            r'^([\[\]]) *([-+]?(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?) *'
-            r', *([-+]?(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?) *([\[\]])$'
+            r'^([\[\]]) *([-+]?(?:\d*\.\d+|\d+\.?)(?:[Ee][+-]?\d+)?) *'
+            r', *([-+]?(?:\d*\.\d+|\d+\.?)(?:[Ee][+-]?\d+)?) *([\[\]])$'
         )
         try:
             i = re.findall(r, scope)[0]
@@ -74,31 +71,19 @@ class Range(object):
             {'[': '<=', ']': '<'}[i[0]],
             {']': '<=', '[': '<'}[i[3]]
         )
-
     def __eq__(self, item: float) -> bool: return eval(self.__lamba)(
         self.__start,
         self.__end,
-        item)
-
+        item
+    )
     def __contains__(self, item: float) -> bool: return self.__eq__(item)
-
     def __iter__(self) -> Generator[object, None, None]: yield self
-
     def __str__(self) -> str: return self.__st.format(self.__start, self.__end)
-
     def __repr__(self) -> str: return self.__str__()
 
 
-print(__doc__.format(__version__))
-
-myformat = ("%(asctime)s.%(msecs)03d :: %(levelname)s: %(filename)s - "
-            "%(lineno)s - %(funcName)s()\t%(message)s")
-logging.basicConfig(format=myformat,
-                    level=logging.INFO,
-                    datefmt="%Y-%m-%d %H:%M:%S")
-
 argparser = argparse.ArgumentParser(
-    description="Reader & Writer for Universal (A)Synchronous MODBUS Client"
+    description="Reader & Writer for An Universal (A)Synchronous MODBUS Client"
 )
 argparser.add_argument(
     '--host',
