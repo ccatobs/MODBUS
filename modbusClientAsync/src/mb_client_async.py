@@ -223,6 +223,7 @@ class MODBUSClientAsync(object):
         :return:
         """
 
+        # start nested functions
         def check_register_integrity() -> None:
             """
             check registry integrity of dictionary keys in mapping file

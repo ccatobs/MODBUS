@@ -1,0 +1,65 @@
+{
+  "endianness": {
+    "byteorder": ">",
+    "wordorder": ">"
+  },
+  "mapping": {
+    "00102": {
+      "parameter": "OutputState_1",
+      "description": "Read 1st output state"
+    },
+    "00103": {
+      "parameter": "OutputState_2",
+      "description": "Read 2nd output state"
+    },
+    "00104": {
+      "parameter": "OutputState_3",
+      "description": "Read 3rd output state"
+    },
+    "00105": {
+      "parameter": "OutputState_4",
+      "description": "Read 4th output state"
+    },
+    "10802": {
+      "parameter": "InputState_1",
+      "description": "Read 1st input state"
+    },
+    "10803": {
+      "parameter": "InputState_2",
+      "description": "Read 2nd input state"
+    },
+    "30301": {
+      "function":"decode_32bit_uint",
+      "parameter": "OutputEnergy_All",
+      "description": "All outputs energy counter",
+      "unit": "Wh"
+    },
+    "30303": {
+      "function":"decode_32bit_uint",
+      "parameter": "OutputEnergy_1",
+      "description": "1st output energy counter",
+      "unit": "Wh"
+    },
+    "30305": {
+      "function":"decode_32bit_uint",
+      "parameter": "OutputEnergy_2",
+      "description": "2nd output energy counter",
+      "unit": "Wh"
+    },
+    "40001": {
+      "function":"decode_16bit_uint",
+      "parameter": "NumberInputs",
+      "description": "Number of digital inputs"
+    },
+    "40002": {
+      "function":"decode_16bit_uint",
+      "parameter": "NumberOutputs",
+      "description": "Number of outputs (Power Sockets/Outlets)"
+    },
+    "40003": {
+      "function":"decode_16bit_uint",
+      "parameter": "NumberMeteredOutputs",
+      "description": "Number of metered Power Sockets/Outlets"
+    }
+  }
+}
