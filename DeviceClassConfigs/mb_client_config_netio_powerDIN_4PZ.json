@@ -4,62 +4,182 @@
     "wordorder": ">"
   },
   "mapping": {
-    "00102": {
+    "00101": {
       "parameter": "OutputState_1",
       "description": "Read 1st output state"
     },
-    "00103": {
+    "00102": {
       "parameter": "OutputState_2",
       "description": "Read 2nd output state"
     },
-    "00104": {
+    "00103": {
       "parameter": "OutputState_3",
       "description": "Read 3rd output state"
     },
-    "00105": {
+    "00104": {
       "parameter": "OutputState_4",
       "description": "Read 4th output state"
     },
-    "10802": {
+    "10801": {
       "parameter": "InputState_1",
       "description": "Read 1st input state"
     },
-    "10803": {
+    "10802": {
       "parameter": "InputState_2",
       "description": "Read 2nd input state"
     },
-    "30301": {
+    "40000": {
+      "function":"decode_16bit_uint",
+      "parameter": "NumberInputs",
+      "description": "Number of digital inputs"
+    },
+    "40001": {
+      "function":"decode_16bit_uint",
+      "parameter": "NumberOutputs",
+      "description": "Number of outputs (Power Sockets/Outlets)"
+    },
+    "40002": {
+      "function":"decode_16bit_uint",
+      "parameter": "NumberMeteredOutputs",
+      "description": "Number of metered Power Sockets/Outlets"
+    },
+    "30000": {
+      "function":"decode_16bit_uint",
+      "parameter": "PowerGridFrequency",
+      "description": "Power grid frequency",
+      "multiplier": 0.01,
+      "unit": "Hz"
+    },
+    "30001": {
+      "function":"decode_16bit_uint",
+      "parameter": "Voltage",
+      "description": "Voltage",
+      "multiplier": 0.1,
+      "unit": "V"
+    },
+    "30002": {
+      "function":"decode_16bit_uint",
+      "parameter": "OverallTruePowerFactor",
+      "description": "OverAll TruePowerFactor",
+      "multiplier": 0.001
+    },
+    "30003": {
+      "function":"decode_16bit_uint",
+      "parameter": "OutputCurrent_All",
+      "description": "All outputs current",
+      "multiplier": 0.001,
+      "unit": "A"
+    },
+    "30004": {
+      "function":"decode_16bit_uint",
+      "parameter": "OutputPower_All",
+      "description": "All outputs power",
+      "unit": "W"
+    },
+    "30005": {
+      "function":"decode_16bit_uint",
+      "parameter": "OutputPhaseShift_All",
+      "description": "All outputs Phase shift",
+      "multiplier": 0.1,
+      "unit": "deg"
+    },
+    "30101": {
+      "function":"decode_16bit_uint",
+      "parameter": "OutputCurrent_1",
+      "description": "1st output current",
+      "multiplier": 0.001,
+      "unit": "A"
+    },
+    "30102": {
+      "function":"decode_16bit_uint",
+      "parameter": "OutputCurrent_2",
+      "description": "2nd output current",
+      "multiplier": 0.001,
+      "unit": "A"
+    },
+    "30201": {
+      "function":"decode_16bit_uint",
+      "parameter": "OutputPower_1",
+      "description": "1st output power",
+      "unit": "W"
+    },
+    "30202": {
+      "function":"decode_16bit_uint",
+      "parameter": "OutputPower_2",
+      "description": "2nd output power",
+      "unit": "W"
+    },
+    "30300": {
       "function":"decode_32bit_uint",
-      "parameter": "OutputEnergy_All",
+      "parameter": "OutputsEnergy_All",
       "description": "All outputs energy counter",
       "unit": "Wh"
     },
-    "30303": {
+    "30302": {
       "function":"decode_32bit_uint",
       "parameter": "OutputEnergy_1",
       "description": "1st output energy counter",
       "unit": "Wh"
     },
-    "30305": {
+    "30304": {
       "function":"decode_32bit_uint",
       "parameter": "OutputEnergy_2",
       "description": "2nd output energy counter",
       "unit": "Wh"
     },
-    "40001": {
+    "30401": {
       "function":"decode_16bit_uint",
-      "parameter": "NumberInputs",
-      "description": "Number of digital inputs"
+      "parameter": "OutputTPF_1",
+      "description": "1st output TPF",
+      "multiplier": 0.001
     },
-    "40002": {
+    "30402": {
       "function":"decode_16bit_uint",
-      "parameter": "NumberOutputs",
-      "description": "Number of outputs (Power Sockets/Outlets)"
+      "parameter": "OutputTPF_2",
+      "description": "2nd output TPF",
+      "multiplier": 0.001
     },
-    "40003": {
+    "30501": {
       "function":"decode_16bit_uint",
-      "parameter": "NumberMeteredOutputs",
-      "description": "Number of metered Power Sockets/Outlets"
+      "parameter": "OutputPhaseShift_1",
+      "description": "1st output Phase shift",
+      "multiplier": 0.1,
+      "unit": "deg"
+    },
+    "30502": {
+      "function":"decode_16bit_uint",
+      "parameter": "OutputPhaseShift_2",
+      "description": "2nd output Phase shift",
+      "multiplier": 0.1,
+      "unit": "deg"
+    },
+    "30600": {
+      "function":"decode_32bit_uint",
+      "parameter": "OutputReverseEnergy_All",
+      "description": "All out. reverseEnergy cnt.",
+      "unit": "Wh"
+    },
+    "30602": {
+      "function":"decode_32bit_uint",
+      "parameter": "OutputReverseEnergy_1",
+      "description": "1st out. reverseEnergy cnt.",
+      "unit": "Wh"
+    },
+    "30604": {
+      "function":"decode_32bit_uint",
+      "parameter": "OutputReverseEnergy_2",
+      "description": "2nd out. reverseEnergy cnt.",
+      "unit": "Wh"
+    },
+    "30802": {
+      "function":"decode_32bit_uint",
+      "parameter": "DigitalInputSoCounter_1",
+      "description": "1st digital input S0 counter"
+    },
+    "30804": {
+      "function":"decode_32bit_uint",
+      "parameter": "DigitalInputSoCounter_2",
+      "description": "2nd digital input S0 counter"
     }
   }
 }

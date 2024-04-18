@@ -53,7 +53,6 @@ logging.basicConfig(format=myformat,
 
 
 class Range(object):
-
     def __init__(self, scope: str):
         r = re.compile(
             r'^([\[\]]) *([-+]?(?:\d*\.\d+|\d+\.?)(?:[Ee][+-]?\d+)?) *'
@@ -61,24 +60,21 @@ class Range(object):
         )
         try:
             i = re.findall(r, scope)[0]
-            self.__start, self.__end = float(i[1]), float(i[2])
-            if self.__start >= self.__end:
+            if float(i[1]) >= float(i[2]):
                 raise ArithmeticError
         except (IndexError, ArithmeticError):
             raise SyntaxError("An error occurred with the range provided!")
-        self.__st = '{}{{}}, {{}}{}'.format(i[0], i[3])
-        self.__lamba = "lambda start, end, item: start {0} item {1} end".format(
+        self.__st = '{}{}, {}{}'.format(*i)
+        self.__lamba = "lambda item: {} {} item {} {}".format(
+            i[1],
             {'[': '<=', ']': '<'}[i[0]],
-            {']': '<=', '[': '<'}[i[3]]
+            {']': '<=', '[': '<'}[i[3]],
+            i[2]
         )
-    def __eq__(self, item: float) -> bool: return eval(self.__lamba)(
-        self.__start,
-        self.__end,
-        item
-    )
+    def __eq__(self, item: float) -> bool: return eval(self.__lamba)(item)
     def __contains__(self, item: float) -> bool: return self.__eq__(item)
     def __iter__(self) -> Generator[object, None, None]: yield self
-    def __str__(self) -> str: return self.__st.format(self.__start, self.__end)
+    def __str__(self) -> str: return self.__st
     def __repr__(self) -> str: return self.__str__()
 
 

@@ -37,15 +37,15 @@ A map might also contain entries matching the 8 bits of the
 leading or trailing byte of a register. In that case the values of the 
 individual bits are provided under the feature "parameter_alt".
 
-Register keys are in the following formates: 
-e.g. "30011" addressing the 12th register
-of the input register class, "30011/1" or "30011/2" for
-the leading and trailing byte of the 16 bit register, respectively.
-Furthermore, "30011/30012" or "30011/30014" address 32 or 64 bit 
-broad registers starting at the 12th register,
-if registers are in zeroMode = True at the server's configuration.
-A start/end register is to be provided for strings only, whereas the 
-specification of an end register is not required for other data types.
+Register keys are in the following formates: "30011" addresses the 
+11th register of the input register class, if registers 
+are in zeroMode = False at the server's configuration. It addresses the 12th
+register is zeroMode = True. "30011/1" or "30011/2" points to
+the leading and trailing byte of that 16 bit register, respectively.
+Furthermore, "30011" addresses also a 32 or a 64 bit 
+broad registers, if the function codes are decode_32bit or decode_64bit.
+A start/end register, such as "30111/30115" 
+is to be provided for strings only.
 
 [Note](https://en.wikipedia.org/wiki/Modbus): the number of registers per class 
 de facto extends to 0xFFFF, such that 65536 registers could be utilized.
