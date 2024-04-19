@@ -137,13 +137,14 @@ async def async_main():
         )
         if args.payload:
             print(json.dumps(
-                await mb_client.write_register(
-                    json.loads(args.payload)
-                ),
-                indent=2))
+                await mb_client.write_register(json.loads(args.payload)),
+                indent=2)
+            )
         else:
-            print(json.dumps(await mb_client.read_register(),
-                             indent=2))
+            print(json.dumps(
+                await mb_client.read_register(),
+                indent=2)
+            )
     except MyException as e:
         print("Code={0}, detail={1}".format(e.status_code,
                                             e.detail))
@@ -163,13 +164,14 @@ def sync_main():
         )
         if args.payload:
             print(json.dumps(
-                mb_client.write_register(
-                    json.loads(args.payload)
-                ),
-                indent=2))
+                mb_client.write_register(json.loads(args.payload)),
+                indent=2)
+            )
         else:
-            print(json.dumps(mb_client.read_register(),
-                             indent=2))
+            print(json.dumps(
+                mb_client.read_register(),
+                indent=2)
+            )
     except MyException as e:
         print("Code={0}, detail={1}".format(e.status_code,
                                             e.detail))

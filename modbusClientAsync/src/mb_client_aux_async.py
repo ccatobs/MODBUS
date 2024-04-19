@@ -126,13 +126,14 @@ class LockGroup(object):
     source:
     https://stackoverflow.com/questions/37624289/value-based-thread-lock
     """
-
     def __init__(self):
         self.__lock_dict = dict()
         self.__lock = Lock()
 
-    def __call__(self,
-                 param: str = None) -> Lock:
+    def __call__(
+            self,
+            param: str = None
+    ) -> Lock:
         with self.__lock:
             if param not in self.__lock_dict:
                 self.__lock_dict[param] = Lock()
