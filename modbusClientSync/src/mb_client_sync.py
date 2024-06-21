@@ -13,12 +13,13 @@ Argelander Institute for Astronomy (AIfA), University Bonn.
 from pymodbus.client import ModbusTcpClient
 import re
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 import datetime
 # internal
 from .mb_client_core_sync import _ObjectTypeSync, FEATURE_ALLOWED_SET
 from .mb_client_aux_sync import (mytimer, _client_config, _throw_error,
-                                 MyException, defined_kwargs, MODBUS2AVRO)
+                                 MyException, defined_kwargs)
+from .mb_client_enums_sync import MODBUS2AVRO
 
 """
 change history
@@ -123,7 +124,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.3.2"
+__version__ = "5.3.3"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -184,7 +185,7 @@ class MODBUSClientSync(object):
                                              "wordorder": ">"})
         }
         # initialize _ObjectType objects for each entity
-        self.__entity_list = list()
+        self.__entity_list: List = []
         for regs in ['0', '1', '3', '4']:
             self.__entity_list.append(
                 _ObjectTypeSync(
@@ -202,7 +203,7 @@ class MODBUSClientSync(object):
         :param wr: list of dicts {parameter: value}
         :return: str, empty (no error)
         """
-        parms = list()
+        parms: List = []
         text = "Parameter {0} not mapped to register"
         for parameter in wr.keys():
             for attributes in self.__init['mapping'].values():
@@ -293,7 +294,7 @@ class MODBUSClientSync(object):
                               .format(", ".join(parameter_duplicate))), 422)
         # end nested functions
 
-        rev_dict = dict()
+        rev_dict: Dict = {}
         for register, value in mapping.items():
             check_register_integrity()
             parameter = parameter_available()
@@ -325,7 +326,7 @@ class MODBUSClientSync(object):
         updated registers for coil and holding after write end or failure
         :return: values of register content
         """
-        tmp = dict()
+        tmp: Dict = {}
         for entity in self.__entity_list:
             if entity.entity in ['0', '4']:
                 tmp.update(entity.updated_items)

@@ -13,7 +13,6 @@ import glob
 import json
 import logging
 from typing import Callable, Any, Dict
-from enum import Enum, EnumMeta
 
 
 class MyException(Exception):
@@ -24,6 +23,27 @@ class MyException(Exception):
                          detail)
         self.status_code = status_code
         self.detail = detail
+
+
+class LockGroup(object):
+    """
+    Returns a lock object, unique for each unique value of param.
+    The first call with a given value of param creates a new lock, subsequent
+    calls return the same lock.
+    source:
+    https://stackoverflow.com/questions/37624289/value-based-thread-lock
+    """
+
+    def __init__(self):
+        self.__lock_dict = dict()
+        self.__lock = Lock()
+
+    def __call__(self,
+                 param: str = None) -> Lock:
+        with self.__lock:
+            if param not in self.__lock_dict:
+                self.__lock_dict[param] = Lock()
+            return self.__lock_dict[param]
 
 
 def _throw_error(detail: str,
@@ -40,6 +60,8 @@ def _throw_error(detail: str,
 
 
 def _client_config(config_filename: str) -> Dict:
+    config_device_class = None
+
     if config_filename:
         if os.path.exists(config_filename):
             config_device_class = config_filename
@@ -66,76 +88,6 @@ def _client_config(config_filename: str) -> Dict:
     logging.info("Config File: {0}".format(config_device_class))
     with open(config_device_class) as config_file:
         return json.load(config_file)
-
-
-class _MyMeta(EnumMeta):
-    def __contains__(self, other) -> bool:
-        try:
-            self(other)
-        except ValueError:
-            return False
-        else:
-            return True
-
-
-class MODBUS2AVRO(
-    str,
-    Enum,
-    metaclass=_MyMeta
-):
-    A = ("decode_bits", "boolean", 8, True)
-    B = ("decode_8bit_int", "int", 8, True)
-    C = ("decode_8bit_uint", "int", 8, True)
-    D = ("decode_16bit_int", "int", 16, True)
-    E = ("decode_16bit_uint", "int", 16, True)
-    F = ("decode_16bit_float", "float", 16, True)
-    G = ("decode_32bit_int", "int", 32, True)
-    H = ("decode_32bit_uint", "int", 32, True)
-    J = ("decode_32bit_float", "float", 32, True)
-    K = ("decode_64bit_int", "long", 64, True)
-    L = ("decode_64bit_uint", "long", 64, True)
-    M = ("decode_64bit_float", "double", 64, True)
-    N = ("decode_string", "string", 16, False)
-
-    def __new__(
-            cls,
-            key,
-            datatype,
-            no_bit,
-            supersede
-    ) -> Enum:
-        obj = str.__new__(cls, [str])
-        obj._value_ = key
-        obj.datatype = datatype
-        obj.no_bit = no_bit
-        obj.supersede = supersede
-        return obj
-
-    @classmethod
-    def no_bytes(cls, key) -> int: return int(cls(key).no_bit/8)
-    @classmethod
-    def width(cls, key) -> int: return max(int(cls(key).no_bit/16), 1)
-
-
-class LockGroup(object):
-    """
-    Returns a lock object, unique for each unique value of param.
-    The first call with a given value of param creates a new lock, subsequent
-    calls return the same lock.
-    source:
-    https://stackoverflow.com/questions/37624289/value-based-thread-lock
-    """
-
-    def __init__(self):
-        self.__lock_dict = dict()
-        self.__lock = Lock()
-
-    def __call__(self,
-                 param: str = None) -> Lock:
-        with self.__lock:
-            if param not in self.__lock_dict:
-                self.__lock_dict[param] = Lock()
-            return self.__lock_dict[param]
 
 
 def mytimer(supersede: Callable | str = None) -> Callable:

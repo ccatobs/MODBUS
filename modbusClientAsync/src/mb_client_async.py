@@ -19,7 +19,8 @@ import datetime
 # internal
 from .mb_client_core_async import _ObjectTypeAsync, FEATURE_ALLOWED_SET
 from .mb_client_aux_async import (_client_config, _throw_error, mytimer,
-                                  MyException, defined_kwargs, MODBUS2AVRO)
+                                  MyException, defined_kwargs)
+from .mb_client_enums_async import MODBUS2AVRO
 
 """
 change history
@@ -124,7 +125,7 @@ __copyright__ = ("Copyright (C) Ralf Antonius Timmermann, "
                  "AIfA, University Bonn")
 __credits__ = ""
 __license__ = "BSD 3-Clause"
-__version__ = "5.3.2"
+__version__ = "5.3.3"
 __maintainer__ = "Ralf Antonius Timmermann"
 __email__ = "rtimmermann@astro.uni-bonn.de"
 __status__ = "QA"
@@ -183,7 +184,7 @@ class MODBUSClientAsync(object):
                                              "wordorder": ">"})
         }
         # initialize _ObjectType objects for each entity
-        self.__entity_list: List = list()
+        self.__entity_list: List = []
         for regs in ['0', '1', '3', '4']:
             self.__entity_list.append(
                 _ObjectTypeAsync(
@@ -201,7 +202,7 @@ class MODBUSClientAsync(object):
         :param wr: list of dicts {parameter: value}
         :return: str (empty = no error)
         """
-        parms: List = list()
+        parms: List = []
         text = "Parameter {0} not mapped to register"
         for parameter in wr.keys():
             for attributes in self.__init['mapping'].values():
@@ -292,7 +293,7 @@ class MODBUSClientAsync(object):
                               .format(", ".join(parameter_duplicate))), 422)
         # end nested functions
 
-        rev_dict: Dict = dict()
+        rev_dict: Dict = {}
         for register, value in mapping.items():
             check_register_integrity()
             parameter = parameter_available()
@@ -314,7 +315,7 @@ class MODBUSClientAsync(object):
                          .format(self._ip)), 503)
         logging.debug("MODBUS Communication Parameters: {}"
                       .format(self.__client.comm_params))
-        decoded: List = list()
+        decoded: List = []
         coros = [entity.register_readout() for entity in self.__entity_list]
         try:
             for item in await asyncio.gather(*coros):
@@ -341,7 +342,7 @@ class MODBUSClientAsync(object):
         updated registers for coil and holding after write end or failure
         :return: values of register content
         """
-        tmp: Dict = dict()
+        tmp: Dict = {}
         for entity in self.__entity_list:
             if entity.entity in ['0', '4']:
                 tmp.update(entity.updated_items)

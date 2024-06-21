@@ -7,6 +7,15 @@
 ### Deprecated
 ### Removed
 ### Security
+## 5.3.3 (2024-06-21)
+### Added
+### Changed
+- minor modifications
+  - new file for enums
+### Fixed
+### Deprecated
+### Removed
+### Security
 ## 5.3.2 (2023-12-15)
 ### Added
 ### Changed

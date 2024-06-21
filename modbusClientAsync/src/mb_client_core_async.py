@@ -12,7 +12,8 @@ import logging
 from typing import Dict, List, Any
 import asyncio
 # internal
-from .mb_client_aux_async import MODBUS2AVRO, _throw_error, defined_kwargs
+from .mb_client_aux_async import _throw_error, defined_kwargs
+from .mb_client_enums_async import MODBUS2AVRO, MODBUS2FUNCTION
 
 UNIT = 0x1
 FEATURE_EXCLUDE_SET = {
@@ -448,21 +449,9 @@ class _ObjectTypeAsync(object):
         """
 
         async def acquire(register: str) -> List[Dict[str, Any]]:
-            f: str = ""
             reg_info = self.__register_width(address=register)
-
-            # read appropriate register(s)
-            match self._entity:
-                case '0':
-                    f = "read_coils"
-                case '1':
-                    f = "read_discrete_inputs"
-                case '3':
-                    f = "read_input_registers"
-                case '4':
-                    f = "read_holding_registers"
-
-            result = await getattr(self.__client, f)(
+            result = await getattr(self.__client,
+                                   MODBUS2FUNCTION(self._entity).name)(
                 address=reg_info['start'],
                 count=reg_info['width'],
                 slave=UNIT

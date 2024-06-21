@@ -11,7 +11,8 @@ import re
 import logging
 from typing import Dict, List, Any
 # internal
-from .mb_client_aux_sync import MODBUS2AVRO, _throw_error, defined_kwargs
+from .mb_client_aux_sync import _throw_error, defined_kwargs
+from .mb_client_enums_sync import MODBUS2AVRO, MODBUS2FUNCTION
 
 UNIT = 0x1
 FEATURE_EXCLUDE_SET = {
@@ -409,23 +410,13 @@ class _ObjectTypeSync(object):
         list of dictionary/ies is appended to the result
         :return: List
         """
-        f = None
         decoded = list()
 
         for register in self.__register_maps.keys():
             reg_info = self.__register_width(register)
             # read appropriate register(s)
-            match self._entity:
-                case '0':
-                    f = "read_coils"
-                case '1':
-                    f = "read_discrete_inputs"
-                case '3':
-                    f = "read_input_registers"
-                case '4':
-                    f = "read_holding_registers"
-
-            result = getattr(self.__client, f)(
+            result = getattr(self.__client,
+                             MODBUS2FUNCTION(self._entity).name)(
                 address=reg_info['start'],
                 count=reg_info['width'],
                 slave=UNIT
