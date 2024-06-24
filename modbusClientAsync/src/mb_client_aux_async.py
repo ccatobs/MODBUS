@@ -25,7 +25,7 @@ class MyException(Exception):
         self.detail: str = detail
 
 
-# deprecated as of 2023-08-12
+# deprecated for async mode as of 2023-08-12
 class LockGroup(object):
     """
     Returns a lock object, unique for each unique value of param.
@@ -117,6 +117,7 @@ def mytimer(supersede: Callable | str = None) -> Callable:
                     (default_timer() - start_time) * 1_000
                 )
             )
+
             return result
 
         return wrapper

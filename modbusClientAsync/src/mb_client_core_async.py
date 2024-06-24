@@ -55,19 +55,19 @@ class _ObjectTypeAsync(object):
             init["endianness"] endianness's of byte and word
         :param entity: str - register prefix
         """
-        self._entity = entity
+        self.__entity = entity
         self.__client = init["client"]
         self.__endianness = init["endianness"]
         # select mapping for each entity and sort by register number
         self.__register_maps = {
             k: v for k, v in
-            sorted(init["mapping"].items()) if k[0] == self._entity
+            sorted(init["mapping"].items()) if k[0] == self.__entity
         }
         # parameter updated in registers after write to date, needs reset
-        self.updated_items = dict()
+        self.updated_items: Dict = {}
 
     @property
-    def entity(self) -> str: return self._entity
+    def entity(self) -> str: return self.__entity
 
     def __register_width(
             self,
@@ -123,7 +123,7 @@ class _ObjectTypeAsync(object):
         :param function: string - decoder method
         :return: List of Dict for each parameter_alt
         """
-        optional = dict()
+        optional: Dict = {}
         one_map_entry = False
         register_maps = self.__register_maps[register]
         desc = register_maps.get('description')
@@ -297,7 +297,7 @@ class _ObjectTypeAsync(object):
             self.updated_items[parm] = val
         # end nested function
 
-        coros = list()
+        coros: List = []
         for parameter, value in wr.items():
             for address, attributes in self.__register_maps.items():
                 # coil register updates one-by-one in async mode
@@ -365,7 +365,7 @@ class _ObjectTypeAsync(object):
             wordorder=self.__endianness['wordorder']
         )
 
-        coros = list()
+        coros: List = []
         for parameter, value in wr.items():
             for address, attributes in self.__register_maps.items():
                 if attributes['parameter'] == parameter:
@@ -451,7 +451,7 @@ class _ObjectTypeAsync(object):
         async def acquire(register: str) -> List[Dict[str, Any]]:
             reg_info = self.__register_width(address=register)
             result = await getattr(self.__client,
-                                   MODBUS2FUNCTION(self._entity).name)(
+                                   MODBUS2FUNCTION(self.__entity).name)(
                 address=reg_info['start'],
                 count=reg_info['width'],
                 slave=UNIT
@@ -462,16 +462,16 @@ class _ObjectTypeAsync(object):
                      "'{1}' for MODBUS class '{2}'")
                     .format(reg_info['start'],
                             reg_info['width'],
-                            self._entity))
+                            self.__entity))
                 _throw_error(detail)
 
             # decode and append to list
-            if self._entity in ['0', '1']:
+            if self.__entity in ['0', '1']:
                 return self.__formatter_bit(
                     decoder=result.bits,
                     register=register
                 )
-            else:  # self._entity in ['3', '4']
+            else:  # self.__entity in ['3', '4']
                 decoder = BinaryPayloadDecoder.fromRegisters(
                     registers=result.registers,
                     byteorder=self.__endianness["byteorder"],
@@ -486,7 +486,7 @@ class _ObjectTypeAsync(object):
                 )
         # end nested function
 
-        decoded: List = list()
+        decoded: List = []
         coros = [acquire(register) for register in self.__register_maps.keys()]
         for item in await asyncio.gather(*coros):
             decoded += item  # item comprises multiple elements if map
@@ -506,7 +506,7 @@ class _ObjectTypeAsync(object):
         """
         self.updated_items.clear()  # reset
 
-        match self._entity:
+        match self.__entity:
             case '4':
                 await self.__holding(wr=wr)
             case '0':
@@ -519,5 +519,5 @@ class _ObjectTypeAsync(object):
                             detail = (("Parameter '{0}' of MODBUS register "
                                        "class '{1}' is not appropriate!")
                                       .format(parameter,
-                                              self._entity))
+                                              self.__entity))
                             _throw_error(detail, 202)

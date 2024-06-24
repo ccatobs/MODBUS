@@ -20,7 +20,7 @@ import datetime
 from .mb_client_core_async import _ObjectTypeAsync, FEATURE_ALLOWED_SET
 from .mb_client_aux_async import (_client_config, _throw_error, mytimer,
                                   MyException, defined_kwargs)
-from .mb_client_enums_async import MODBUS2AVRO
+from .mb_client_enums_async import MODBUS2AVRO, MODBUS2FUNCTION
 
 """
 change history
@@ -185,7 +185,7 @@ class MODBUSClientAsync(object):
         }
         # initialize _ObjectType objects for each entity
         self.__entity_list: List = []
-        for regs in ['0', '1', '3', '4']:
+        for regs in [i.value for i in MODBUS2FUNCTION]:
             self.__entity_list.append(
                 _ObjectTypeAsync(
                     init=self.__init,

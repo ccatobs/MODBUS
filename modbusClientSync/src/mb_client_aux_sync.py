@@ -21,8 +21,8 @@ class MyException(Exception):
                  detail):
         super().__init__(status_code,
                          detail)
-        self.status_code = status_code
-        self.detail = detail
+        self.status_code: int = status_code
+        self.detail: str = detail
 
 
 class LockGroup(object):
@@ -33,13 +33,14 @@ class LockGroup(object):
     source:
     https://stackoverflow.com/questions/37624289/value-based-thread-lock
     """
-
     def __init__(self):
         self.__lock_dict = dict()
         self.__lock = Lock()
 
-    def __call__(self,
-                 param: str = None) -> Lock:
+    def __call__(
+            self,
+            param: str = None
+    ) -> Lock:
         with self.__lock:
             if param not in self.__lock_dict:
                 self.__lock_dict[param] = Lock()

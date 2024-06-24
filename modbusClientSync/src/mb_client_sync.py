@@ -19,7 +19,7 @@ import datetime
 from .mb_client_core_sync import _ObjectTypeSync, FEATURE_ALLOWED_SET
 from .mb_client_aux_sync import (mytimer, _client_config, _throw_error,
                                  MyException, defined_kwargs)
-from .mb_client_enums_sync import MODBUS2AVRO
+from .mb_client_enums_sync import MODBUS2AVRO, MODBUS2FUNCTION
 
 """
 change history
@@ -186,7 +186,7 @@ class MODBUSClientSync(object):
         }
         # initialize _ObjectType objects for each entity
         self.__entity_list: List = []
-        for regs in ['0', '1', '3', '4']:
+        for regs in [i.value for i in MODBUS2FUNCTION]:
             self.__entity_list.append(
                 _ObjectTypeSync(
                     init=self.__init,
